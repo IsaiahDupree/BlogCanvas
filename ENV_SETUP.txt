@@ -1,0 +1,19 @@
+# Copy this content to create your .env.local file
+# Instructions:
+# 1. Create a new file named ".env.local" in the root directory
+# 2. Copy everything below the line into that file
+# 3. Save the file
+# ================================================================
+
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=https://gqjgxltroyysjoxswbmn.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdxamd4bHRyb3l5c2pveHN3Ym1uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ3OTg3OTAsImV4cCI6MjA4MDM3NDc5MH0.H4LfkcbGPrMDM3CCaI5hGE1JWm7OO-jEZOiNPdNzh_s
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdxamd4bHRyb3l5c2pveHN3Ym1uIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NDc5ODc5MCwiZXhwIjoyMDgwMzc0NzkwfQ.E37Oz3DU4JU9_MTTqZ0CJ60D0ejche03VX1cqLhBlfo
+
+# LLM API Keys (Add your keys when you're ready)
+OPENAI_API_KEY=your_openai_key_here
+ANTHROPIC_API_KEY=your_anthropic_key_here
+
+# Application Settings
+NODE_ENV=development
+NEXT_PUBLIC_APP_URL=http://localhost:3002
