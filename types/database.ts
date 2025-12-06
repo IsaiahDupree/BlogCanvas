@@ -58,6 +58,106 @@ export type Database = {
           },
         ]
       }
+      blog_post_metrics: {
+        Row: {
+          avg_position: number | null
+          blog_post_id: string | null
+          clicks: number | null
+          conversions: number | null
+          created_at: string | null
+          ctr: number | null
+          id: string
+          impressions: number | null
+          raw_metrics: Json | null
+          seo_score: number | null
+          sessions: number | null
+          snapshot_date: string
+          time_on_page: number | null
+        }
+        Insert: {
+          avg_position?: number | null
+          blog_post_id?: string | null
+          clicks?: number | null
+          conversions?: number | null
+          created_at?: string | null
+          ctr?: number | null
+          id?: string
+          impressions?: number | null
+          raw_metrics?: Json | null
+          seo_score?: number | null
+          sessions?: number | null
+          snapshot_date: string
+          time_on_page?: number | null
+        }
+        Update: {
+          avg_position?: number | null
+          blog_post_id?: string | null
+          clicks?: number | null
+          conversions?: number | null
+          created_at?: string | null
+          ctr?: number | null
+          id?: string
+          impressions?: number | null
+          raw_metrics?: Json | null
+          seo_score?: number | null
+          sessions?: number | null
+          snapshot_date?: string
+          time_on_page?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_post_metrics_blog_post_id_fkey"
+            columns: ["blog_post_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      blog_post_revisions: {
+        Row: {
+          blog_post_id: string | null
+          content: Json | null
+          content_text: string | null
+          created_at: string | null
+          created_by: string | null
+          created_by_type: string | null
+          id: string
+          notes: string | null
+          revision_type: string
+        }
+        Insert: {
+          blog_post_id?: string | null
+          content?: Json | null
+          content_text?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          created_by_type?: string | null
+          id?: string
+          notes?: string | null
+          revision_type: string
+        }
+        Update: {
+          blog_post_id?: string | null
+          content?: Json | null
+          content_text?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          created_by_type?: string | null
+          id?: string
+          notes?: string | null
+          revision_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_post_revisions_blog_post_id_fkey"
+            columns: ["blog_post_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blog_post_sections: {
         Row: {
           ai_content: Json | null
@@ -115,6 +215,7 @@ export type Database = {
         Row: {
           client_id: string | null
           cms_publish_info: Json | null
+          content_batch_id: string | null
           created_at: string | null
           draft: Json | null
           final_html: string | null
@@ -125,17 +226,20 @@ export type Database = {
           research_context: Json | null
           seo_metadata: Json | null
           seo_notes: string | null
+          seo_quality_score: number | null
           status: Database["public"]["Enums"]["blog_post_status"] | null
           target_audience: string | null
           target_keyword: string | null
           tone_of_voice: string | null
           topic: string
+          topic_cluster_id: string | null
           updated_at: string | null
           word_count_goal: number | null
         }
         Insert: {
           client_id?: string | null
           cms_publish_info?: Json | null
+          content_batch_id?: string | null
           created_at?: string | null
           draft?: Json | null
           final_html?: string | null
@@ -146,17 +250,20 @@ export type Database = {
           research_context?: Json | null
           seo_metadata?: Json | null
           seo_notes?: string | null
+          seo_quality_score?: number | null
           status?: Database["public"]["Enums"]["blog_post_status"] | null
           target_audience?: string | null
           target_keyword?: string | null
           tone_of_voice?: string | null
           topic: string
+          topic_cluster_id?: string | null
           updated_at?: string | null
           word_count_goal?: number | null
         }
         Update: {
           client_id?: string | null
           cms_publish_info?: Json | null
+          content_batch_id?: string | null
           created_at?: string | null
           draft?: Json | null
           final_html?: string | null
@@ -167,11 +274,13 @@ export type Database = {
           research_context?: Json | null
           seo_metadata?: Json | null
           seo_notes?: string | null
+          seo_quality_score?: number | null
           status?: Database["public"]["Enums"]["blog_post_status"] | null
           target_audience?: string | null
           target_keyword?: string | null
           tone_of_voice?: string | null
           topic?: string
+          topic_cluster_id?: string | null
           updated_at?: string | null
           word_count_goal?: number | null
         }
@@ -181,6 +290,118 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blog_posts_content_batch_id_fkey"
+            columns: ["content_batch_id"]
+            isOneToOne: false
+            referencedRelation: "content_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blog_posts_topic_cluster_id_fkey"
+            columns: ["topic_cluster_id"]
+            isOneToOne: false
+            referencedRelation: "topic_clusters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      brand_guides: {
+        Row: {
+          brand_name: string | null
+          created_at: string | null
+          donts: Json | null
+          full_content: string | null
+          id: string
+          messaging_hierarchy: Json | null
+          name: string
+          products_services: Json | null
+          source: string | null
+          source_url: string | null
+          tagline: string | null
+          target_audiences: Json | null
+          tone_guidelines: Json | null
+          updated_at: string | null
+          value_propositions: Json | null
+          voice_traits: Json | null
+        }
+        Insert: {
+          brand_name?: string | null
+          created_at?: string | null
+          donts?: Json | null
+          full_content?: string | null
+          id?: string
+          messaging_hierarchy?: Json | null
+          name: string
+          products_services?: Json | null
+          source?: string | null
+          source_url?: string | null
+          tagline?: string | null
+          target_audiences?: Json | null
+          tone_guidelines?: Json | null
+          updated_at?: string | null
+          value_propositions?: Json | null
+          voice_traits?: Json | null
+        }
+        Update: {
+          brand_name?: string | null
+          created_at?: string | null
+          donts?: Json | null
+          full_content?: string | null
+          id?: string
+          messaging_hierarchy?: Json | null
+          name?: string
+          products_services?: Json | null
+          source?: string | null
+          source_url?: string | null
+          tagline?: string | null
+          target_audiences?: Json | null
+          tone_guidelines?: Json | null
+          updated_at?: string | null
+          value_propositions?: Json | null
+          voice_traits?: Json | null
+        }
+        Relationships: []
+      }
+      check_back_schedules: {
+        Row: {
+          blog_post_id: string | null
+          check_back_type: string | null
+          completed_at: string | null
+          created_at: string | null
+          error_message: string | null
+          id: string
+          scheduled_date: string
+          status: string | null
+        }
+        Insert: {
+          blog_post_id?: string | null
+          check_back_type?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          scheduled_date: string
+          status?: string | null
+        }
+        Update: {
+          blog_post_id?: string | null
+          check_back_type?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          scheduled_date?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "check_back_schedules_blog_post_id_fkey"
+            columns: ["blog_post_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
             referencedColumns: ["id"]
           },
         ]
@@ -354,6 +575,535 @@ export type Database = {
           },
         ]
       }
+      comparison_tables: {
+        Row: {
+          brand_guide_id: string | null
+          category: string | null
+          columns: Json | null
+          created_at: string | null
+          description: string | null
+          id: string
+          rows: Json | null
+          title: string
+        }
+        Insert: {
+          brand_guide_id?: string | null
+          category?: string | null
+          columns?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          rows?: Json | null
+          title: string
+        }
+        Update: {
+          brand_guide_id?: string | null
+          category?: string | null
+          columns?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          rows?: Json | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comparison_tables_brand_guide_id_fkey"
+            columns: ["brand_guide_id"]
+            isOneToOne: false
+            referencedRelation: "brand_guides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_batches: {
+        Row: {
+          client_id: string | null
+          created_at: string | null
+          created_by: string | null
+          end_date: string | null
+          goal_score_from: number | null
+          goal_score_to: number | null
+          id: string
+          name: string
+          posts_approved: number | null
+          posts_completed: number | null
+          posts_published: number | null
+          start_date: string | null
+          status: string | null
+          total_posts: number | null
+          updated_at: string | null
+          website_id: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          end_date?: string | null
+          goal_score_from?: number | null
+          goal_score_to?: number | null
+          id?: string
+          name: string
+          posts_approved?: number | null
+          posts_completed?: number | null
+          posts_published?: number | null
+          start_date?: string | null
+          status?: string | null
+          total_posts?: number | null
+          updated_at?: string | null
+          website_id?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          end_date?: string | null
+          goal_score_from?: number | null
+          goal_score_to?: number | null
+          id?: string
+          name?: string
+          posts_approved?: number | null
+          posts_completed?: number | null
+          posts_published?: number | null
+          start_date?: string | null
+          status?: string | null
+          total_posts?: number | null
+          updated_at?: string | null
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_batches_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_batches_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_gaps: {
+        Row: {
+          affected_pages: Json | null
+          created_at: string | null
+          description: string | null
+          gap_type: string
+          id: string
+          metadata: Json | null
+          resolved_at: string | null
+          severity: string | null
+          status: string | null
+          suggested_action: string | null
+          title: string
+          website_id: string | null
+        }
+        Insert: {
+          affected_pages?: Json | null
+          created_at?: string | null
+          description?: string | null
+          gap_type: string
+          id?: string
+          metadata?: Json | null
+          resolved_at?: string | null
+          severity?: string | null
+          status?: string | null
+          suggested_action?: string | null
+          title: string
+          website_id?: string | null
+        }
+        Update: {
+          affected_pages?: Json | null
+          created_at?: string | null
+          description?: string | null
+          gap_type?: string
+          id?: string
+          metadata?: Json | null
+          resolved_at?: string | null
+          severity?: string | null
+          status?: string | null
+          suggested_action?: string | null
+          title?: string
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_gaps_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_requirements: {
+        Row: {
+          content_type: string | null
+          created_at: string | null
+          id: string
+          is_default: boolean | null
+          optional_elements: Json | null
+          required_sections: Json | null
+          seo_requirements: Json | null
+          target_audience: string | null
+          template_name: string
+          tone: string | null
+          word_count_range: Json | null
+        }
+        Insert: {
+          content_type?: string | null
+          created_at?: string | null
+          id?: string
+          is_default?: boolean | null
+          optional_elements?: Json | null
+          required_sections?: Json | null
+          seo_requirements?: Json | null
+          target_audience?: string | null
+          template_name: string
+          tone?: string | null
+          word_count_range?: Json | null
+        }
+        Update: {
+          content_type?: string | null
+          created_at?: string | null
+          id?: string
+          is_default?: boolean | null
+          optional_elements?: Json | null
+          required_sections?: Json | null
+          seo_requirements?: Json | null
+          target_audience?: string | null
+          template_name?: string
+          tone?: string | null
+          word_count_range?: Json | null
+        }
+        Relationships: []
+      }
+      content_suggestions: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          estimated_impact: string | null
+          estimated_word_count: number | null
+          gap_id: string | null
+          id: string
+          outline: Json | null
+          priority: number | null
+          reasoning: string | null
+          status: string | null
+          suggestion_type: string
+          target_keyword: string | null
+          title: string
+          updated_at: string | null
+          website_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          estimated_impact?: string | null
+          estimated_word_count?: number | null
+          gap_id?: string | null
+          id?: string
+          outline?: Json | null
+          priority?: number | null
+          reasoning?: string | null
+          status?: string | null
+          suggestion_type: string
+          target_keyword?: string | null
+          title: string
+          updated_at?: string | null
+          website_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          estimated_impact?: string | null
+          estimated_word_count?: number | null
+          gap_id?: string | null
+          id?: string
+          outline?: Json | null
+          priority?: number | null
+          reasoning?: string | null
+          status?: string | null
+          suggestion_type?: string
+          target_keyword?: string | null
+          title?: string
+          updated_at?: string | null
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_suggestions_gap_id_fkey"
+            columns: ["gap_id"]
+            isOneToOne: false
+            referencedRelation: "content_gaps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_suggestions_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      faqs: {
+        Row: {
+          answer: string
+          brand_guide_id: string | null
+          category: string | null
+          created_at: string | null
+          id: string
+          keywords: Json | null
+          question: string
+          usage_count: number | null
+        }
+        Insert: {
+          answer: string
+          brand_guide_id?: string | null
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          keywords?: Json | null
+          question: string
+          usage_count?: number | null
+        }
+        Update: {
+          answer?: string
+          brand_guide_id?: string | null
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          keywords?: Json | null
+          question?: string
+          usage_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "faqs_brand_guide_id_fkey"
+            columns: ["brand_guide_id"]
+            isOneToOne: false
+            referencedRelation: "brand_guides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_requirements: {
+        Row: {
+          blog_post_id: string | null
+          brand_guide_id: string | null
+          created_at: string | null
+          custom_requirements: Json | null
+          id: string
+          include_comparison: boolean | null
+          include_faqs: boolean | null
+          include_statistics: boolean | null
+          include_table: boolean | null
+          selected_faqs: Json | null
+          selected_products: Json | null
+          selected_tables: Json | null
+        }
+        Insert: {
+          blog_post_id?: string | null
+          brand_guide_id?: string | null
+          created_at?: string | null
+          custom_requirements?: Json | null
+          id?: string
+          include_comparison?: boolean | null
+          include_faqs?: boolean | null
+          include_statistics?: boolean | null
+          include_table?: boolean | null
+          selected_faqs?: Json | null
+          selected_products?: Json | null
+          selected_tables?: Json | null
+        }
+        Update: {
+          blog_post_id?: string | null
+          brand_guide_id?: string | null
+          created_at?: string | null
+          custom_requirements?: Json | null
+          id?: string
+          include_comparison?: boolean | null
+          include_faqs?: boolean | null
+          include_statistics?: boolean | null
+          include_table?: boolean | null
+          selected_faqs?: Json | null
+          selected_products?: Json | null
+          selected_tables?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_requirements_blog_post_id_fkey"
+            columns: ["blog_post_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_requirements_brand_guide_id_fkey"
+            columns: ["brand_guide_id"]
+            isOneToOne: false
+            referencedRelation: "brand_guides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products_services: {
+        Row: {
+          benefits: Json | null
+          brand_guide_id: string | null
+          category: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          key_features: Json | null
+          metadata: Json | null
+          name: string
+          pricing_info: string | null
+          target_audience: string | null
+          use_cases: Json | null
+        }
+        Insert: {
+          benefits?: Json | null
+          brand_guide_id?: string | null
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          key_features?: Json | null
+          metadata?: Json | null
+          name: string
+          pricing_info?: string | null
+          target_audience?: string | null
+          use_cases?: Json | null
+        }
+        Update: {
+          benefits?: Json | null
+          brand_guide_id?: string | null
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          key_features?: Json | null
+          metadata?: Json | null
+          name?: string
+          pricing_info?: string | null
+          target_audience?: string | null
+          use_cases?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_services_brand_guide_id_fkey"
+            columns: ["brand_guide_id"]
+            isOneToOne: false
+            referencedRelation: "brand_guides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          client_id: string | null
+          company: string | null
+          created_at: string | null
+          email: string | null
+          full_name: string | null
+          id: string
+          role: string
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          client_id?: string | null
+          company?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id: string
+          role?: string
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          client_id?: string | null
+          company?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          role?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reports: {
+        Row: {
+          content_batch_id: string | null
+          created_at: string | null
+          generated_by: string | null
+          id: string
+          period_end: string
+          period_start: string
+          report_data: Json | null
+          report_type: string
+          storage_url: string | null
+          website_id: string | null
+        }
+        Insert: {
+          content_batch_id?: string | null
+          created_at?: string | null
+          generated_by?: string | null
+          id?: string
+          period_end: string
+          period_start: string
+          report_data?: Json | null
+          report_type: string
+          storage_url?: string | null
+          website_id?: string | null
+        }
+        Update: {
+          content_batch_id?: string | null
+          created_at?: string | null
+          generated_by?: string | null
+          id?: string
+          period_end?: string
+          period_start?: string
+          report_data?: Json | null
+          report_type?: string
+          storage_url?: string | null
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_content_batch_id_fkey"
+            columns: ["content_batch_id"]
+            isOneToOne: false
+            referencedRelation: "content_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       review_tasks: {
         Row: {
           assigned_to: string | null
@@ -402,6 +1152,230 @@ export type Database = {
           },
         ]
       }
+      scraped_pages: {
+        Row: {
+          content: string | null
+          description: string | null
+          headings: Json | null
+          html: string | null
+          id: string
+          images: Json | null
+          links: Json | null
+          metadata: Json | null
+          scraped_at: string | null
+          title: string | null
+          url: string
+          website_id: string | null
+          word_count: number | null
+        }
+        Insert: {
+          content?: string | null
+          description?: string | null
+          headings?: Json | null
+          html?: string | null
+          id?: string
+          images?: Json | null
+          links?: Json | null
+          metadata?: Json | null
+          scraped_at?: string | null
+          title?: string | null
+          url: string
+          website_id?: string | null
+          word_count?: number | null
+        }
+        Update: {
+          content?: string | null
+          description?: string | null
+          headings?: Json | null
+          html?: string | null
+          id?: string
+          images?: Json | null
+          links?: Json | null
+          metadata?: Json | null
+          scraped_at?: string | null
+          title?: string | null
+          url?: string
+          website_id?: string | null
+          word_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scraped_pages_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seo_audits: {
+        Row: {
+          audit_date: string | null
+          baseline_score: number | null
+          created_at: string | null
+          id: string
+          pages_indexed: number | null
+          raw_metrics: Json | null
+          updated_at: string | null
+          website_id: string | null
+        }
+        Insert: {
+          audit_date?: string | null
+          baseline_score?: number | null
+          created_at?: string | null
+          id?: string
+          pages_indexed?: number | null
+          raw_metrics?: Json | null
+          updated_at?: string | null
+          website_id?: string | null
+        }
+        Update: {
+          audit_date?: string | null
+          baseline_score?: number | null
+          created_at?: string | null
+          id?: string
+          pages_indexed?: number | null
+          raw_metrics?: Json | null
+          updated_at?: string | null
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seo_audits_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      topic_clusters: {
+        Row: {
+          created_at: string | null
+          currently_covered: boolean | null
+          difficulty: number | null
+          estimated_traffic: number | null
+          id: string
+          name: string
+          primary_keyword: string
+          recommended_article_count: number | null
+          search_intent: string | null
+          updated_at: string | null
+          website_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          currently_covered?: boolean | null
+          difficulty?: number | null
+          estimated_traffic?: number | null
+          id?: string
+          name: string
+          primary_keyword: string
+          recommended_article_count?: number | null
+          search_intent?: string | null
+          updated_at?: string | null
+          website_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          currently_covered?: boolean | null
+          difficulty?: number | null
+          estimated_traffic?: number | null
+          id?: string
+          name?: string
+          primary_keyword?: string
+          recommended_article_count?: number | null
+          search_intent?: string | null
+          updated_at?: string | null
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "topic_clusters_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      uploaded_documents: {
+        Row: {
+          analysis_result: Json | null
+          created_at: string | null
+          extracted_text: string | null
+          file_size: number | null
+          file_type: string | null
+          filename: string
+          id: string
+          processed: boolean | null
+          storage_path: string | null
+        }
+        Insert: {
+          analysis_result?: Json | null
+          created_at?: string | null
+          extracted_text?: string | null
+          file_size?: number | null
+          file_type?: string | null
+          filename: string
+          id?: string
+          processed?: boolean | null
+          storage_path?: string | null
+        }
+        Update: {
+          analysis_result?: Json | null
+          created_at?: string | null
+          extracted_text?: string | null
+          file_size?: number | null
+          file_type?: string | null
+          filename?: string
+          id?: string
+          processed?: boolean | null
+          storage_path?: string | null
+        }
+        Relationships: []
+      }
+      website_insights: {
+        Row: {
+          analyzed_at: string | null
+          id: string
+          insight_type: string
+          metric_name: string
+          metric_value: Json | null
+          recommendations: Json | null
+          trend: string | null
+          website_id: string | null
+        }
+        Insert: {
+          analyzed_at?: string | null
+          id?: string
+          insight_type: string
+          metric_name: string
+          metric_value?: Json | null
+          recommendations?: Json | null
+          trend?: string | null
+          website_id?: string | null
+        }
+        Update: {
+          analyzed_at?: string | null
+          id?: string
+          insight_type?: string
+          metric_name?: string
+          metric_value?: Json | null
+          recommendations?: Json | null
+          trend?: string | null
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "website_insights_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       website_pages: {
         Row: {
           clean_text: string | null
@@ -442,6 +1416,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      websites: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          domain: string
+          id: string
+          last_scraped_at: string | null
+          metadata: Json | null
+          pages_scraped: number | null
+          scrape_status: string | null
+          title: string | null
+          total_pages_found: number | null
+          updated_at: string | null
+          url: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          domain: string
+          id?: string
+          last_scraped_at?: string | null
+          metadata?: Json | null
+          pages_scraped?: number | null
+          scrape_status?: string | null
+          title?: string | null
+          total_pages_found?: number | null
+          updated_at?: string | null
+          url: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          domain?: string
+          id?: string
+          last_scraped_at?: string | null
+          metadata?: Json | null
+          pages_scraped?: number | null
+          scrape_status?: string | null
+          title?: string | null
+          total_pages_found?: number | null
+          updated_at?: string | null
+          url?: string
+        }
+        Relationships: []
       }
     }
     Views: {
@@ -612,6 +1631,3 @@ export const Constants = {
     },
   },
 } as const
-
-// Export BlogPostStatus type for convenience
-export type BlogPostStatus = Database["public"]["Enums"]["blog_post_status"]

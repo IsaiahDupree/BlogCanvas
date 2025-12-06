@@ -1,7 +1,105 @@
+
 import { GET as getClients, POST as createClient } from '@/app/api/clients/route';
 import { POST as createPost } from '@/app/api/clients/[clientId]/posts/route';
 import { POST as updateStatus } from '@/app/api/posts/[postId]/status/route';
 import { NextRequest } from 'next/server';
+
+// Fix hoisting issue by inlining the mock or defining it inside the factory
+jest.mock('@/lib/supabase/server', () => ({
+    createClient: jest.fn(() => ({
+        from: jest.fn((table: string) => ({
+            select: jest.fn(() => ({
+                order: jest.fn(() => Promise.resolve({
+                    data: [
+                        { id: '1', name: 'Test Company', status: 'onboarding' }
+                    ],
+                    error: null
+                })),
+                eq: jest.fn(() => ({
+                    order: jest.fn(() => Promise.resolve({
+                        data: [
+                            { id: '1', topic: 'How to Use CRM', status: 'researching', client_id: '1' }
+                        ],
+                        error: null
+                    }))
+                })),
+                single: jest.fn(() => Promise.resolve({
+                    data: { id: '1', topic: 'How to Use CRM', status: 'researching', client_id: '1' },
+                    error: null
+                }))
+            })),
+            insert: jest.fn((data: any) => ({
+                select: jest.fn(() => ({
+                    single: jest.fn(() => Promise.resolve({
+                        data: {
+                            ...data,
+                            id: '1',
+                            status: data.status || 'onboarding',
+                            topic: data.topic || 'Test Topic'
+                        },
+                        error: null
+                    }))
+                }))
+            })),
+            update: jest.fn((data: any) => ({
+                select: jest.fn(() => ({
+                    single: jest.fn(() => Promise.resolve({
+                        data: { id: '1', ...data, status: data.status },
+                        error: null
+                    }))
+                }))
+            }))
+        }))
+    }))
+}));
+
+jest.mock('@/lib/supabase', () => ({
+    supabaseAdmin: {
+        from: jest.fn((table: string) => ({
+            select: jest.fn(() => ({
+                order: jest.fn(() => Promise.resolve({
+                    data: [
+                        { id: '1', name: 'Test Company', status: 'onboarding' }
+                    ],
+                    error: null
+                })),
+                eq: jest.fn(() => ({
+                    order: jest.fn(() => Promise.resolve({
+                        data: [
+                            { id: '1', topic: 'How to Use CRM', status: 'researching', client_id: '1' }
+                        ],
+                        error: null
+                    }))
+                })),
+                single: jest.fn(() => Promise.resolve({
+                    data: { id: '1', topic: 'How to Use CRM', status: 'researching', client_id: '1' },
+                    error: null
+                }))
+            })),
+            insert: jest.fn((data: any) => ({
+                select: jest.fn(() => ({
+                    single: jest.fn(() => Promise.resolve({
+                        data: {
+                            ...data,
+                            id: '1',
+                            status: data.status || 'onboarding',
+                            topic: data.topic || 'Test Topic'
+                        },
+                        error: null
+                    }))
+                }))
+            })),
+            update: jest.fn((data: any) => ({
+                select: jest.fn(() => ({
+                    single: jest.fn(() => Promise.resolve({
+                        data: { id: '1', ...data, status: data.status },
+                        error: null
+                    }))
+                }))
+            }))
+        }))
+    }
+}));
 
 describe('Merchant Portal APIs', () => {
     describe('Client Management', () => {
@@ -13,6 +111,7 @@ describe('Merchant Portal APIs', () => {
             expect(response.status).toBe(200);
             expect(data.success).toBe(true);
             expect(Array.isArray(data.clients)).toBe(true);
+            expect(data.clients[0].name).toBe('Test Company');
         });
 
         it('creates a new client', async () => {
@@ -20,8 +119,8 @@ describe('Merchant Portal APIs', () => {
                 method: 'POST',
                 body: JSON.stringify({
                     name: 'Test Company',
-                    website: 'test.com',
-                    contact_email: 'hello@test.com',
+                    website_url: 'test.com',
+                    primary_contact_email: 'hello@test.com',
                     onboarding_method: 'site_scan'
                 }),
             });
@@ -32,14 +131,14 @@ describe('Merchant Portal APIs', () => {
             expect(response.status).toBe(200);
             expect(data.success).toBe(true);
             expect(data.client.name).toBe('Test Company');
-            expect(data.client.slug).toBe('test-company');
+            // slug removed
             expect(data.client.status).toBe('onboarding');
         });
 
         it('returns error when client name is missing', async () => {
             const request = new NextRequest('http://localhost/api/clients', {
                 method: 'POST',
-                body: JSON.stringify({ website: 'test.com' }),
+                body: JSON.stringify({ website_url: 'test.com' }),
             });
 
             const response = await createClient(request);
@@ -58,13 +157,13 @@ describe('Merchant Portal APIs', () => {
                 body: JSON.stringify({
                     topic: 'How to Use CRM',
                     targetKeyword: 'CRM guide',
-                    contentType: 'how-to',
-                    wordCountGoal: 1500,
-                    includeFAQs: true
+                    word_count_goal: 1500,
+                    // contentType removed
                 }),
             });
 
-            const response = await createPost(request, { params: { clientId: '1' } });
+            // Use simple object for params as Next.js expects, trying async param resolution
+            const response = await createPost(request, { params: Promise.resolve({ clientId: '1' }) });
             const data = await response.json();
 
             expect(response.status).toBe(200);
@@ -84,7 +183,7 @@ describe('Merchant Portal APIs', () => {
                 }),
             });
 
-            const response = await updateStatus(request, { params: { postId: '1' } });
+            const response = await updateStatus(request, { params: Promise.resolve({ postId: '1' }) });
             const data = await response.json();
 
             expect(response.status).toBe(200);
@@ -98,7 +197,7 @@ describe('Merchant Portal APIs', () => {
                 body: JSON.stringify({ status: 'invalid_status' }),
             });
 
-            const response = await updateStatus(request, { params: { postId: '1' } });
+            const response = await updateStatus(request, { params: Promise.resolve({ postId: '1' }) });
             const data = await response.json();
 
             expect(response.status).toBe(400);

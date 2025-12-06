@@ -1,0 +1,38 @@
+# Files and directories to ignore when deploying to Vercel
+
+# Dependencies (already handled by Vercel)
+node_modules
+
+# Testing
+coverage
+__tests__
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# Development files
+.env.local
+.env.development.local
+.env.test.local
+
+# Documentation (optional - remove if you want docs deployed)
+docs/
+*.md
+!README.md
+
+# Scripts (optional - remove if needed in production)
+scripts/
+
+# Marketing materials (optional)
+marketing-materials/
+Marketing-Materials-Examples/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+

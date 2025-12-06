@@ -1,6 +1,6 @@
-import { runOutlineAgent, OutlineAgentInput } from '../../../lib/agents/outline';
-import { LLMProvider } from '../../../lib/agents/types';
-import { EVERREACH_MARKETING_CONTEXT } from '../../../lib/context/marketing';
+import { runOutlineAgent, OutlineAgentInput } from '@/lib/agents/outline';
+import { LLMProvider } from '@/lib/agents/types';
+import { EVERREACH_MARKETING_CONTEXT } from '@/lib/context/marketing';
 
 describe('Outline Agent', () => {
     let mockProvider: LLMProvider;

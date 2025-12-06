@@ -1,6 +1,6 @@
-import { runBlogPostPipeline, PipelineInput } from '../../lib/pipeline/orchestrator';
-import { LLMProvider } from '../../lib/agents/types';
-import { EVERREACH_MARKETING_CONTEXT } from '../../lib/context/marketing';
+import { runBlogPostPipeline, PipelineInput } from '@/lib/pipeline/orchestrator';
+import { LLMProvider } from '@/lib/agents/types';
+import { EVERREACH_MARKETING_CONTEXT } from '@/lib/context/marketing';
 
 describe('Pipeline Orchestrator Integration', () => {
     let mockProvider: LLMProvider;
@@ -11,7 +11,9 @@ describe('Pipeline Orchestrator Integration', () => {
         mockProvider = {
             name: 'test-provider',
             call: jest.fn(async (req) => {
-                if (req.userPrompt.includes('Content Strategist and Researcher')) {
+                const promptToCheck = (req.systemPrompt || '') + (req.userPrompt || '');
+
+                if (promptToCheck.includes('Content Strategist and Researcher')) {
                     return JSON.stringify({
                         painPoints: ['Pain 1', 'Pain 2', 'Pain 3'],
                         keyFacts: ['Fact 1', 'Fact 2'],
@@ -19,7 +21,7 @@ describe('Pipeline Orchestrator Integration', () => {
                         relatedSubtopics: ['Topic 1'],
                         suggestedAngles: ['Angle 1', 'Angle 2']
                     });
-                } else if (req.userPrompt.includes('Content Strategist creating')) {
+                } else if (promptToCheck.includes('Content Strategist creating') || promptToCheck.includes('create a blog post outline')) {
                     return JSON.stringify({
                         sections: [
                             { key: 'intro', title: 'Intro', type: 'intro', keyPoints: ['p1'], estimatedWords: 300 },
@@ -30,12 +32,12 @@ describe('Pipeline Orchestrator Integration', () => {
                         ],
                         totalEstimatedWords: 1400
                     });
-                } else if (req.userPrompt.includes('expert Content Writer')) {
+                } else if (promptToCheck.includes('expert Content Writer')) {
                     return JSON.stringify({
                         content: 'Lorem ipsum dolor sit amet '.repeat(50), // ~250 words
                         wordCount: 250
                     });
-                } else if (req.userPrompt.includes('SEO expert')) {
+                } else if (promptToCheck.includes('SEO expert')) {
                     return JSON.stringify({
                         title: 'Optimized SEO Title - Perfect Length Here',
                         metaDescription: 'This is a well-optimized meta description that provides value and stays within the recommended character limit for search engines.',
@@ -44,7 +46,7 @@ describe('Pipeline Orchestrator Integration', () => {
                         keywordDensity: 1.8,
                         readabilityScore: 'Good'
                     });
-                } else if (req.userPrompt.includes('Brand Voice')) {
+                } else if (promptToCheck.includes('Brand Voice')) {
                     return JSON.stringify({
                         alignmentScore: 88,
                         issues: [],
@@ -96,9 +98,10 @@ describe('Pipeline Orchestrator Integration', () => {
 
         mockProvider.call = jest.fn(async (req) => {
             callCount++;
+            const promptToCheck = (req.systemPrompt || '') + (req.userPrompt || '');
 
             // First outline attempt fails (too few sections)
-            if (req.userPrompt.includes('Content Strategist creating') && callCount <= 2) {
+            if (promptToCheck.includes('Content Strategist creating') && callCount <= 2) {
                 return JSON.stringify({
                     sections: [
                         { key: 'intro', title: 'Intro', type: 'intro', keyPoints: [], estimatedWords: 200 }
@@ -109,7 +112,7 @@ describe('Pipeline Orchestrator Integration', () => {
             }
 
             // Second attempt succeeds
-            if (req.userPrompt.includes('Content Strategist creating')) {
+            if (promptToCheck.includes('Content Strategist creating')) {
                 return JSON.stringify({
                     sections: [
                         { key: 'intro', title: 'Intro', type: 'intro', keyPoints: ['p1'], estimatedWords: 300 },
@@ -140,7 +143,8 @@ describe('Pipeline Orchestrator Integration', () => {
     it('should fail after max retries', async () => {
         // Always return invalid outline
         mockProvider.call = jest.fn(async (req) => {
-            if (req.userPrompt.includes('Content Strategist creating')) {
+            const promptToCheck = (req.systemPrompt || '') + (req.userPrompt || '');
+            if (promptToCheck.includes('Content Strategist creating')) {
                 return JSON.stringify({
                     sections: [{ key: 'intro', title: 'Intro', type: 'intro', keyPoints: [], estimatedWords: 100 }],
                     totalEstimatedWords: 100
@@ -166,9 +170,10 @@ describe('Pipeline Orchestrator Integration', () => {
 
         mockProvider.call = jest.fn(async (req) => {
             failCount++;
+            const promptToCheck = (req.systemPrompt || '') + (req.userPrompt || '');
 
             // Research fails
-            if (req.userPrompt.includes('Content Strategist and Researcher')) {
+            if (promptToCheck.includes('Content Strategist and Researcher')) {
                 throw new Error('LLM Connection Error');
             }
 

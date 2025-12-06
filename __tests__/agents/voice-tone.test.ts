@@ -1,6 +1,6 @@
-import { runVoiceToneAgent, VoiceToneAgentInput } from '../../../lib/agents/voice-tone';
-import { LLMProvider } from '../../../lib/agents/types';
-import { EVERREACH_MARKETING_CONTEXT } from '../../../lib/context/marketing';
+import { runVoiceToneAgent, VoiceToneAgentInput } from '@/lib/agents/voice-tone';
+import { LLMProvider } from '@/lib/agents/types';
+import { EVERREACH_MARKETING_CONTEXT } from '@/lib/context/marketing';
 
 describe('Voice/Tone Agent', () => {
     let mockProvider: LLMProvider;

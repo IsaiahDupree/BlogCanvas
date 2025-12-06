@@ -1,5 +1,5 @@
-import { runSEOAgent, SEOAgentInput } from '../../../lib/agents/seo';
-import { LLMProvider } from '../../../lib/agents/types';
+import { runSEOAgent, SEOAgentInput } from '@/lib/agents/seo';
+import { LLMProvider } from '@/lib/agents/types';
 
 describe('SEO Agent', () => {
     let mockProvider: LLMProvider;

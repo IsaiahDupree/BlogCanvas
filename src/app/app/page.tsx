@@ -1,213 +1,270 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Plus, Users, TrendingUp, Clock, CheckCircle, FileText, Search } from 'lucide-react'
-import { Card } from '@/components/ui/card'
+import { Globe, FileText, TrendingUp, CheckCircle2, Clock, Zap, ArrowRight, Play } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 
-export default function MerchantDashboard() {
-    const [searchQuery, setSearchQuery] = useState('')
+export default function DashboardPage() {
+    const [stats, setStats] = useState({
+        websites: 0,
+        batches: 0,
+        postsGenerated: 0,
+        postsPublished: 0,
+        avgQuality: 0,
+        activeGeneration: false
+    })
+    const [recentActivity, setRecentActivity] = useState<any[]>([])
+    const [loading, setLoading] = useState(true)
 
-    // Mock data - would come from API
-    const stats = {
-        totalClients: 12,
-        activeClients: 10,
-        postsThisMonth: 47,
-        postsInReview: 8,
-        avgApprovalTime: '2.3 days'
+    useEffect(() => {
+        fetchDashboardData()
+    }, [])
+
+    const fetchDashboardData = async () => {
+        try {
+            // Fetch stats from various endpoints
+            const [websitesRes, batchesRes, postsRes] = await Promise.all([
+                fetch('/api/websites'),
+                fetch('/api/content-batches'),
+                fetch('/api/blog-posts')
+            ])
+
+            const websitesData = await websitesRes.json()
+            const batchesData = await batchesRes.json()
+            const postsData = await postsRes.json()
+
+            const websites = websitesData.websites || []
+            const batches = batchesData.batches || []
+            const posts = postsData.posts || []
+
+            const published = posts.filter((p: any) => p.status === 'published').length
+            const qualityScores = posts
+                .filter((p: any) => p.seo_quality_score)
+                .map((p: any) => p.seo_quality_score)
+            const avgQuality = qualityScores.length > 0
+                ? Math.round(qualityScores.reduce((a: number, b: number) => a + b, 0) / qualityScores.length)
+                : 0
+
+            setStats({
+                websites: websites.length,
+                batches: batches.length,
+                postsGenerated: posts.filter((p: any) => ['draft', 'in_review', 'approved', 'published'].includes(p.status)).length,
+                postsPublished: published,
+                avgQuality,
+                activeGeneration: posts.some((p: any) => p.status === 'generating')
+            })
+
+            // Create recent activity from batches
+            const recent = batches
+                .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                .slice(0, 5)
+            setRecentActivity(recent)
+
+        } catch (error) {
+            console.error('Failed to fetch dashboard data:', error)
+        } finally {
+            setLoading(false)
+        }
     }
 
-    const clients = [
-        {
-            id: '1',
-            name: 'Acme Software',
-            slug: 'acme-software',
-            status: 'active',
-            postsThisMonth: 8,
-            inReview: 2,
-            website: 'acme.com'
-        },
-        {
-            id: '2',
-            name: 'TechCorp Inc',
-            slug: 'techcorp',
-            status: 'active',
-            postsThisMonth: 6,
-            inReview: 1,
-            website: 'techcorp.io'
-        },
-        {
-            id: '3',
-            name: 'StartupXYZ',
-            slug: 'startupxyz',
-            status: 'onboarding',
-            postsThisMonth: 0,
-            inReview: 0,
-            website: 'startupxyz.com'
-        }
-    ]
-
-    const recentActivity = [
-        { id: '1', action: 'Post approved', client: 'Acme Software', post: 'How AI Transforms Sales', time: '2 hours ago' },
-        { id: '2', action: 'Post created', client: 'TechCorp Inc', post: 'Ultimate Guide to CRM', time: '5 hours ago' },
-        { id: '3', action: 'Client onboarded', client: 'StartupXYZ', time: '1 day ago' }
-    ]
-
-    const filteredClients = clients.filter(client =>
-        client.name.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-            {/* Header */}
-            <div className="bg-white border-b shadow-sm">
-                <div className="max-w-7xl mx-auto px-6 py-6">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                                Agency Dashboard
-                            </h1>
-                            <p className="text-muted-foreground mt-1">Manage all clients and content operations</p>
-                        </div>
-                        <Link
-                            href="/app/clients/new"
-                            className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-semibold hover:opacity-90 transition-opacity shadow-lg flex items-center gap-2"
-                        >
-                            <Plus className="w-5 h-5" />
-                            New Client
-                        </Link>
-                    </div>
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 p-6">
+            <div className="max-w-7xl mx-auto">
+                {/* Header */}
+                <div className="mb-8">
+                    <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                        BlogCanvas Dashboard
+                    </h1>
+                    <p className="text-muted-foreground text-lg">
+                        AI-Powered SEO Content Pipeline
+                    </p>
                 </div>
-            </div>
 
-            <div className="max-w-7xl mx-auto px-6 py-8">
-                {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-                    <Card className="p-6 bg-white border-2 border-blue-100 hover:border-blue-300 transition-colors">
-                        <div className="flex items-center justify-between mb-3">
-                            <Users className="w-8 h-8 text-blue-600" />
-                        </div>
-                        <h3 className="text-3xl font-bold text-gray-900">{stats.totalClients}</h3>
-                        <p className="text-sm text-muted-foreground">Total Clients</p>
-                        <p className="text-xs text-green-600 mt-1">{stats.activeClients} active</p>
+                {/* Quick Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+                    <Card className="border-indigo-200 bg-gradient-to-br from-indigo-50 to-indigo-100">
+                        <CardContent className="p-6">
+                            <div className="flex items-center justify-between mb-2">
+                                <Globe className="w-8 h-8 text-indigo-600" />
+                                {stats.activeGeneration && (
+                                    <Badge className="bg-green-500 text-white animate-pulse">
+                                        <Zap className="w-3 h-3 mr-1" />
+                                        Active
+                                    </Badge>
+                                )}
+                            </div>
+                            <div className="text-3xl font-bold text-indigo-700">{stats.websites}</div>
+                            <div className="text-sm text-indigo-600">Websites</div>
+                        </CardContent>
                     </Card>
 
-                    <Card className="p-6 bg-white border-2 border-indigo-100 hover:border-indigo-300 transition-colors">
-                        <div className="flex items-center justify-between mb-3">
-                            <FileText className="w-8 h-8 text-indigo-600" />
-                        </div>
-                        <h3 className="text-3xl font-bold text-gray-900">{stats.postsThisMonth}</h3>
-                        <p className="text-sm text-muted-foreground">Posts This Month</p>
+                    <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100">
+                        <CardContent className="p-6">
+                            <FileText className="w-8 h-8 text-purple-600 mb-2" />
+                            <div className="text-3xl font-bold text-purple-700">{stats.batches}</div>
+                            <div className="text-sm text-purple-600">Content Batches</div>
+                        </CardContent>
                     </Card>
 
-                    <Card className="p-6 bg-white border-2 border-yellow-100 hover:border-yellow-300 transition-colors">
-                        <div className="flex items-center justify-between mb-3">
-                            <Clock className="w-8 h-8 text-yellow-600" />
-                        </div>
-                        <h3 className="text-3xl font-bold text-gray-900">{stats.postsInReview}</h3>
-                        <p className="text-sm text-muted-foreground">In Review</p>
+                    <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100">
+                        <CardContent className="p-6">
+                            <TrendingUp className="w-8 h-8 text-blue-600 mb-2" />
+                            <div className="text-3xl font-bold text-blue-700">{stats.postsGenerated}</div>
+                            <div className="text-sm text-blue-600">Posts Generated</div>
+                        </CardContent>
                     </Card>
 
-                    <Card className="p-6 bg-white border-2 border-green-100 hover:border-green-300 transition-colors">
-                        <div className="flex items-center justify-between mb-3">
-                            <CheckCircle className="w-8 h-8 text-green-600" />
-                        </div>
-                        <h3 className="text-3xl font-bold text-gray-900">{stats.avgApprovalTime}</h3>
-                        <p className="text-sm text-muted-foreground">Avg Approval Time</p>
+                    <Card className="border-green-200 bg-gradient-to-br from-green-50 to-green-100">
+                        <CardContent className="p-6">
+                            <CheckCircle2 className="w-8 h-8 text-green-600 mb-2" />
+                            <div className="text-3xl font-bold text-green-700">{stats.postsPublished}</div>
+                            <div className="text-sm text-green-600">Published</div>
+                        </CardContent>
                     </Card>
 
-                    <Card className="p-6 bg-white border-2 border-purple-100 hover:border-purple-300 transition-colors">
-                        <div className="flex items-center justify-between mb-3">
-                            <TrendingUp className="w-8 h-8 text-purple-600" />
-                        </div>
-                        <h3 className="text-3xl font-bold text-gray-900">87%</h3>
-                        <p className="text-sm text-muted-foreground">Client Satisfaction</p>
+                    <Card className="border-orange-200 bg-gradient-to-br from-orange-50 to-orange-100">
+                        <CardContent className="p-6">
+                            <div className="text-xs text-orange-600 mb-2">Avg Quality</div>
+                            <div className="text-3xl font-bold text-orange-700">{stats.avgQuality}</div>
+                            <div className="text-sm text-orange-600">Out of 100</div>
+                        </CardContent>
                     </Card>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Clients List */}
-                    <div className="lg:col-span-2">
-                        <Card className="p-6 bg-white shadow-xl">
-                            <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-2xl font-bold">Clients</h2>
-                                <Link href="/app/clients" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
-                                    View All →
-                                </Link>
-                            </div>
+                {/* Quick Actions */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <Link href="/app/websites">
+                        <Card className="hover:shadow-xl transition-all cursor-pointer group h-full">
+                            <CardHeader>
+                                <CardTitle className="flex items-center justify-between">
+                                    <span>Websites</span>
+                                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-sm text-muted-foreground mb-4">
+                                    Analyze websites, identify gaps, and generate topic clusters
+                                </p>
+                                <Button className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+                                    Manage Websites
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    </Link>
 
-                            {/* Search */}
-                            <div className="relative mb-6">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                <input
-                                    type="text"
-                                    placeholder="Search clients..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
-                                />
-                            </div>
+                    <Link href="/app/batches">
+                        <Card className="hover:shadow-xl transition-all cursor-pointer group h-full">
+                            <CardHeader>
+                                <CardTitle className="flex items-center justify-between">
+                                    <span>Content Batches</span>
+                                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-sm text-muted-foreground mb-4">
+                                    Create and manage content production batches
+                                </p>
+                                <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+                                    View Batches
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    </Link>
 
+                    <Link href="/app/review">
+                        <Card className="hover:shadow-xl transition-all cursor-pointer group h-full">
+                            <CardHeader>
+                                <CardTitle className="flex items-center justify-between">
+                                    <span>Review Board</span>
+                                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-sm text-muted-foreground mb-4">
+                                    Manage content workflow and approvals
+                                </p>
+                                <Button className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white">
+                                    Review Content
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    </Link>
+
+                    <Card className="hover:shadow-xl transition-all group h-full bg-gradient-to-br from-indigo-50 to-purple-50">
+                        <CardHeader>
+                            <CardTitle className="flex items-center justify-between">
+                                <span>Quick Stats</span>
+                                <TrendingUp className="w-5 h-5 text-indigo-600" />
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-2 text-sm">
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">Total Posts:</span>
+                                    <span className="font-semibold">{stats.postsGenerated}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">Published:</span>
+                                    <span className="font-semibold text-green-600">{stats.postsPublished}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">Avg Quality:</span>
+                                    <span className="font-semibold text-orange-600">{stats.avgQuality}/100</span>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* Recent Activity */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Clock className="w-5 h-5" />
+                            Recent Batches
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {recentActivity.length > 0 ? (
                             <div className="space-y-3">
-                                {filteredClients.map((client) => (
-                                    <Link key={client.id} href={`/app/clients/${client.slug}/overview`}>
-                                        <div className="p-4 border-2 border-gray-100 rounded-lg hover:border-blue-300 hover:bg-blue-50/50 transition-all group">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex-1">
-                                                    <div className="flex items-center gap-3 mb-2">
-                                                        <h3 className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
-                                                            {client.name}
-                                                        </h3>
-                                                        <Badge className={
-                                                            client.status === 'active' ? 'bg-green-100 text-green-700 border-green-200' :
-                                                                client.status === 'onboarding' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
-                                                                    'bg-gray-100 text-gray-700 border-gray-200'
-                                                        }>
-                                                            {client.status}
-                                                        </Badge>
-                                                    </div>
-                                                    <p className="text-sm text-muted-foreground">{client.website}</p>
-                                                    <div className="flex items-center gap-4 mt-2 text-xs text-gray-600">
-                                                        <span>{client.postsThisMonth} posts this month</span>
-                                                        {client.inReview > 0 && (
-                                                            <>
-                                                                <span>•</span>
-                                                                <span className="text-yellow-600">{client.inReview} in review</span>
-                                                            </>
-                                                        )}
-                                                    </div>
+                                {recentActivity.map((batch: any) => (
+                                    <Link
+                                        key={batch.id}
+                                        href={`/app/batches/${batch.id}`}
+                                        className="block"
+                                    >
+                                        <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                                            <div className="flex-1">
+                                                <div className="font-medium mb-1">{batch.name}</div>
+                                                <div className="text-sm text-muted-foreground">
+                                                    {batch.total_posts} posts • Created{' '}
+                                                    {new Date(batch.created_at).toLocaleDateString()}
                                                 </div>
-                                                <button className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-200 transition-colors">
-                                                    Manage
-                                                </button>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <Badge variant="outline" className="capitalize">
+                                                    {batch.status}
+                                                </Badge>
+                                                <ArrowRight className="w-5 h-5 text-gray-400" />
                                             </div>
                                         </div>
                                     </Link>
                                 ))}
                             </div>
-                        </Card>
-                    </div>
-
-                    {/* Recent Activity */}
-                    <div>
-                        <Card className="p-6 bg-white shadow-xl">
-                            <h2 className="text-2xl font-bold mb-6">Recent Activity</h2>
-                            <div className="space-y-4">
-                                {recentActivity.map((activity) => (
-                                    <div key={activity.id} className="pb-4 border-b border-gray-100 last:border-0">
-                                        <p className="font-semibold text-sm text-gray-900">{activity.action}</p>
-                                        <p className="text-sm text-muted-foreground mt-1">
-                                            {activity.client}
-                                            {activity.post && ` - ${activity.post}`}
-                                        </p>
-                                        <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
-                                    </div>
-                                ))}
+                        ) : (
+                            <div className="text-center py-12 text-muted-foreground">
+                                <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                                <p>No batches yet. Start by analyzing a website!</p>
+                                <Link href="/app/websites">
+                                    <Button className="mt-4">Add Website</Button>
+                                </Link>
                             </div>
-                        </Card>
-                    </div>
-                </div>
+                        )}
+                    </CardContent>
+                </Card>
             </div>
         </div>
     )

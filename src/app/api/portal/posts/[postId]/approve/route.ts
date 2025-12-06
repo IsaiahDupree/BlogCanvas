@@ -9,8 +9,26 @@ export async function POST(
     try {
         const { postId } = await params;
 
-        // TODO: Get current user from session and verify they're a client
-        const approvedBy = 'client-user-id'; // Would get from auth session
+        // Get current user from session and verify they're a client
+        const { getServerUserProfile, isClientUser } = await import('@/lib/supabase/server');
+        
+        const isClient = await isClientUser();
+        if (!isClient) {
+            return NextResponse.json(
+                { success: false, error: 'Unauthorized. Client access required.' },
+                { status: 403 }
+            );
+        }
+
+        const profile = await getServerUserProfile();
+        const approvedBy = profile?.user.id;
+        
+        if (!approvedBy) {
+            return NextResponse.json(
+                { success: false, error: 'User not found' },
+                { status: 401 }
+            );
+        }
 
         // Update post in Supabase
         const { data: post, error } = await supabaseAdmin

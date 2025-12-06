@@ -78,7 +78,7 @@ export default function DashboardPage() {
             </div>
             <h3 className="text-3xl font-bold text-gray-900">{stats.inReview}</h3>
             <p className="text-sm text-muted-foreground">In Review</p>
-            <p className="text-xs text-yellow-600 mt-2">Needs attention</p>
+            <p className="text-xs text-yellow-700 mt-2">Needs attention</p>
           </Card>
 
           <Card className="p-6 bg-white border-2 border-purple-100 hover:border-purple-300 transition-colors">

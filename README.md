@@ -133,9 +133,34 @@ Required:
 
 See `env.example` for all available variables.
 
+## Deployment
+
+### Deploy to Vercel
+
+The easiest way to deploy BlogCanvas is using [Vercel](https://vercel.com):
+
+1. **Push your code to GitHub**
+   ```bash
+   git push origin main
+   ```
+
+2. **Import to Vercel**
+   - Go to [vercel.com/new](https://vercel.com/new)
+   - Import your repository
+   - Add environment variables:
+     - `NEXT_PUBLIC_SUPABASE_URL`
+     - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - Click "Deploy"
+
+3. **Your app is live!** 🚀
+
+📖 **Detailed Guide**: See [docs/VERCEL_DEPLOYMENT.md](./docs/VERCEL_DEPLOYMENT.md) for complete deployment instructions.
+
 ## Documentation
 
 - [Supabase Setup Guide](./docs/SUPABASE_SETUP.md) - Complete guide for connecting to Supabase locally or cloud
+- [Vercel Deployment Guide](./docs/VERCEL_DEPLOYMENT.md) - Complete guide for deploying to Vercel
+- [Migration Management](./docs/MIGRATION_MANAGEMENT.md) - Database migration guide
 - [Supabase Documentation](https://supabase.com/docs) - Official Supabase docs
 
 ## Development

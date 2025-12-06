@@ -1,27 +1,80 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Mail, Lock, ArrowRight } from 'lucide-react'
+import { Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 
 export default function PortalLoginPage() {
+    const router = useRouter()
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [loading, setLoading] = useState(false)
+    const [error, setError] = useState('')
+    const [magicLinkSent, setMagicLinkSent] = useState(false)
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault()
         setLoading(true)
+        setError('')
 
-        // Simulate login
-        setTimeout(() => {
-            window.location.href = '/portal/dashboard'
-        }, 1000)
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            })
+
+            const data = await response.json()
+
+            if (!data.success) {
+                setError(data.error || 'Login failed')
+                setLoading(false)
+                return
+            }
+
+            // Redirect based on user role
+            router.push(data.redirectUrl || '/portal/dashboard')
+            router.refresh()
+
+        } catch (err: any) {
+            setError(err.message || 'An error occurred')
+            setLoading(false)
+        }
     }
 
-    const handleMagicLink = () => {
-        alert('Magic link sent to ' + email)
+    const handleMagicLink = async () => {
+        if (!email) {
+            setError('Please enter your email address')
+            return
+        }
+
+        setLoading(true)
+        setError('')
+
+        try {
+            const response = await fetch('/api/auth/magic-link', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            })
+
+            const data = await response.json()
+
+            if (!data.success) {
+                setError(data.error || 'Failed to send magic link')
+                setLoading(false)
+                return
+            }
+
+            setMagicLinkSent(true)
+            setLoading(false)
+
+        } catch (err: any) {
+            setError(err.message || 'An error occurred')
+            setLoading(false)
+        }
     }
 
     return (
@@ -37,6 +90,20 @@ export default function PortalLoginPage() {
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome back</h2>
                     <p className="text-muted-foreground mb-6">Sign in to review your content</p>
 
+                    {error && (
+                        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700">
+                            <AlertCircle className="w-5 h-5" />
+                            <span className="text-sm">{error}</span>
+                        </div>
+                    )}
+
+                    {magicLinkSent && (
+                        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700">
+                            <p className="text-sm font-medium">Magic link sent!</p>
+                            <p className="text-sm mt-1">Check your email and click the link to sign in.</p>
+                        </div>
+                    )}
+
                     <form onSubmit={handleLogin} className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
@@ -45,10 +112,15 @@ export default function PortalLoginPage() {
                                 <input
                                     type="email"
                                     value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    onChange={(e) => {
+                                        setEmail(e.target.value)
+                                        setError('')
+                                        setMagicLinkSent(false)
+                                    }}
                                     placeholder="you@company.com"
                                     className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
                                     required
+                                    disabled={loading}
                                 />
                             </div>
                         </div>
@@ -60,10 +132,14 @@ export default function PortalLoginPage() {
                                 <input
                                     type="password"
                                     value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
+                                    onChange={(e) => {
+                                        setPassword(e.target.value)
+                                        setError('')
+                                    }}
                                     placeholder="••••••••"
                                     className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
                                     required
+                                    disabled={loading}
                                 />
                             </div>
                         </div>
@@ -99,10 +175,12 @@ export default function PortalLoginPage() {
                         </div>
 
                         <button
+                            type="button"
                             onClick={handleMagicLink}
-                            className="mt-4 w-full px-6 py-3 bg-white border-2 border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                            disabled={loading || magicLinkSent}
+                            className="mt-4 w-full px-6 py-3 bg-white border-2 border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            Send Magic Link
+                            {magicLinkSent ? 'Magic Link Sent ✓' : 'Send Magic Link'}
                         </button>
                     </div>
                 </Card>

@@ -1,8 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   reactCompiler: true,
+  // Next.js automatically handles NEXT_PUBLIC_* environment variables
+  // No additional configuration needed for Vercel deployment
 };
 
 export default nextConfig;

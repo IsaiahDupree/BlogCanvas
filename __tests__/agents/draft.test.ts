@@ -1,6 +1,6 @@
-import { runDraftAgent, DraftAgentInput } from '../../../lib/agents/draft';
-import { LLMProvider } from '../../../lib/agents/types';
-import { EVERREACH_MARKETING_CONTEXT } from '../../../lib/context/marketing';
+import { runDraftAgent, DraftAgentInput } from '@/lib/agents/draft';
+import { LLMProvider } from '@/lib/agents/types';
+import { EVERREACH_MARKETING_CONTEXT } from '@/lib/context/marketing';
 
 describe('Draft Agent', () => {
     let mockProvider: LLMProvider;

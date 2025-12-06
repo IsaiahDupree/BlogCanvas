@@ -1,29 +1,9 @@
-import '@testing-library/jest-dom';
+// Jest setup file
+require('dotenv').config({ path: '.env.local' });
+require('@testing-library/jest-dom');
 
-// Mock Next.js router
-jest.mock('next/navigation', () => ({
-    useRouter() {
-        return {
-            push: jest.fn(),
-            replace: jest.fn(),
-            prefetch: jest.fn(),
-            back: jest.fn(),
-        };
-    },
-    usePathname() {
-        return '';
-    },
-    useSearchParams() {
-        return new URLSearchParams();
-    },
-}));
-
-// Mock Next.js link
-jest.mock('next/link', () => {
-    return ({ children, href }: any) => {
-        return <a href={href}>{children}</a>;
-    };
-});
-
-// Global fetch mock
-global.fetch = jest.fn();
+// Set test environment variables  
+process.env.NEXT_PUBLIC_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'http://localhost:54321';
+process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'test-anon-key';
+process.env.SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'test-service-key';
+process.env.NEXT_PUBLIC_APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';

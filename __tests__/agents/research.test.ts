@@ -1,6 +1,6 @@
-import { runResearchAgent, ResearchAgentInput } from '../../../lib/agents/research';
-import { LLMProvider } from '../../../lib/agents/types';
-import { EVERREACH_MARKETING_CONTEXT } from '../../../lib/context/marketing';
+import { runResearchAgent, ResearchAgentInput } from '@/lib/agents/research';
+import { LLMProvider } from '@/lib/agents/types';
+import { EVERREACH_MARKETING_CONTEXT } from '@/lib/context/marketing';
 
 describe('Research Agent', () => {
     let mockProvider: LLMProvider;
