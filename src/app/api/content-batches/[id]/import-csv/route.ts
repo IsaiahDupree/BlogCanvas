@@ -47,7 +47,7 @@ export async function POST(
             skip_empty_lines: true,
             trim: true,
             relax_column_count: true
-        });
+        }) as Record<string, string>[];
 
         if (!records || records.length === 0) {
             return NextResponse.json(
@@ -75,7 +75,7 @@ export async function POST(
         const errors = [];
 
         for (let i = 0; i < records.length; i++) {
-            const row = records[i];
+            const row: Record<string, string> = records[i];
             const topic = row.topic || row.title || row['Topic'] || row['Title'];
             const targetKeyword = row.target_keyword || row.keyword || row['Target Keyword'] || row['Keyword'] || '';
             const targetWordcount = parseInt(row.target_wordcount || row.wordcount || row['Target Wordcount'] || row['Wordcount'] || '1500') || 1500;
