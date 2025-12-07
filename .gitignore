@@ -46,3 +46,10 @@ Thumbs.db
 # Misc
 *.pem
 .turbo
+
+# Test results
+*-test-results.json
+*-test-summary.json
+auth-test-*.json
+final-auth-test-*.json
+db-test-result-*.json
