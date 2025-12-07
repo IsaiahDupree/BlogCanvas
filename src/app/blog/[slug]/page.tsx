@@ -1,64 +1,24 @@
 'use client'
 
-import { use } from 'react'
+import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Calendar, Clock, Tag, Share2, Bookmark, Twitter, Linkedin, Facebook } from 'lucide-react'
+import { ArrowLeft, Calendar, Clock, Tag, Twitter, Linkedin, Facebook, Bookmark } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { blogPosts } from '@/data/blog-posts'
+import { use } from 'react'
 
 export default function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = use(params)
+    const post = blogPosts.find(p => p.slug === slug)
 
-    // Mock data - would fetch from API based on slug
-    const post = {
-        title: 'How AI CRM Transforms Sales Processes',
-        slug: 'how-ai-crm-transforms-sales-processes',
-        excerpt: 'Discover how AI-powered CRM systems are revolutionizing the way sales teams manage relationships and close deals.',
-        content: `
-      <h2>The Challenge of Traditional CRM</h2>
-      <p>Sales teams struggle with manual data entry, missed follow-ups, and lost opportunities. Traditional CRM systems require constant maintenance and often feel like a burden rather than a help.</p>
-      
-      <h2>How AI Changes Everything</h2>
-      <p>AI-powered CRM systems automatically capture interactions, predict the best time to reach out, and prioritize your most valuable relationships.</p>
-      
-      <h3>Key Benefits:</h3>
-      <ul>
-        <li><strong>Automatic Data Entry:</strong> No more manual logging of calls and emails</li>
-        <li><strong>Smart Reminders:</strong> AI tells you who to contact and when</li>
-        <li><strong>Relationship Scoring:</strong> See which relationships need attention</li>
-        <li><strong>Predictive Insights:</strong> Know which deals are likely to close</li>
-      </ul>
-
-      <h2>Real Results from Real Teams</h2>
-      <p>Companies using AI CRM see 3x more deals closed and save 70% of time previously spent on admin work.</p>
-
-      <blockquote>
-        "Our team closed 40% more deals in the first quarter after switching to AI CRM. The automatic follow-ups alone were game-changing." - Sarah M., VP of Sales
-      </blockquote>
-
-      <h2>Getting Started with AI CRM</h2>
-      <p>The best time to adopt AI CRM is now. Start small, measure results, and scale what works.</p>
-    `,
-        category: 'CRM',
-        tags: ['AI', 'Sales', 'Automation', 'CRM'],
-        author: {
-            name: 'Sarah Johnson',
-            avatar: 'SJ',
-            role: 'Head of Content'
-        },
-        publishDate: 'December 1, 2024',
-        readTime: '8 min read',
-        views: 1243,
-        seo: {
-            metaTitle: 'How AI CRM Transforms Sales Processes - Complete Guide 2024',
-            metaDescription: 'Discover how AI-powered CRM systems are revolutionizing sales. Learn about automatic data entry, smart reminders, and relationship scoring to close 3x more deals.'
-        }
+    if (!post) {
+        notFound()
     }
 
-    const relatedPosts = [
-        { id: '2', title: 'Ultimate Guide to Sales Automation', slug: 'ultimate-guide-to-sales-automation' },
-        { id: '3', title: 'Top 10 CRM Features', slug: 'top-10-crm-features-every-business-needs' }
-    ]
+    const relatedPosts = blogPosts
+        .filter(p => p.id !== post.id && (p.category === post.category || post.category === 'Security'))
+        .slice(0, 2)
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -128,7 +88,8 @@ export default function BlogPostPage({ params }: { params: Promise<{ slug: strin
               prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-6
               prose-ul:my-6 prose-li:my-2
               prose-strong:text-gray-900 prose-strong:font-semibold
-              prose-blockquote:border-l-4 prose-blockquote:border-blue-600 prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-gray-700"
+              prose-blockquote:border-l-4 prose-blockquote:border-blue-600 prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-gray-700
+              prose-code:text-blue-600 prose-code:bg-blue-50 prose-code:px-1 prose-code:py-0.5 prose-code:rounded"
                         dangerouslySetInnerHTML={{ __html: post.content }}
                     />
 

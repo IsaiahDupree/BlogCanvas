@@ -5,55 +5,22 @@ import Link from 'next/link'
 import { Search, ArrowRight, Calendar, Clock, Tag } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { blogPosts } from '@/data/blog-posts'
 
 export default function PublicBlogPage() {
     const [searchQuery, setSearchQuery] = useState('')
     const [selectedCategory, setSelectedCategory] = useState('all')
 
-    // Mock data - would come from API
-    const posts = [
-        {
-            id: '1',
-            title: 'How AI CRM Transforms Sales Processes',
-            slug: 'how-ai-crm-transforms-sales-processes',
-            excerpt: 'Discover how AI-powered CRM systems are revolutionizing the way sales teams manage relationships and close deals.',
-            coverImage: '/blog/ai-crm.jpg',
-            category: 'CRM',
-            tags: ['AI', 'Sales', 'Automation'],
-            author: 'Sarah Johnson',
-            publishDate: 'Dec 1, 2024',
-            readTime: '8 min read',
-            views: 1243
-        },
-        {
-            id: '2',
-            title: 'Ultimate Guide to Sales Automation',
-            slug: 'ultimate-guide-to-sales-automation',
-            excerpt: 'Everything you need to know about automating your sales process for maximum efficiency and revenue growth.',
-            coverImage: '/blog/sales-automation.jpg',
-            category: 'Sales',
-            tags: ['Automation', 'Productivity', 'Sales'],
-            author: 'Mike Chen',
-            publishDate: 'Nov 28, 2024',
-            readTime: '12 min read',
-            views: 2156
-        },
-        {
-            id: '3',
-            title: 'Top 10 CRM Features Every Business Needs',
-            slug: 'top-10-crm-features-every-business-needs',
-            excerpt: 'Not all CRMs are created equal. Here are the must-have features that separate basic from exceptional.',
-            coverImage: '/blog/crm-features.jpg',
-            category: 'CRM',
-            tags: ['Features', 'Guide', 'CRM'],
-            author: 'Emily Woods',
-            publishDate: 'Nov 25, 2024',
-            readTime: '6 min read',
-            views: 987
-        }
-    ]
+    // Data fetched from shared source
+    const posts = blogPosts.map(post => ({
+        ...post,
+        coverImage: post.category === 'Security' ? '/blog/security-update.jpg' :
+            post.category === 'CRM' ? '/blog/ai-crm.jpg' :
+                post.category === 'Sales' ? '/blog/sales-automation.jpg' :
+                    '/blog/crm-features.jpg'
+    }))
 
-    const categories = ['All', 'CRM', 'Sales', 'Automation', 'Guides']
+    const categories = ['All', 'Security', 'CRM', 'Sales', 'Automation', 'Guides']
 
     const filteredPosts = posts.filter(post => {
         const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -98,8 +65,8 @@ export default function PublicBlogPage() {
                             key={category}
                             onClick={() => setSelectedCategory(category.toLowerCase())}
                             className={`px-6 py-3 rounded-full font-medium transition-all whitespace-nowrap ${selectedCategory === category.toLowerCase()
-                                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                 }`}
                         >
                             {category}
