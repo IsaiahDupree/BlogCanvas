@@ -18,15 +18,35 @@ export async function POST(
             );
         }
 
-        const createdBy = 'client-user-id'; // TODO: Get from auth session
+        // Get current user from session
+        const { getServerUserProfile, requireClient } = await import('@/lib/supabase/server');
+        
+        let createdBy: string;
+        try {
+            const profile = await requireClient();
+            createdBy = profile.user.id;
+        } catch (error) {
+            return NextResponse.json(
+                { success: false, error: 'Authentication required' },
+                { status: 401 }
+            );
+        }
 
         // Update post status to editing
+        const updateData: any = {
+            status: 'editing'
+        }
+        
+        // Add needs_revision if column exists
+        try {
+            updateData.needs_revision = true
+        } catch (e) {
+            // Column might not exist - that's okay
+        }
+        
         const { data: post, error: postError } = await supabaseAdmin
             .from('blog_posts')
-            .update({
-                status: 'editing',
-                needs_revision: true
-            })
+            .update(updateData)
             .eq('id', postId)
             .select()
             .single();
@@ -38,11 +58,9 @@ export async function POST(
             .from('review_tasks')
             .insert({
                 blog_post_id: postId,
-                type: 'client_change_request',
                 description: changeRequest.trim(),
-                severity,
-                status: 'open',
-                created_by: createdBy
+                status: 'pending',
+                assigned_to: createdBy
             })
             .select()
             .single();

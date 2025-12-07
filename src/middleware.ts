@@ -66,6 +66,11 @@ export async function middleware(request: NextRequest) {
     // Refresh auth session
     await supabase.auth.getUser();
 
+    // Allow auth callback route
+    if (request.nextUrl.pathname.startsWith('/auth/callback')) {
+        return response;
+    }
+
     // Protect portal routes - require authentication
     if (request.nextUrl.pathname.startsWith('/portal') && 
         !request.nextUrl.pathname.startsWith('/portal/login')) {
@@ -157,5 +162,6 @@ export const config = {
         '/api/:path*',
         '/portal/:path*',
         '/app/:path*',
+        '/auth/callback',
     ],
 };

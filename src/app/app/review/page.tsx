@@ -24,16 +24,20 @@ interface KanbanColumn {
 }
 
 const COLUMNS: KanbanColumn[] = [
-    { id: 'draft', title: 'Draft', status: ['draft', 'generating'], color: 'bg-gray-100' },
-    { id: 'review', title: 'In Review', status: ['in_review'], color: 'bg-blue-100' },
+    { id: 'draft', title: 'Draft', status: ['draft', 'generating', 'idea', 'researching', 'outlining', 'drafting'], color: 'bg-gray-100' },
+    { id: 'editing', title: 'Editing', status: ['editing', 'needs_human_input'], color: 'bg-yellow-100' },
+    { id: 'review', title: 'In Review', status: ['ready_for_review', 'in_review'], color: 'bg-blue-100' },
+    { id: 'client', title: 'Client Review', status: ['client_review'], color: 'bg-orange-100' },
     { id: 'approved', title: 'Approved', status: ['approved'], color: 'bg-green-100' },
-    { id: 'published', title: 'Published', status: ['published'], color: 'bg-purple-100' }
+    { id: 'published', title: 'Published', status: ['published', 'scheduled'], color: 'bg-purple-100' }
 ]
 
 export default function ReviewBoardPage() {
     const [posts, setPosts] = useState<Post[]>([])
     const [loading, setLoading] = useState(true)
     const [filter, setFilter] = useState('')
+    const [draggedPost, setDraggedPost] = useState<string | null>(null)
+    const [dragOverColumn, setDragOverColumn] = useState<string | null>(null)
 
     useEffect(() => {
         fetchPosts()
@@ -68,6 +72,49 @@ export default function ReviewBoardPage() {
             ))
         } catch (error) {
             console.error('Failed to update status:', error)
+        }
+    }
+
+    const handleDragStart = (e: React.DragEvent, postId: string) => {
+        setDraggedPost(postId)
+        e.dataTransfer.effectAllowed = 'move'
+    }
+
+    const handleDragOver = (e: React.DragEvent, columnId: string) => {
+        e.preventDefault()
+        e.dataTransfer.dropEffect = 'move'
+        setDragOverColumn(columnId)
+    }
+
+    const handleDragLeave = () => {
+        setDragOverColumn(null)
+    }
+
+    const handleDrop = async (e: React.DragEvent, columnId: string) => {
+        e.preventDefault()
+        setDragOverColumn(null)
+
+        if (!draggedPost) return
+
+        const column = COLUMNS.find(c => c.id === columnId)
+        if (!column) return
+
+        // Get the first status for the column (or map to appropriate status)
+        const newStatus = mapColumnToStatus(columnId)
+        
+        await updatePostStatus(draggedPost, newStatus)
+        setDraggedPost(null)
+    }
+
+    const mapColumnToStatus = (columnId: string): string => {
+        switch (columnId) {
+            case 'draft': return 'draft'
+            case 'editing': return 'editing'
+            case 'review': return 'ready_for_review'
+            case 'client': return 'client_review'
+            case 'approved': return 'approved'
+            case 'published': return 'published'
+            default: return 'draft'
         }
     }
 
@@ -116,14 +163,15 @@ export default function ReviewBoardPage() {
                 </div>
 
                 {/* Kanban Board */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
                     {COLUMNS.map(column => {
                         const columnPosts = getPostsByStatus(column.status)
+                        const isDragOver = dragOverColumn === column.id
 
                         return (
                             <div key={column.id} className="flex flex-col">
                                 {/* Column Header */}
-                                <Card className={`${column.color} border-2 mb-4`}>
+                                <Card className={`${column.color} border-2 mb-4 ${isDragOver ? 'ring-2 ring-indigo-500' : ''}`}>
                                     <CardHeader className="p-4">
                                         <div className="flex items-center justify-between">
                                             <CardTitle className="text-lg">{column.title}</CardTitle>
@@ -133,11 +181,22 @@ export default function ReviewBoardPage() {
                                 </Card>
 
                                 {/* Column Posts */}
-                                <div className="space-y-3 flex-1 overflow-y-auto max-h-[calc(100vh-300px)]">
+                                <div
+                                    className={`space-y-3 flex-1 overflow-y-auto max-h-[calc(100vh-300px)] min-h-[200px] p-2 rounded-lg transition-colors ${
+                                        isDragOver ? 'bg-indigo-50 border-2 border-dashed border-indigo-300' : ''
+                                    }`}
+                                    onDragOver={(e) => handleDragOver(e, column.id)}
+                                    onDragLeave={handleDragLeave}
+                                    onDrop={(e) => handleDrop(e, column.id)}
+                                >
                                     {columnPosts.map(post => (
                                         <Card
                                             key={post.id}
-                                            className="hover:shadow-lg transition-shadow cursor-pointer group"
+                                            draggable
+                                            onDragStart={(e) => handleDragStart(e, post.id)}
+                                            className={`hover:shadow-lg transition-shadow cursor-move group ${
+                                                draggedPost === post.id ? 'opacity-50' : ''
+                                            }`}
                                         >
                                             <CardContent className="p-4">
                                                 <div className="space-y-3">

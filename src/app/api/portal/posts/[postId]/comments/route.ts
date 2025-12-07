@@ -65,14 +65,28 @@ export async function POST(
             );
         }
 
-        const authorId = 'client-user-id'; // TODO: Get from auth session
+        // Get current user from session
+        const { getServerUserProfile, requireClient } = await import('@/lib/supabase/server');
+        
+        let authorId: string | null = null;
+        let authorName: string | null = null;
+        
+        try {
+            const profile = await requireClient();
+            authorId = profile.user.id;
+            authorName = profile.profile?.full_name || profile.user.email || 'Client';
+        } catch (error) {
+            // Not authenticated - allow anonymous comments with author_name
+            // This allows comments from non-authenticated users if needed
+        }
 
         // Insert comment into Supabase
         const { data: comment, error } = await supabaseAdmin
             .from('comments')
             .insert({
                 blog_post_id: postId,
-                author_id: authorId,
+                user_id: authorId,
+                author_name: authorName,
                 content: content.trim()
             })
             .select()

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { TrendingUp, Calendar, FileText, Zap, ArrowRight, Download, Send } from 'lucide-react'
+import { TrendingUp, Calendar, FileText, Zap, ArrowRight, Download, Send, Mail, FileDown, Presentation } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -32,6 +32,8 @@ export function PitchBuilderTab({ websiteId }: { websiteId: string }) {
     const [customMonths, setCustomMonths] = useState<number | null>(null)
     const [batchName, setBatchName] = useState('')
     const [creatingBatch, setCreatingBatch] = useState(false)
+    const [generatingPitch, setGeneratingPitch] = useState(false)
+    const [pitchContent, setPitchContent] = useState<{ format: string; content?: string; html?: string; subject?: string } | null>(null)
 
     const calculateProjection = async () => {
         setLoading(true)
@@ -99,6 +101,55 @@ export function PitchBuilderTab({ websiteId }: { websiteId: string }) {
             case 'medium': return 'bg-yellow-100 text-yellow-700'
             default: return 'bg-orange-100 text-orange-700'
         }
+    }
+
+    const generatePitch = async (format: 'email' | 'pdf' | 'slide') => {
+        if (!projection) return
+
+        setGeneratingPitch(true)
+        try {
+            const response = await fetch(`/api/websites/${websiteId}/generate-pitch`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    format,
+                    projection
+                })
+            })
+
+            const data = await response.json()
+            if (data.success) {
+                setPitchContent(data)
+
+                // For PDF, open in new window for printing/download
+                if (format === 'pdf' && data.html) {
+                    const printWindow = window.open('', '_blank')
+                    if (printWindow) {
+                        printWindow.document.write(data.html)
+                        printWindow.document.close()
+                        printWindow.focus()
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Failed to generate pitch:', error)
+            alert('Failed to generate pitch. Please try again.')
+        } finally {
+            setGeneratingPitch(false)
+        }
+    }
+
+    const downloadEmail = () => {
+        if (!pitchContent?.content || !pitchContent?.subject) return
+
+        const emailBody = `Subject: ${pitchContent.subject}\n\n${pitchContent.content}`
+        const blob = new Blob([emailBody], { type: 'text/plain' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `pitch-email-${websiteId}.txt`
+        a.click()
+        URL.revokeObjectURL(url)
     }
 
     return (
@@ -288,6 +339,75 @@ export function PitchBuilderTab({ websiteId }: { websiteId: string }) {
                                         />
                                     </div>
                                 </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Generate Pitch */}
+                    <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Send className="w-5 h-5 text-purple-600" />
+                                Generate Client Pitch
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-4">
+                                <p className="text-sm text-muted-foreground">
+                                    Generate a professional pitch document to send to your client
+                                </p>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    <Button
+                                        onClick={() => generatePitch('email')}
+                                        disabled={generatingPitch}
+                                        variant="outline"
+                                        className="flex items-center gap-2"
+                                    >
+                                        <Mail className="w-4 h-4" />
+                                        Email Draft
+                                    </Button>
+                                    <Button
+                                        onClick={() => generatePitch('pdf')}
+                                        disabled={generatingPitch}
+                                        variant="outline"
+                                        className="flex items-center gap-2"
+                                    >
+                                        <FileDown className="w-4 h-4" />
+                                        PDF Report
+                                    </Button>
+                                    <Button
+                                        onClick={() => generatePitch('slide')}
+                                        disabled={generatingPitch}
+                                        variant="outline"
+                                        className="flex items-center gap-2"
+                                    >
+                                        <Presentation className="w-4 h-4" />
+                                        Slide Deck
+                                    </Button>
+                                </div>
+
+                                {pitchContent && pitchContent.format === 'email' && (
+                                    <div className="mt-4 p-4 bg-white rounded-lg border">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <h4 className="font-semibold">Email Draft</h4>
+                                            <Button
+                                                onClick={downloadEmail}
+                                                size="sm"
+                                                variant="outline"
+                                            >
+                                                <Download className="w-4 h-4 mr-2" />
+                                                Download
+                                            </Button>
+                                        </div>
+                                        <div className="text-sm space-y-2">
+                                            <p><strong>Subject:</strong> {pitchContent.subject}</p>
+                                            <div className="max-h-60 overflow-y-auto p-3 bg-gray-50 rounded whitespace-pre-wrap text-xs">
+                                                {pitchContent.content}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </CardContent>
                     </Card>

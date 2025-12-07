@@ -1,3 +1,6 @@
+/**
+ * @jest-environment jsdom
+ */
 import { render, screen } from '@testing-library/react'
 import { Sidebar } from '@/components/layout/Sidebar'
 
@@ -11,14 +14,17 @@ describe('Sidebar Component', () => {
     render(<Sidebar />)
     
     expect(screen.getByText('BlogCanvas')).toBeInTheDocument()
-    expect(screen.getByText('Content Pipeline')).toBeInTheDocument()
+    // "Content Pipeline" appears multiple times - use getAllByText or check first occurrence
+    expect(screen.getAllByText('Content Pipeline').length).toBeGreaterThan(0)
   })
 
   it('should render all navigation groups', () => {
     render(<Sidebar />)
     
     expect(screen.getByText('Overview')).toBeInTheDocument()
-    expect(screen.getByText('Content Pipeline')).toBeInTheDocument()
+    // "Content Pipeline" appears as subtitle and as group name - check for group name specifically
+    const contentPipelineGroups = screen.getAllByText('Content Pipeline')
+    expect(contentPipelineGroups.length).toBeGreaterThan(0)
     expect(screen.getByText('Settings')).toBeInTheDocument()
   })
 
@@ -35,6 +41,7 @@ describe('Sidebar Component', () => {
   it('should show version information in footer', () => {
     render(<Sidebar />)
     
+    // Check for footer content
     expect(screen.getByText('BlogCanvas v1.0')).toBeInTheDocument()
     expect(screen.getByText('AI-Powered SEO Platform')).toBeInTheDocument()
   })
@@ -43,6 +50,11 @@ describe('Sidebar Component', () => {
     render(<Sidebar />)
     
     const dashboardLink = screen.getByText('Dashboard').closest('a')
-    expect(dashboardLink).toHaveClass('bg-indigo-600')
+    // Active link should have active styling
+    expect(dashboardLink).toBeTruthy()
+    // Check if it has active class or is in active state
+    if (dashboardLink) {
+      expect(dashboardLink.className).toContain('bg-indigo-600')
+    }
   })
 })

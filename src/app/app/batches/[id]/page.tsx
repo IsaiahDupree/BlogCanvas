@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Play, Pause, CheckCircle2, AlertCircle, Loader2, TrendingUp, FileText } from 'lucide-react'
+import { ArrowLeft, Play, Pause, CheckCircle2, AlertCircle, Loader2, TrendingUp, FileText, Upload, Download } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -15,6 +15,8 @@ export default function BatchDetailPage() {
     const [posts, setPosts] = useState<any[]>([])
     const [generating, setGenerating] = useState(false)
     const [loading, setLoading] = useState(true)
+    const [importing, setImporting] = useState(false)
+    const [importFile, setImportFile] = useState<File | null>(null)
 
     useEffect(() => {
         fetchBatchDetails()
@@ -85,6 +87,67 @@ export default function BatchDetailPage() {
         return 'text-red-600'
     }
 
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (file) {
+            setImportFile(file)
+            handleImportCSV(file)
+        }
+    }
+
+    const handleImportCSV = async (file: File) => {
+        setImporting(true)
+        try {
+            const formData = new FormData()
+            formData.append('file', file)
+
+            const response = await fetch(`/api/content-batches/${params.id}/import-csv`, {
+                method: 'POST',
+                body: formData
+            })
+
+            const data = await response.json()
+            if (data.success) {
+                alert(`Successfully imported ${data.imported} posts${data.errors ? ` (${data.errors.length} errors)` : ''}`)
+                if (data.errors && data.errors.length > 0) {
+                    console.error('Import errors:', data.errors)
+                }
+                await fetchBatchDetails()
+            } else {
+                alert(`Import failed: ${data.error}`)
+            }
+        } catch (error) {
+            console.error('Import error:', error)
+            alert('Failed to import CSV file')
+        } finally {
+            setImporting(false)
+            setImportFile(null)
+            // Reset file input
+            const input = document.querySelector('input[type="file"]') as HTMLInputElement
+            if (input) input.value = ''
+        }
+    }
+
+    const handleExportCSV = async () => {
+        try {
+            const response = await fetch(`/api/content-batches/${params.id}/export-csv`)
+            if (!response.ok) throw new Error('Export failed')
+
+            const blob = await response.blob()
+            const url = window.URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = response.headers.get('Content-Disposition')?.split('filename=')[1]?.replace(/"/g, '') || `batch_${params.id}.csv`
+            document.body.appendChild(a)
+            a.click()
+            window.URL.revokeObjectURL(url)
+            document.body.removeChild(a)
+        } catch (error) {
+            console.error('Export error:', error)
+            alert('Failed to export CSV file')
+        }
+    }
+
     if (loading) {
         return <div className="min-h-screen flex items-center justify-center">
             <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
@@ -121,23 +184,51 @@ export default function BatchDetailPage() {
                                 Goal: {batch.goal_score_from} → {batch.goal_score_to} SEO Score
                             </p>
                         </div>
-                        <Button
-                            onClick={startGeneration}
-                            disabled={generating || completedPosts === totalPosts}
-                            className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white"
-                        >
-                            {generating ? (
-                                <>
-                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                    Generating...
-                                </>
-                            ) : (
-                                <>
-                                    <Play className="w-4 h-4 mr-2" />
-                                    {completedPosts === 0 ? 'Start Generation' : 'Resume Generation'}
-                                </>
-                            )}
-                        </Button>
+                        <div className="flex gap-2">
+                            <Button
+                                onClick={handleExportCSV}
+                                variant="outline"
+                                className="flex items-center gap-2"
+                            >
+                                <Download className="w-4 h-4" />
+                                Export CSV
+                            </Button>
+                            <label className="cursor-pointer">
+                                <Button
+                                    variant="outline"
+                                    className="flex items-center gap-2"
+                                    asChild
+                                >
+                                    <span>
+                                        <Upload className="w-4 h-4" />
+                                        Import CSV
+                                    </span>
+                                </Button>
+                                <input
+                                    type="file"
+                                    accept=".csv"
+                                    className="hidden"
+                                    onChange={handleFileSelect}
+                                />
+                            </label>
+                            <Button
+                                onClick={startGeneration}
+                                disabled={generating || completedPosts === totalPosts}
+                                className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white"
+                            >
+                                {generating ? (
+                                    <>
+                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                        Generating...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Play className="w-4 h-4 mr-2" />
+                                        {completedPosts === 0 ? 'Start Generation' : 'Resume Generation'}
+                                    </>
+                                )}
+                            </Button>
+                        </div>
                     </div>
                 </div>
 
