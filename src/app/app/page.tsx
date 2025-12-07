@@ -193,7 +193,7 @@ export default function DashboardPage() {
                         </Card>
                     </Link>
 
-                    <Card className="hover:shadow-xl transition-all group h-full bg-gradient-to-br from-indigo-50 to-purple-50">
+                    <Card className="hover:shadow-xl transition-all group h-full bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-200">
                         <CardHeader>
                             <CardTitle className="flex items-center justify-between">
                                 <span>Quick Stats</span>
@@ -201,18 +201,18 @@ export default function DashboardPage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="space-y-2 text-sm">
-                                <div className="flex justify-between">
+                            <div className="space-y-3 text-sm">
+                                <div className="flex justify-between items-center py-2 border-b border-indigo-100">
                                     <span className="text-muted-foreground">Total Posts:</span>
-                                    <span className="font-semibold">{stats.postsGenerated}</span>
+                                    <span className="font-bold text-lg text-indigo-700">{stats.postsGenerated}</span>
                                 </div>
-                                <div className="flex justify-between">
+                                <div className="flex justify-between items-center py-2 border-b border-indigo-100">
                                     <span className="text-muted-foreground">Published:</span>
-                                    <span className="font-semibold text-green-600">{stats.postsPublished}</span>
+                                    <span className="font-bold text-lg text-green-600">{stats.postsPublished}</span>
                                 </div>
-                                <div className="flex justify-between">
+                                <div className="flex justify-between items-center py-2">
                                     <span className="text-muted-foreground">Avg Quality:</span>
-                                    <span className="font-semibold text-orange-600">{stats.avgQuality}/100</span>
+                                    <span className="font-bold text-lg text-orange-600">{stats.avgQuality}/100</span>
                                 </div>
                             </div>
                         </CardContent>

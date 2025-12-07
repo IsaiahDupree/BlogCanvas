@@ -219,33 +219,39 @@ export function GlobalSidebar() {
                     </div>
                 </nav>
 
-                {/* User section */}
-                {user && (
-                    <div className="border-t border-gray-800 p-4">
-                        <div className="flex items-center gap-3 mb-3">
-                            <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-semibold">
-                                {user.email?.charAt(0).toUpperCase() || 'U'}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-white truncate">
-                                    {profile?.full_name || user.email}
-                                </p>
-                                <p className="text-xs text-gray-400 truncate">
-                                    {profile?.role || 'user'}
-                                </p>
-                            </div>
-                        </div>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={signOut}
-                            className="w-full justify-start text-gray-300 hover:text-white hover:bg-gray-800"
-                        >
-                            <LogOut className="w-4 h-4 mr-2" />
-                            Sign Out
-                        </Button>
-                    </div>
-                )}
+                       {/* User section */}
+                       {user && (
+                           <div className="border-t border-gray-800 p-4">
+                               <div className="flex items-center gap-3 mb-3">
+                                   <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-semibold">
+                                       {user.email?.charAt(0).toUpperCase() || 'U'}
+                                   </div>
+                                   <div className="flex-1 min-w-0">
+                                       <p className="text-sm font-medium text-white truncate">
+                                           {profile?.full_name || user.email}
+                                       </p>
+                                       <p className="text-xs text-gray-400 truncate">
+                                           {profile?.role || 'user'}
+                                       </p>
+                                   </div>
+                               </div>
+                               <Button
+                                   variant="ghost"
+                                   size="sm"
+                                   onClick={signOut}
+                                   className="w-full justify-start text-gray-300 hover:text-white hover:bg-gray-800"
+                               >
+                                   <LogOut className="w-4 h-4 mr-2" />
+                                   Sign Out
+                               </Button>
+                               
+                               {/* Version info - WordBrew style */}
+                               <div className="mt-4 pt-4 border-t border-gray-800">
+                                   <p className="text-xs text-gray-500 text-center mb-1">BlogCanvas v1.0</p>
+                                   <p className="text-xs text-gray-600 text-center">AI-Powered SEO Platform</p>
+                               </div>
+                           </div>
+                       )}
             </aside>
         </>
     )
