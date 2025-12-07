@@ -16,7 +16,7 @@ import { requireAuth } from '@/lib/supabase/server';
  */
 export async function POST(request: NextRequest) {
     try {
-        const { user } = await requireAuth();
+        const user = await requireAuth();
         const body = await request.json();
         const { websiteId, batchId, periodStart, periodEnd, format = 'email' } = body;
 
