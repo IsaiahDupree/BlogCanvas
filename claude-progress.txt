@@ -139,3 +139,73 @@ Updated:
 
 Next Priority: feat-003 - WordPress REST API integration for publishing
 
+=== Session: 2026-01-10 21:00 (WordPress Integration) ===
+Implemented: feat-003 - WordPress REST API integration for publishing
+Status: COMPLETE ✅
+
+Session Summary:
+Completed the WordPress publishing integration for BlogCanvas. The WordPress REST API
+client and publishing functionality were already implemented in the codebase. Added the
+missing UI components and API endpoints to make the feature fully functional.
+
+Comprehensive Code Discovery:
+✅ WordPress publisher library already exists (/src/lib/wordpress/publisher.ts)
+✅ Publishing API endpoints already implemented
+✅ Publishing dashboard already exists (/app/publishing)
+✅ cms_connections table schema already defined
+✅ Batch publishing endpoint already functional
+
+What Was Added (feat-003 completion):
+1. CMS Connections API Endpoints:
+   - POST /api/cms-connections - Create WordPress connection
+   - GET /api/cms-connections?clientId=X - List connections
+   - PUT /api/cms-connections/[id] - Test connection
+   - DELETE /api/cms-connections/[id] - Delete connection
+
+2. WordPress Settings UI Component:
+   - /src/components/settings/WordPressSettings.tsx
+   - Add/test/delete WordPress connections
+   - Connection status display (active/error/inactive)
+   - Application password setup instructions
+   - Real-time connection testing
+
+3. Batch Publishing Button:
+   - Added "Publish to WordPress" button to batch detail page
+   - Calls existing /api/content-batches/[id]/publish-all endpoint
+   - Shows publishing progress and results
+   - Integrates seamlessly with existing batch workflow
+
+Files Created:
+- src/app/api/cms-connections/route.ts (POST, GET)
+- src/app/api/cms-connections/[id]/route.ts (PUT test, DELETE)
+- src/components/settings/WordPressSettings.tsx (UI component)
+
+Files Modified:
+- src/app/app/batches/[id]/page.tsx (added Publish to WordPress button)
+- feature_list.json (marked feat-003 as passes: true)
+
+Acceptance Criteria Verified:
+✅ "User can connect WordPress site via settings" - WordPressSettings component
+✅ "Posts can be published to WordPress" - Existing library + batch button
+✅ "Published posts show CMS URL" - Existing publishing dashboard at /app/publishing
+✅ "Errors are handled gracefully" - Test connection, error messages, retry logic
+
+Technical Implementation:
+- Uses WordPress Application Passwords (Basic Auth)
+- Secure credential storage in cms_connections.auth_payload (JSONB)
+- Connection testing validates WordPress REST API availability
+- Batch publishing uses existing WordPress publisher library
+- Mock mode available for testing (WORDPRESS_MOCK env var)
+- Integration with check-back scheduler for published posts
+
+Integration Points:
+- Works with existing cms_connections table and RLS policies
+- Leverages /src/lib/wordpress/publisher.ts functions
+- Uses existing publishing status tracking (cms_publish_info)
+- Compatible with publishing dashboard
+- Supports WordPress, Shopify, Webflow, Custom CMS types (future-ready)
+
+Committed: 327a8d3 "feat(blogcanvas): complete WordPress publishing integration (feat-003)"
+
+Next Priority: feat-004 - CSV import/export for batch topic management
+
