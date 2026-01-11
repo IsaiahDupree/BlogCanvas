@@ -69,11 +69,12 @@ export async function getServerUserProfile() {
 }
 
 /**
- * Check if current user is a client
+ * Check if current user is a client (includes client_admin and client_reviewer)
  */
 export async function isClientUser(): Promise<boolean> {
     const profile = await getServerUserProfile()
-    return profile?.profile?.role === 'client'
+    const role = profile?.profile?.role
+    return role === 'client' || role === 'client_admin' || role === 'client_reviewer'
 }
 
 /**
@@ -115,6 +116,26 @@ export async function requireStaff() {
     const isStaff = await isStaffUser()
     if (!isStaff) {
         throw new Error('Staff access required')
+    }
+    const profile = await getServerUserProfile()
+    return profile!
+}
+
+/**
+ * Check if current user is a client admin
+ */
+export async function isClientAdmin(): Promise<boolean> {
+    const profile = await getServerUserProfile()
+    return profile?.profile?.role === 'client_admin'
+}
+
+/**
+ * Require client admin role - throws if not a client admin
+ */
+export async function requireClientAdmin() {
+    const isAdmin = await isClientAdmin()
+    if (!isAdmin) {
+        throw new Error('Client admin access required')
     }
     const profile = await getServerUserProfile()
     return profile!

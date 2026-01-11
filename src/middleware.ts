@@ -72,22 +72,26 @@ export async function middleware(request: NextRequest) {
     }
 
     // Protect portal routes - require authentication
-    if (request.nextUrl.pathname.startsWith('/portal') && 
+    if (request.nextUrl.pathname.startsWith('/portal') &&
         !request.nextUrl.pathname.startsWith('/portal/login')) {
         const { data: { user } } = await supabase.auth.getUser();
-        
+
         if (!user) {
             return NextResponse.redirect(new URL('/portal/login', request.url));
         }
 
-        // Check if user is a client
+        // Check if user is a client (includes client_admin and client_reviewer)
         const { data: profile } = await supabase
             .from('profiles')
             .select('role')
             .eq('id', user.id)
             .single();
 
-        if (profile?.role !== 'client') {
+        const isClientRole = profile?.role === 'client' ||
+                            profile?.role === 'client_admin' ||
+                            profile?.role === 'client_reviewer';
+
+        if (!isClientRole) {
             // Redirect staff/owners to app dashboard
             return NextResponse.redirect(new URL('/app', request.url));
         }
@@ -96,7 +100,7 @@ export async function middleware(request: NextRequest) {
     // Protect app routes - require staff/owner role
     if (request.nextUrl.pathname.startsWith('/app')) {
         const { data: { user } } = await supabase.auth.getUser();
-        
+
         if (!user) {
             return NextResponse.redirect(new URL('/portal/login', request.url));
         }
@@ -107,7 +111,11 @@ export async function middleware(request: NextRequest) {
             .eq('id', user.id)
             .single();
 
-        if (profile?.role === 'client') {
+        const isClientRole = profile?.role === 'client' ||
+                            profile?.role === 'client_admin' ||
+                            profile?.role === 'client_reviewer';
+
+        if (isClientRole) {
             // Redirect clients to portal
             return NextResponse.redirect(new URL('/portal/dashboard', request.url));
         }
@@ -163,5 +171,6 @@ export const config = {
         '/portal/:path*',
         '/app/:path*',
         '/auth/callback',
+        '/auth/client',
     ],
 };

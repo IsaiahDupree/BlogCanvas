@@ -72,10 +72,14 @@ npm run test:supabase
 ### 4. Run Development Server
 
 ```bash
+# Default port (4848)
 npm run dev
+
+# Custom port
+PORT=3000 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to see the app.
+Open [http://localhost:4848](http://localhost:4848) to see the app (or your custom port).
 
 ## Project Structure
 
@@ -127,11 +131,42 @@ See `supabase/migrations/` for the complete schema.
 
 ## Environment Variables
 
-Required:
+### Port Configuration
+- `PORT` - Application port (default: `4848`)
+- `POSTGRES_PORT` - PostgreSQL port for Docker (default: `5432`)
+
+### Required
 - `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anon key
 
-See `env.example` for all available variables.
+### Optional
+- `OPENAI_API_KEY` - For AI content generation
+- `STRIPE_SECRET_KEY` - For billing integration
+- `RESEND_API_KEY` - For transactional emails
+
+See `.env.example` for all available variables.
+
+## Docker Development
+
+### Quick Start with Docker
+
+```bash
+# Start with default ports (app: 4848, db: 5432)
+docker compose -f docker-compose.dev.yml up
+
+# Start with custom ports
+PORT=3000 POSTGRES_PORT=5433 docker compose -f docker-compose.dev.yml up
+
+# Production build
+docker compose up --build
+```
+
+### Docker Configuration
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `4848` | Application port |
+| `POSTGRES_PORT` | `5432` | PostgreSQL port |
 
 ## Deployment
 

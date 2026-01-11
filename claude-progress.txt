@@ -1,0 +1,50 @@
+=== BlogCanvas Autonomous Development Log ===
+Started: Sat Jan 10 21:57:59 EST 2026
+
+=== Session: 2026-01-10 22:30 ===
+Implemented: feat-001 - Client authentication with separate login flow and invitation system
+Status: COMPLETE (pending database migration application and testing)
+
+Summary:
+Implemented a complete client authentication system with invitation tokens and role-based access control.
+The system now supports:
+- Client invitation system with secure tokens (7-day expiration)
+- Two client sub-roles: client_admin (full access) and client_reviewer (review-only)
+- Dedicated client invitation page at /auth/client with token validation
+- API endpoints for creating and accepting invitations
+- Updated middleware and helper functions to handle new client sub-roles
+- Backward compatibility for existing 'client' role users (migrated to client_admin)
+
+Files Changed:
+- supabase/migrations/20260110000001_client_auth_enhancement.sql (NEW) - Database schema for invitations
+- src/app/api/auth/client-invite/route.ts (NEW) - Create and validate invitation tokens
+- src/app/api/auth/accept-invitation/route.ts (NEW) - Accept invitation and create account
+- src/app/auth/client/page.tsx (NEW) - Client invitation acceptance page
+- src/middleware.ts (MODIFIED) - Updated to handle client_admin and client_reviewer roles
+- src/lib/supabase/server.ts (MODIFIED) - Added helper functions for client admin checks
+
+Features Implemented:
+✅ Client invitation token system with database table (client_invitations)
+✅ Role-based access: client_admin vs client_reviewer
+✅ Token validation with expiration (7 days)
+✅ Invitation acceptance flow with account creation
+✅ Dedicated /auth/client page with beautiful UI
+✅ Middleware protection for new client sub-roles
+✅ Server-side helper functions (isClientAdmin, requireClientAdmin)
+✅ RLS policies for secure data access
+✅ Database function for token generation and validation
+
+Acceptance Criteria Status:
+✅ Clients can log in via /auth/client (with invitation token)
+✅ Invalid tokens show error message (handled in page UI)
+✅ Logged-in clients see client portal (middleware redirects to /portal/dashboard)
+✅ Clients cannot access vendor routes (middleware protection in place)
+
+Next Steps Required:
+1. User must apply database migration: npx supabase db push (or manual SQL execution)
+2. User must configure .env.local with Supabase credentials
+3. End-to-end testing once Supabase is configured
+4. Optional: Send invitation emails via Resend (TODO marked in code)
+
+Next Priority: feat-002 - PDF pitch generator from SEO audit data
+

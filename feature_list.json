@@ -1,0 +1,532 @@
+{
+  "project": "BlogCanvas",
+  "version": "2.0",
+  "created": "2026-01-10",
+  "features": [
+    {
+      "id": "feat-001",
+      "epic": "Epic 4: Authentication",
+      "category": "critical",
+      "priority": 1,
+      "description": "Client authentication - separate login flow for clients vs vendors",
+      "steps": [
+        "Create client login page at /auth/client",
+        "Implement client invitation token validation",
+        "Set up role-based session with client_admin/client_reviewer roles",
+        "Redirect clients to /portal after login",
+        "Add middleware to protect client routes"
+      ],
+      "acceptance_criteria": [
+        "Clients can log in via /auth/client",
+        "Invalid tokens show error message",
+        "Logged-in clients see client portal",
+        "Clients cannot access vendor routes"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-002",
+      "epic": "Epic 2: Pitch Generator",
+      "category": "critical",
+      "priority": 2,
+      "description": "PDF pitch generator from SEO audit data",
+      "steps": [
+        "Create PDF generation service using @react-pdf/renderer or similar",
+        "Build pitch template with SEO scores, recommendations, pricing",
+        "Add 'Generate Pitch' button to PitchBuilderTab",
+        "Implement download functionality",
+        "Add email draft generation option"
+      ],
+      "acceptance_criteria": [
+        "User can generate PDF from audit data",
+        "PDF includes baseline score, recommendations, projected improvement",
+        "PDF downloads successfully",
+        "Email draft option creates shareable content"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-003",
+      "epic": "Epic 5: CMS Publishing",
+      "category": "critical",
+      "priority": 3,
+      "description": "WordPress REST API integration for publishing",
+      "steps": [
+        "Create WordPress connection settings UI",
+        "Implement WordPress REST API client",
+        "Add publish button to blog post detail page",
+        "Handle authentication (application passwords)",
+        "Store published URL and status"
+      ],
+      "acceptance_criteria": [
+        "User can connect WordPress site via settings",
+        "Posts can be published to WordPress",
+        "Published posts show CMS URL",
+        "Errors are handled gracefully"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-004",
+      "epic": "Epic 3: Content Batch",
+      "category": "high",
+      "priority": 4,
+      "description": "CSV import/export for batch topic management",
+      "steps": [
+        "Create CSV import API endpoint",
+        "Build CSV export functionality",
+        "Add import/export buttons to batch dashboard",
+        "Validate CSV format and show errors",
+        "Support columns: topic, keywords, target_audience, template"
+      ],
+      "acceptance_criteria": [
+        "User can upload CSV with topics",
+        "System creates blog post records from CSV",
+        "User can export current batch to CSV",
+        "Invalid CSV rows show clear errors"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-005",
+      "epic": "Epic 4: Review Workflow",
+      "category": "high",
+      "priority": 5,
+      "description": "Editor Kanban board for content workflow",
+      "steps": [
+        "Create Kanban board component with drag-drop",
+        "Implement columns: Draft, Review, Client Review, Approved, Published",
+        "Add card component showing post title, client, due date",
+        "Implement drag-drop status updates",
+        "Add filtering by client, editor, date"
+      ],
+      "acceptance_criteria": [
+        "Kanban board displays all posts in workflow",
+        "Cards can be dragged between columns",
+        "Status updates persist to database",
+        "Filters work correctly"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-006",
+      "epic": "Epic 6: Analytics",
+      "category": "high",
+      "priority": 6,
+      "description": "Analytics data collection for published posts",
+      "steps": [
+        "Create check-back scheduler (cron job or queue)",
+        "Integrate Google Search Console API",
+        "Store metrics in blog_post_metrics table",
+        "Build analytics dashboard widget",
+        "Show impressions, clicks, CTR, position over time"
+      ],
+      "acceptance_criteria": [
+        "System collects metrics for published posts",
+        "Dashboard shows post performance",
+        "Historical data is tracked",
+        "Metrics update on schedule"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-007",
+      "epic": "Epic 3: Revisions",
+      "category": "medium",
+      "priority": 7,
+      "description": "Revision history UI with diff viewing",
+      "steps": [
+        "Create revision history sidebar component",
+        "Implement diff viewing using diff library",
+        "Add 'View History' button to post editor",
+        "Show revision metadata (author, timestamp, type)",
+        "Add restore previous version functionality"
+      ],
+      "acceptance_criteria": [
+        "User can view revision history",
+        "Diff shows changes between versions",
+        "User can restore previous versions",
+        "All revision types are tracked"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-008",
+      "epic": "Epic 6: Reporting",
+      "category": "medium",
+      "priority": 8,
+      "description": "Report generation engine (PDF, Email, Slides)",
+      "steps": [
+        "Create report template system",
+        "Implement PDF report generation",
+        "Add email report sending via Resend",
+        "Build slide deck export (HTML or PPTX)",
+        "Add scheduling for automated reports"
+      ],
+      "acceptance_criteria": [
+        "User can generate monthly performance report",
+        "Reports available in PDF, email, slide formats",
+        "Reports include key metrics and visualizations",
+        "Automated reports can be scheduled"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-009",
+      "epic": "Epic 1: SEO Audit",
+      "category": "medium",
+      "priority": 9,
+      "description": "Enhanced audit visualizations and comparisons",
+      "steps": [
+        "Create SEO score trend chart component",
+        "Add competitor comparison view",
+        "Implement audit history timeline",
+        "Build export audit report feature",
+        "Add visual topic cluster map"
+      ],
+      "acceptance_criteria": [
+        "User sees visual SEO trends over time",
+        "Audit comparisons are available",
+        "Reports can be exported",
+        "Topic clusters shown visually"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-010",
+      "epic": "Epic 7: Newsletter",
+      "category": "medium",
+      "priority": 10,
+      "description": "Newsletter builder with drag-drop editor",
+      "steps": [
+        "Create drag-drop email builder component",
+        "Implement newsletter template system",
+        "Add block types: header, text, image, post card, CTA",
+        "Build preview functionality",
+        "Integrate with Resend for sending"
+      ],
+      "acceptance_criteria": [
+        "User can build newsletter with drag-drop",
+        "Templates are available and customizable",
+        "Preview shows accurate representation",
+        "Newsletter sends via Resend"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-011",
+      "epic": "Epic 7: Newsletter",
+      "category": "medium",
+      "priority": 11,
+      "description": "Newsletter scheduling and audience management",
+      "steps": [
+        "Create recipient list management UI",
+        "Implement scheduling functionality",
+        "Add automation triggers (milestone, monthly)",
+        "Build newsletter analytics tracking",
+        "Handle unsubscribes"
+      ],
+      "acceptance_criteria": [
+        "User can manage recipient lists",
+        "Newsletters can be scheduled",
+        "Automations trigger correctly",
+        "Analytics show open/click rates"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-012",
+      "epic": "Epic 8: Stripe Integration",
+      "category": "medium",
+      "priority": 12,
+      "description": "Stripe subscription and invoice management",
+      "steps": [
+        "Set up Stripe Connect for vendors",
+        "Create subscription plan management UI",
+        "Implement invoice generation",
+        "Add payment link creation",
+        "Handle Stripe webhooks"
+      ],
+      "acceptance_criteria": [
+        "Vendors can connect Stripe account",
+        "Subscription plans can be created",
+        "Invoices generate correctly",
+        "Webhooks update payment status"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-013",
+      "epic": "Epic 8: Resend Integration",
+      "category": "medium",
+      "priority": 13,
+      "description": "Transactional email system with templates",
+      "steps": [
+        "Create email template system",
+        "Implement key transactional emails (invite, approval, published)",
+        "Add email preview in admin",
+        "Set up email queue for reliability",
+        "Track email delivery status"
+      ],
+      "acceptance_criteria": [
+        "System sends transactional emails",
+        "Templates are customizable",
+        "Email delivery is tracked",
+        "Queue handles failures gracefully"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-014",
+      "epic": "Epic 1: Vendor-Client Management",
+      "category": "medium",
+      "priority": 14,
+      "description": "Vendor onboarding and organization setup",
+      "steps": [
+        "Create vendor registration flow",
+        "Build organization profile settings",
+        "Implement team member invitation",
+        "Add branding customization (logo, colors)",
+        "Create vendor dashboard"
+      ],
+      "acceptance_criteria": [
+        "New vendors can self-register",
+        "Organization profile is editable",
+        "Team members can be invited with roles",
+        "Branding appears in client portal"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-015",
+      "epic": "Epic 1: Vendor-Client Management",
+      "category": "medium",
+      "priority": 15,
+      "description": "Client onboarding with guided setup",
+      "steps": [
+        "Create client creation wizard",
+        "Implement client invitation emails",
+        "Build client profile completion flow",
+        "Add brand guide quick-start",
+        "Create relationship dashboard"
+      ],
+      "acceptance_criteria": [
+        "Vendors can add new clients",
+        "Invitation emails are sent",
+        "Clients can complete profile",
+        "Relationship dashboard shows health"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-016",
+      "epic": "Epic 2: Project Transparency",
+      "category": "medium",
+      "priority": 16,
+      "description": "Work declaration system for client visibility",
+      "steps": [
+        "Create work_declarations table and API",
+        "Build work declaration form",
+        "Add client view of declared work",
+        "Implement status updates with notifications",
+        "Show progress percentage and timeline"
+      ],
+      "acceptance_criteria": [
+        "Vendors can declare work items",
+        "Clients see declared work in portal",
+        "Status updates trigger notifications",
+        "Progress is visually tracked"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-017",
+      "epic": "Epic 3: File Transfer",
+      "category": "medium",
+      "priority": 17,
+      "description": "Secure file upload with organization",
+      "steps": [
+        "Create files table and storage bucket",
+        "Build file upload component with progress",
+        "Implement folder organization",
+        "Add file metadata and tagging",
+        "Create file browser UI"
+      ],
+      "acceptance_criteria": [
+        "Users can upload files up to 100MB",
+        "Files are organized in folders",
+        "Metadata and tags are searchable",
+        "File browser shows all client files"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-018",
+      "epic": "Epic 3: File Transfer",
+      "category": "low",
+      "priority": 18,
+      "description": "File versioning and sharing",
+      "steps": [
+        "Implement version tracking for files",
+        "Add version comparison UI",
+        "Create shareable file links",
+        "Add permission levels (view, download, edit)",
+        "Implement link expiration"
+      ],
+      "acceptance_criteria": [
+        "Files can have multiple versions",
+        "Versions can be compared/restored",
+        "Share links work with permissions",
+        "Expired links show appropriate message"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-019",
+      "epic": "Epic 9: Dev Access",
+      "category": "low",
+      "priority": 19,
+      "description": "API key management for vendors",
+      "steps": [
+        "Create api_keys table",
+        "Build API key generation UI",
+        "Implement key authentication middleware",
+        "Add rate limiting per key",
+        "Show usage statistics"
+      ],
+      "acceptance_criteria": [
+        "Vendors can create API keys with scopes",
+        "Keys authenticate API requests",
+        "Rate limits are enforced",
+        "Usage is tracked and visible"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-020",
+      "epic": "Epic 9: Dev Access",
+      "category": "low",
+      "priority": 20,
+      "description": "Webhook configuration and delivery",
+      "steps": [
+        "Create webhooks table",
+        "Build webhook registration UI",
+        "Implement webhook dispatcher",
+        "Add signature verification",
+        "Create delivery logs view"
+      ],
+      "acceptance_criteria": [
+        "Vendors can register webhook endpoints",
+        "Events trigger webhook calls",
+        "Signatures can be verified",
+        "Delivery logs show success/failure"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-021",
+      "epic": "Epic 4: Client Portal",
+      "category": "medium",
+      "priority": 21,
+      "description": "Batch approval feature for clients",
+      "steps": [
+        "Create bulk selection UI for posts",
+        "Implement batch approve/reject API",
+        "Add confirmation modal",
+        "Send batch notification email",
+        "Update dashboard to show batch actions"
+      ],
+      "acceptance_criteria": [
+        "Clients can select multiple posts",
+        "Batch approve/reject works correctly",
+        "Confirmation prevents accidental actions",
+        "Single notification sent for batch"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-022",
+      "epic": "Epic 4: Review Workflow",
+      "category": "medium",
+      "priority": 22,
+      "description": "Threaded comments on blog posts",
+      "steps": [
+        "Update comments table for threading",
+        "Build threaded comment UI component",
+        "Implement reply functionality",
+        "Add @mentions with notifications",
+        "Show comment resolution status"
+      ],
+      "acceptance_criteria": [
+        "Comments can have replies",
+        "Thread view is clear and navigable",
+        "@mentions notify users",
+        "Comments can be marked resolved"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-023",
+      "epic": "Epic 5: CMS Publishing",
+      "category": "medium",
+      "priority": 23,
+      "description": "Batch publishing and scheduling",
+      "steps": [
+        "Create publish queue system",
+        "Build scheduling UI with calendar",
+        "Implement batch publish API",
+        "Add retry logic for failures",
+        "Create publish status dashboard"
+      ],
+      "acceptance_criteria": [
+        "Multiple posts can be scheduled",
+        "Calendar shows scheduled posts",
+        "Failed publishes retry automatically",
+        "Dashboard shows publish status"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-024",
+      "epic": "Epic 8: Gmail Integration",
+      "category": "low",
+      "priority": 24,
+      "description": "Gmail sync and email thread management",
+      "steps": [
+        "Set up Gmail OAuth flow",
+        "Implement email sync service",
+        "Create email thread view",
+        "Add compose functionality",
+        "Link emails to clients/projects"
+      ],
+      "acceptance_criteria": [
+        "Users can connect Gmail account",
+        "Emails sync to the app",
+        "Thread view shows conversation",
+        "Emails can be linked to clients"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-025",
+      "epic": "Epic 5: AI Pipeline",
+      "category": "medium",
+      "priority": 25,
+      "description": "Fact-check agent for content verification",
+      "steps": [
+        "Create fact-check agent prompt",
+        "Implement claim extraction",
+        "Add source verification logic",
+        "Build fact-check UI indicators",
+        "Show verification status per claim"
+      ],
+      "acceptance_criteria": [
+        "Agent extracts verifiable claims",
+        "Claims are checked against sources",
+        "UI shows verified/unverified status",
+        "Sources are suggested for unverified"
+      ],
+      "passes": false
+    }
+  ]
+}

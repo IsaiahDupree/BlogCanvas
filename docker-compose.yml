@@ -1,0 +1,67 @@
+version: '3.8'
+
+# BlogCanvas Production Docker Compose
+# Configure ports: PORT=4848 POSTGRES_PORT=5432 docker compose up
+
+services:
+  # BlogCanvas Next.js Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${PORT:-4848}:${PORT:-4848}"
+    environment:
+      - NODE_ENV=production
+      - PORT=${PORT:-4848}
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+    depends_on:
+      - db
+    networks:
+      - blogcanvas-network
+
+  # Local Supabase PostgreSQL Database
+  db:
+    image: supabase/postgres:15.1.1.61
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: blogcanvas
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./supabase/migrations:/docker-entrypoint-initdb.d
+    networks:
+      - blogcanvas-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Supabase Studio (optional - for database management)
+  studio:
+    image: supabase/studio:20240101
+    ports:
+      - "3001:3000"
+    environment:
+      STUDIO_PG_META_URL: http://meta:8080
+      POSTGRES_PASSWORD: postgres
+      DEFAULT_ORGANIZATION_NAME: BlogCanvas
+      DEFAULT_PROJECT_NAME: BlogCanvas
+      SUPABASE_URL: http://kong:8000
+      SUPABASE_PUBLIC_URL: http://localhost:8000
+    depends_on:
+      - db
+    networks:
+      - blogcanvas-network
+
+networks:
+  blogcanvas-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

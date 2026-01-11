@@ -1,0 +1,22 @@
+# BlogCanvas Development Dockerfile
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install dependencies for native modules
+RUN apk add --no-cache libc6-compat
+
+# Copy package files
+COPY package.json package-lock.json* ./
+
+# Install dependencies
+RUN npm install
+
+# Copy application code
+COPY . .
+
+# Expose port (configurable via PORT env var, default 4848)
+EXPOSE ${PORT:-4848}
+
+# Start development server with hot reload on configured port
+CMD ["sh", "-c", "npm run dev -- -p ${PORT:-4848}"]
