@@ -17,7 +17,8 @@ import {
     BarChart3,
     BookOpen,
     Bell,
-    LogOut
+    LogOut,
+    Mail
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -47,6 +48,7 @@ const staffNavigation: NavGroup[] = [
             { name: 'Websites', href: '/app/websites', icon: Globe },
             { name: 'Content Batches', href: '/app/batches', icon: FileText },
             { name: 'Review Board', href: '/app/review', icon: CheckSquare },
+            { name: 'Newsletters', href: '/app/newsletters', icon: Mail },
         ]
     },
     {

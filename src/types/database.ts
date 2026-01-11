@@ -1418,6 +1418,167 @@ export type Database = {
         }
         Relationships: []
       }
+      newsletter_templates: {
+        Row: {
+          id: string
+          vendor_id: string | null
+          name: string
+          description: string | null
+          html_content: string
+          json_content: Json | null
+          thumbnail_url: string | null
+          is_system_template: boolean | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          vendor_id?: string | null
+          name: string
+          description?: string | null
+          html_content: string
+          json_content?: Json | null
+          thumbnail_url?: string | null
+          is_system_template?: boolean | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          vendor_id?: string | null
+          name?: string
+          description?: string | null
+          html_content?: string
+          json_content?: Json | null
+          thumbnail_url?: string | null
+          is_system_template?: boolean | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "newsletter_templates_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      newsletter_campaigns: {
+        Row: {
+          id: string
+          vendor_id: string | null
+          template_id: string | null
+          subject: string
+          preview_text: string | null
+          html_content: string
+          json_content: Json | null
+          status: string | null
+          scheduled_at: string | null
+          sent_at: string | null
+          recipient_count: number | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          vendor_id?: string | null
+          template_id?: string | null
+          subject: string
+          preview_text?: string | null
+          html_content: string
+          json_content?: Json | null
+          status?: string | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          recipient_count?: number | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          vendor_id?: string | null
+          template_id?: string | null
+          subject?: string
+          preview_text?: string | null
+          html_content?: string
+          json_content?: Json | null
+          status?: string | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          recipient_count?: number | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "newsletter_campaigns_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "newsletter_campaigns_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "newsletter_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      newsletter_recipients: {
+        Row: {
+          id: string
+          campaign_id: string | null
+          email: string
+          client_id: string | null
+          status: string | null
+          sent_at: string | null
+          opened_at: string | null
+          clicked_at: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          campaign_id?: string | null
+          email: string
+          client_id?: string | null
+          status?: string | null
+          sent_at?: string | null
+          opened_at?: string | null
+          clicked_at?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          campaign_id?: string | null
+          email?: string
+          client_id?: string | null
+          status?: string | null
+          sent_at?: string | null
+          opened_at?: string | null
+          clicked_at?: string | null
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "newsletter_recipients_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "newsletter_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "newsletter_recipients_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

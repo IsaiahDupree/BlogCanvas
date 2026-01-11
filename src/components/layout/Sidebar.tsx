@@ -8,7 +8,8 @@ import {
     FileText,
     CheckSquare,
     Settings,
-    ChevronRight
+    ChevronRight,
+    Mail
 } from 'lucide-react'
 
 interface NavItem {
@@ -35,6 +36,7 @@ const navigation: NavGroup[] = [
             { name: 'Websites', href: '/app/websites', icon: Globe },
             { name: 'Content Batches', href: '/app/batches', icon: FileText },
             { name: 'Review Board', href: '/app/review', icon: CheckSquare },
+            { name: 'Newsletters', href: '/app/newsletters', icon: Mail },
         ]
     },
     {
