@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { NewsletterBuilder, NewsletterBlock } from '@/components/newsletters/NewsletterBuilder';
 
 interface Newsletter Campaign {
@@ -187,6 +188,7 @@ function CampaignCard({
     getStatusColor: (status: string) => string;
     getStatusIcon: (status: string) => string;
 }) {
+    const router = useRouter();
     const [sending, setSending] = useState(false);
 
     const handleSend = async () => {
@@ -248,18 +250,26 @@ function CampaignCard({
             </div>
 
             {/* Actions */}
-            <div className="flex gap-2">
-                {campaign.status === 'draft' && (
-                    <button
-                        onClick={handleSend}
-                        disabled={sending}
-                        className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white px-4 py-2 rounded text-sm font-medium transition-colors"
-                    >
-                        {sending ? 'Sending...' : 'Send Now'}
+            <div className="flex flex-col gap-2">
+                <div className="flex gap-2">
+                    {campaign.status === 'draft' && (
+                        <button
+                            onClick={handleSend}
+                            disabled={sending}
+                            className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white px-4 py-2 rounded text-sm font-medium transition-colors"
+                        >
+                            {sending ? 'Sending...' : 'Send Now'}
+                        </button>
+                    )}
+                    <button className="flex-1 border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded text-sm font-medium transition-colors">
+                        Preview
                     </button>
-                )}
-                <button className="flex-1 border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded text-sm font-medium transition-colors">
-                    Preview
+                </div>
+                <button
+                    onClick={() => router.push(`/app/newsletters/${campaign.id}/recipients`)}
+                    className="w-full border border-indigo-300 hover:bg-indigo-50 text-indigo-700 px-4 py-2 rounded text-sm font-medium transition-colors"
+                >
+                    Manage Recipients ({campaign.recipient_count})
                 </button>
             </div>
         </div>

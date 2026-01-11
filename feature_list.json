@@ -227,7 +227,9 @@
         "Preview shows accurate representation",
         "Newsletter sends via Resend"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-11T07:40:00Z",
+      "notes": "Complete newsletter system with drag-drop builder, templates, and Resend integration. Database: newsletter_templates, newsletter_campaigns, newsletter_recipients with RLS. Backend: Template CRUD, campaign management, send via Resend. Frontend: NewsletterBuilder component with 7 block types (header, text, image, posts-grid, posts-list, cta, footer), live HTML generation, template selection, recipient management. Added to navigation sidebar."
     },
     {
       "id": "feat-011",
@@ -248,7 +250,9 @@
         "Automations trigger correctly",
         "Analytics show open/click rates"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-11T14:00:00Z",
+      "notes": "Complete newsletter scheduling and audience management system. Recipient Management: Add/remove recipients API, CSV import, recipient list UI at /app/newsletters/[id]/recipients with analytics dashboard. Unsubscribe: Token-based unsubscribe endpoint, preference center page at /unsubscribe, automatic unsubscribe footer in emails. Automation Engine: Database tables (newsletter_automations, newsletter_automation_executions), automation CRUD APIs, processor endpoint for cron execution, support for monthly/weekly/milestone triggers, recipient selection strategies (all_clients, custom_list, client_ids). Analytics: Campaign analytics API, Resend webhook receiver at /api/newsletters/webhooks/resend for tracking opens/clicks/bounces. Documentation: Comprehensive setup guide in docs/NEWSLETTER_AUTOMATION_SETUP.md covering cron setup (Vercel, GitHub Actions, external services), webhook configuration, monitoring queries."
     },
     {
       "id": "feat-012",

@@ -113,12 +113,30 @@ export async function POST(
 
         for (const recipient of recipients) {
             try {
+                // Generate unsubscribe token (format: base64(email:campaign_id:timestamp))
+                const unsubscribeToken = Buffer.from(
+                    `${recipient.email}:${campaignId}:${Date.now()}`
+                ).toString('base64');
+
+                const unsubscribeUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:4848'}/api/newsletters/unsubscribe?token=${unsubscribeToken}`;
+
+                // Add unsubscribe link to HTML content
+                const htmlWithUnsubscribe = campaign.html_content.replace(
+                    '{{unsubscribe_url}}',
+                    unsubscribeUrl
+                ) + `
+                    <div style="margin-top: 40px; padding: 20px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 12px; color: #6b7280;">
+                        <p>You received this email because you're subscribed to our newsletter.</p>
+                        <p><a href="${unsubscribeUrl}" style="color: #6b7280; text-decoration: underline;">Unsubscribe</a> from this list</p>
+                    </div>
+                `;
+
                 // Send email via Resend
                 await resend.emails.send({
                     from: 'BlogCanvas <newsletters@blogcanvas.app>',
                     to: recipient.email,
                     subject: campaign.subject,
-                    html: campaign.html_content
+                    html: htmlWithUnsubscribe
                 });
 
                 // Update recipient status
