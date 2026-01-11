@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { GapsAnalysisTab } from '@/components/website/GapsAnalysisTab'
 import { TopicClustersTab } from '@/components/website/TopicClustersTab'
 import { PitchBuilderTab } from '@/components/website/PitchBuilderTab'
+import { AnalyticsTab } from '@/components/website/AnalyticsTab'
 
 export default function WebsiteDetailPage() {
     const params = useParams()
@@ -192,6 +193,7 @@ export default function WebsiteDetailPage() {
                 <Tabs defaultValue="overview" className="space-y-6">
                     <TabsList>
                         <TabsTrigger value="overview">Overview</TabsTrigger>
+                        <TabsTrigger value="analytics">Analytics</TabsTrigger>
                         <TabsTrigger value="gaps">Content Gaps</TabsTrigger>
                         <TabsTrigger value="topics">Topic Clusters</TabsTrigger>
                         <TabsTrigger value="pitch">Build Pitch</TabsTrigger>
@@ -262,6 +264,10 @@ export default function WebsiteDetailPage() {
                                 </div>
                             </CardContent>
                         </Card>
+                    </TabsContent>
+
+                    <TabsContent value="analytics">
+                        <AnalyticsTab websiteId={params.id as string} />
                     </TabsContent>
 
                     <TabsContent value="gaps">

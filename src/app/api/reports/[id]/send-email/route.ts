@@ -20,8 +20,8 @@ export async function POST(
     try {
         const { id } = await params;
         await requireAuth();
-        const body = await request.json();
-        const { recipientEmail, includePDF = false } = body;
+        const requestBody = await request.json();
+        const { recipientEmail, includePDF = false } = requestBody;
 
         // Fetch the report
         const { data: report, error } = await supabaseAdmin
