@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Play, Pause, CheckCircle2, AlertCircle, Loader2, TrendingUp, FileText, Upload, Download } from 'lucide-react'
+import { ArrowLeft, Play, Pause, CheckCircle2, AlertCircle, Loader2, TrendingUp, FileText, Upload, Download, Send } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -17,6 +17,7 @@ export default function BatchDetailPage() {
     const [loading, setLoading] = useState(true)
     const [importing, setImporting] = useState(false)
     const [importFile, setImportFile] = useState<File | null>(null)
+    const [publishing, setPublishing] = useState(false)
 
     useEffect(() => {
         fetchBatchDetails()
@@ -148,6 +149,34 @@ export default function BatchDetailPage() {
         }
     }
 
+    const handlePublishAll = async () => {
+        if (!confirm('This will publish all approved posts in this batch to WordPress. Continue?')) {
+            return
+        }
+
+        setPublishing(true)
+        try {
+            const response = await fetch(`/api/content-batches/${params.id}/publish-all`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            const data = await response.json()
+
+            if (data.success) {
+                const { summary } = data
+                alert(`Publishing complete!\n\nTotal: ${summary.total}\nSucceeded: ${summary.succeeded}\nFailed: ${summary.failed}`)
+                await fetchBatchDetails()
+            } else {
+                alert(`Publishing failed: ${data.error}`)
+            }
+        } catch (error: any) {
+            console.error('Publishing error:', error)
+            alert(`Failed to publish posts: ${error.message}`)
+        } finally {
+            setPublishing(false)
+        }
+    }
+
     if (loading) {
         return <div className="min-h-screen flex items-center justify-center">
             <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
@@ -225,6 +254,23 @@ export default function BatchDetailPage() {
                                     <>
                                         <Play className="w-4 h-4 mr-2" />
                                         {completedPosts === 0 ? 'Start Generation' : 'Resume Generation'}
+                                    </>
+                                )}
+                            </Button>
+                            <Button
+                                onClick={handlePublishAll}
+                                disabled={publishing}
+                                className="bg-gradient-to-r from-green-600 to-green-700 text-white"
+                            >
+                                {publishing ? (
+                                    <>
+                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                        Publishing...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Send className="w-4 h-4 mr-2" />
+                                        Publish to WordPress
                                     </>
                                 )}
                             </Button>
