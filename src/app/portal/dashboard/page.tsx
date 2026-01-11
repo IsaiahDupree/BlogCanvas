@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { FileText, Clock, CheckCircle, Calendar, ArrowRight, Bell } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import TopPerformingPosts from '@/components/analytics/TopPerformingPosts'
 
 export default function PortalDashboardPage() {
     // Mock data - would come from API filtered by client_id
@@ -212,6 +213,11 @@ export default function PortalDashboardPage() {
                         <p className="text-3xl font-bold text-gray-900">24</p>
                         <p className="text-sm text-muted-foreground">Total Posts</p>
                     </Card>
+                </div>
+
+                {/* Top Performing Posts */}
+                <div className="mt-8">
+                    <TopPerformingPosts limit={5} />
                 </div>
             </div>
         </div>
