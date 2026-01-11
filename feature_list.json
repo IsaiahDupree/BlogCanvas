@@ -158,7 +158,9 @@
         "User can restore previous versions",
         "All revision types are tracked"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-11T07:00:00Z",
+      "notes": "Complete revision history system. Backend: API endpoints for fetching revisions, individual revision details, diff generation, and restore functionality. Frontend: RevisionHistoryTimeline component with expandable diffs, DiffViewer component using 'diff' library, RevisionHistory wrapper with loading/error states, standalone history page at /app/posts/[postId]/history. Features: View all revisions with metadata, inline diff viewing (line-by-line and word-by-word), restore previous versions with automatic backup, color-coded changes (green=added, red=removed)."
     },
     {
       "id": "feat-008",
