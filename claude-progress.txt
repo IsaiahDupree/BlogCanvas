@@ -3106,3 +3106,17 @@ Implementation Quality:
 
 Next Priority: feat-024 (Gmail sync) or feat-025 (Fact-check agent) or feat-026 (Unit tests)
 
+
+=== Session 2026-01-12 18:30 ===
+- Implemented: feat-026 - Unit tests for core API endpoints
+- Files changed:
+  * jest.setup.js - Added environment variables for Resend and cron secret
+  * __tests__/api/merchant-routes.test.ts - Fixed mocks for requireStaff and Supabase
+  * feature_list.json - Marked feat-026 as passing
+- Tests passed:
+  * auth.test.ts: 5/5 tests passing (login, logout, redirects, validation)
+  * merchant-routes.test.ts: 6/6 tests passing (client CRUD, post management)
+  * blog-posts.test.ts: Comprehensive test coverage verified
+  * content-batches.test.ts: Batch operations coverage verified
+- Committed: "feat(blogcanvas): implement unit tests for core API endpoints (feat-026)"
+- Next priority: feat-027 (Integration tests for AI pipeline) or feat-028 (E2E tests)
