@@ -22,7 +22,9 @@
         "Logged-in clients see client portal",
         "Clients cannot access vendor routes"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-12T19:00:00Z",
+      "notes": "Complete client authentication system with invitation tokens. Files: /auth/client page, API endpoints (/api/auth/client-invite, /api/auth/accept-invitation), database migration (20260110000001_client_auth_enhancement.sql), middleware protection. All acceptance criteria verified: page loads correctly, token validation works, middleware redirects properly, clients blocked from /app routes."
     },
     {
       "id": "feat-002",
