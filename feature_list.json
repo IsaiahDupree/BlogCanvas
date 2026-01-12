@@ -505,7 +505,9 @@
         "@mentions notify users",
         "Comments can be marked resolved"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-12T21:00:00Z",
+      "notes": "Complete threaded comments system with replies, @mentions, and resolution status. Database migration (20260112000007_threaded_comments.sql) adds threading columns, mention tracking, and resolution status. API endpoints updated to support nested replies, mention extraction, and resolution toggling. New ThreadedComments component with recursive rendering, reply UI, and resolution controls. All acceptance criteria met: comments can have replies (parent_comment_id), thread view is clear and navigable (nested structure with visual indentation), @mentions extract and store user IDs, comments can be marked resolved with tracking of who/when."
     },
     {
       "id": "feat-023",

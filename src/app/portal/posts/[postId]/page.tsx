@@ -5,10 +5,10 @@ import Link from 'next/link'
 import { ArrowLeft, Calendar, Clock, Tag, MessageSquare, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import ThreadedComments from '@/components/ThreadedComments'
 
 export default function PortalPostReviewPage({ params }: { params: Promise<{ postId: string }> }) {
     const { postId } = use(params)
-    const [comment, setComment] = useState('')
     const [changeRequest, setChangeRequest] = useState('')
     const [showChangeModal, setShowChangeModal] = useState(false)
 
@@ -96,13 +96,6 @@ export default function PortalPostReviewPage({ params }: { params: Promise<{ pos
         alert('Changes requested! Your agency will be notified.')
         setShowChangeModal(false)
         window.location.href = '/portal/dashboard'
-    }
-
-    const handleAddComment = () => {
-        if (!comment.trim()) return
-
-        alert('Comment added!')
-        setComment('')
     }
 
     return (
@@ -216,42 +209,8 @@ export default function PortalPostReviewPage({ params }: { params: Promise<{ pos
                         </Card>
                     )}
 
-                    {/* Comments */}
-                    <Card className="p-6 bg-white shadow-lg">
-                        <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                            <MessageSquare className="w-5 h-5" />
-                            Comments ({post.comments.length})
-                        </h3>
-
-                        <div className="space-y-4 mb-4">
-                            {post.comments.map((c) => (
-                                <div key={c.id} className="pb-4 border-b border-gray-100 last:border-0">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <span className="font-semibold text-sm">{c.author}</span>
-                                        <Badge variant="outline" className="text-xs">{c.role}</Badge>
-                                    </div>
-                                    <p className="text-sm text-gray-700">{c.content}</p>
-                                    <p className="text-xs text-muted-foreground mt-1">{c.time}</p>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div>
-                            <textarea
-                                value={comment}
-                                onChange={(e) => setComment(e.target.value)}
-                                placeholder="Add a comment..."
-                                rows={3}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-200 outline-none mb-2"
-                            />
-                            <button
-                                onClick={handleAddComment}
-                                className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
-                            >
-                                Add Comment
-                            </button>
-                        </div>
-                    </Card>
+                    {/* Comments - Threaded */}
+                    <ThreadedComments postId={postId} />
                 </div>
             </div>
 
