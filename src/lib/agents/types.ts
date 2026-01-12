@@ -78,9 +78,30 @@ export interface QualityGate {
     score?: number;
 }
 
+export interface FactCheckClaim {
+    claim: string;
+    sectionKey?: string;
+    verifiable: boolean;
+    status: 'verified' | 'unverified' | 'questionable' | 'needs_source';
+    reasoning: string;
+    suggestedSource?: string;
+    severity: 'low' | 'medium' | 'high';
+}
+
+export interface FactCheckResult {
+    claims: FactCheckClaim[];
+    factCheckScore: number;
+    overallFeedback: string;
+    passed: boolean;
+    totalClaims: number;
+    verifiedClaims: number;
+    unverifiedClaims: number;
+}
+
 export interface QualityGates {
     outline: QualityGate;
     completeness: QualityGate;
     seo?: QualityGate;
     voiceTone?: QualityGate;
+    factCheck?: QualityGate;
 }

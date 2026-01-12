@@ -3,12 +3,13 @@
  * Coordinates all agents to create a complete blog post
  */
 
-import { LLMProvider, ResearchResult, OutlineResult, SEOMetadata, VoiceToneResult, QualityGates, DraftSectionResult } from '../agents/types';
+import { LLMProvider, ResearchResult, OutlineResult, SEOMetadata, VoiceToneResult, FactCheckResult, QualityGates, DraftSectionResult } from '../agents/types';
 import { runResearchAgent } from '../agents/research';
 import { runOutlineAgent, validateOutline } from '../agents/outline';
 import { runDraftAgent, combineSections } from '../agents/draft';
 import { runSEOAgent, validateSEOMetadata } from '../agents/seo';
 import { runVoiceToneAgent } from '../agents/voice-tone';
+import { runFactCheckAgent } from '../agents/fact-check';
 import { MarketingContext } from '../context/marketing';
 
 export interface PipelineInput {
@@ -32,6 +33,7 @@ export interface PipelineResult {
     fullDraft?: string;
     seoMetadata?: SEOMetadata;
     voiceToneReport?: VoiceToneResult;
+    factCheckReport?: FactCheckResult;
     qualityGates?: QualityGates;
     retryCount?: number;
 }
@@ -126,7 +128,15 @@ export async function runBlogPostPipeline(
             targetKeyword: input.targetKeyword
         });
 
-        // Step 5: Voice/Tone check
+        // Step 5: Fact-check
+        const factCheckResult = await runFactCheckAgent(provider, {
+            fullDraftContent: fullDraft,
+            sectionContents: sections.reduce((acc, s) => ({ ...acc, [s.key]: s.content }), {}),
+            topic: input.topic,
+            targetKeyword: input.targetKeyword
+        });
+
+        // Step 6: Voice/Tone check
         const voiceToneResult = await runVoiceToneAgent(provider, {
             fullDraftContent: fullDraft,
             marketingContext: input.marketingContext,
@@ -147,6 +157,11 @@ export async function runBlogPostPipeline(
                 passed: validateSEOMetadata(seoResult.data).passed,
                 score: seoResult.data.keywordDensity
             } : undefined,
+            factCheck: factCheckResult.data ? {
+                passed: factCheckResult.data.passed,
+                score: factCheckResult.data.factCheckScore,
+                reason: `${factCheckResult.data.verifiedClaims}/${factCheckResult.data.totalClaims} claims verified`
+            } : undefined,
             voiceTone: voiceToneResult.data ? {
                 passed: voiceToneResult.data.passed,
                 score: voiceToneResult.data.alignmentScore
@@ -161,6 +176,7 @@ export async function runBlogPostPipeline(
             fullDraft,
             seoMetadata: seoResult.data,
             voiceToneReport: voiceToneResult.data,
+            factCheckReport: factCheckResult.data,
             qualityGates,
             retryCount
         };

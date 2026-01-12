@@ -574,7 +574,9 @@
         "UI shows verified/unverified status",
         "Sources are suggested for unverified"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-12T20:00:00Z",
+      "notes": "Complete fact-check agent implementation. Agent: /src/lib/agents/fact-check.ts with claim extraction, verification status, source suggestions, severity levels. Integrated into pipeline orchestrator between SEO and voice-tone agents. UI: FactCheckReport component in /src/components/fact-check/FactCheckReport.tsx shows claims with status, reasoning, suggested sources. Quality gate added to pipeline. Tests: Updated orchestrator.test.ts with fact-check mocks. All acceptance criteria verified: extracts claims, checks status, UI shows verified/unverified, suggests sources."
     },
     {
       "id": "feat-026",

@@ -46,6 +46,24 @@ describe('Pipeline Orchestrator Integration', () => {
                         keywordDensity: 1.8,
                         readabilityScore: 'Good'
                     });
+                } else if (promptToCheck.includes('Fact-Checking Specialist')) {
+                    return JSON.stringify({
+                        claims: [
+                            {
+                                claim: 'Test claim',
+                                verifiable: true,
+                                status: 'verified',
+                                reasoning: 'Common knowledge',
+                                severity: 'low'
+                            }
+                        ],
+                        factCheckScore: 85,
+                        overallFeedback: 'Good factual integrity',
+                        passed: true,
+                        totalClaims: 1,
+                        verifiedClaims: 1,
+                        unverifiedClaims: 0
+                    });
                 } else if (promptToCheck.includes('Brand Voice')) {
                     return JSON.stringify({
                         alignmentScore: 88,
@@ -80,6 +98,7 @@ describe('Pipeline Orchestrator Integration', () => {
         expect(result.sections).toBeDefined();
         expect(result.sections?.length).toBeGreaterThan(0);
         expect(result.seoMetadata).toBeDefined();
+        expect(result.factCheckReport).toBeDefined();
         expect(result.voiceToneReport).toBeDefined();
     }, 30000); // Increase timeout for full pipeline
 
@@ -90,6 +109,7 @@ describe('Pipeline Orchestrator Integration', () => {
         expect(result.qualityGates?.outline.passed).toBe(true);
         expect(result.qualityGates?.completeness.passed).toBe(true);
         expect(result.qualityGates?.seo?.passed).toBe(true);
+        expect(result.qualityGates?.factCheck?.passed).toBe(true);
         expect(result.qualityGates?.voiceTone?.passed).toBe(true);
     }, 30000);
 
