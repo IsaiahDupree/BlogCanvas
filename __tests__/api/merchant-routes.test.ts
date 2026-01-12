@@ -7,54 +7,91 @@ import { NextRequest } from 'next/server';
 // Fix hoisting issue by inlining the mock or defining it inside the factory
 jest.mock('@/lib/supabase/server', () => ({
     createClient: jest.fn(() => ({
-        from: jest.fn((table: string) => ({
-            select: jest.fn(() => ({
-                order: jest.fn(() => Promise.resolve({
-                    data: [
-                        { id: '1', name: 'Test Company', status: 'onboarding' }
-                    ],
-                    error: null
-                })),
-                eq: jest.fn(() => ({
-                    order: jest.fn(() => Promise.resolve({
-                        data: [
-                            { id: '1', topic: 'How to Use CRM', status: 'researching', client_id: '1' }
-                        ],
-                        error: null
-                    }))
-                })),
-                single: jest.fn(() => Promise.resolve({
-                    data: { id: '1', topic: 'How to Use CRM', status: 'researching', client_id: '1' },
-                    error: null
-                }))
-            })),
-            insert: jest.fn((data: any) => ({
-                select: jest.fn(() => ({
-                    single: jest.fn(() => Promise.resolve({
-                        data: {
-                            ...data,
-                            id: '1',
-                            status: data.status || 'onboarding',
-                            topic: data.topic || 'Test Topic'
-                        },
-                        error: null
-                    }))
-                }))
-            })),
-            update: jest.fn((data: any) => ({
-                select: jest.fn(() => ({
-                    single: jest.fn(() => Promise.resolve({
-                        data: { id: '1', ...data, status: data.status },
-                        error: null
-                    }))
-                }))
+        auth: {
+            getUser: jest.fn(() => Promise.resolve({
+                data: { user: { id: 'test-user-123', email: 'test@example.com' } },
+                error: null
             }))
-        }))
+        },
+        from: jest.fn((table: string) => {
+            if (table === 'clients') {
+                return {
+                    select: jest.fn(() => ({
+                        eq: jest.fn(() => ({
+                            single: jest.fn(() => Promise.resolve({
+                                data: null, // No existing client with that slug
+                                error: null
+                            }))
+                        })),
+                        order: jest.fn(() => Promise.resolve({
+                            data: [
+                                { id: '1', name: 'Test Company', status: 'onboarding' }
+                            ],
+                            error: null
+                        }))
+                    }))
+                };
+            } else if (table === 'profiles') {
+                return {
+                    select: jest.fn(() => ({
+                        eq: jest.fn(() => ({
+                            single: jest.fn(() => Promise.resolve({
+                                data: {
+                                    id: 'profile-1',
+                                    vendor_id: 'vendor-1',
+                                    vendors: { name: 'Test Vendor' }
+                                },
+                                error: null
+                            }))
+                        }))
+                    }))
+                };
+            }
+            return {
+                select: jest.fn(() => ({
+                    order: jest.fn(() => Promise.resolve({
+                        data: [],
+                        error: null
+                    })),
+                    eq: jest.fn(() => ({
+                        single: jest.fn(() => Promise.resolve({
+                            data: null,
+                            error: null
+                        }))
+                    }))
+                })),
+                insert: jest.fn((data: any) => ({
+                    select: jest.fn(() => ({
+                        single: jest.fn(() => Promise.resolve({
+                            data: { ...data, id: '1' },
+                            error: null
+                        }))
+                    }))
+                })),
+                update: jest.fn((data: any) => ({
+                    select: jest.fn(() => ({
+                        single: jest.fn(() => Promise.resolve({
+                            data: { id: '1', ...data },
+                            error: null
+                        }))
+                    }))
+                }))
+            };
+        })
+    })),
+    requireStaff: jest.fn(() => Promise.resolve({
+        id: 'profile-1',
+        vendor_id: 'vendor-1',
+        role: 'admin'
     }))
 }));
 
 jest.mock('@/lib/supabase', () => ({
     supabaseAdmin: {
+        rpc: jest.fn((rpcName: string) => Promise.resolve({
+            data: 'test-token-123',
+            error: null
+        })),
         from: jest.fn((table: string) => ({
             select: jest.fn(() => ({
                 order: jest.fn(() => Promise.resolve({
@@ -68,6 +105,10 @@ jest.mock('@/lib/supabase', () => ({
                         data: [
                             { id: '1', topic: 'How to Use CRM', status: 'researching', client_id: '1' }
                         ],
+                        error: null
+                    })),
+                    single: jest.fn(() => Promise.resolve({
+                        data: null,
                         error: null
                     }))
                 })),
@@ -83,7 +124,8 @@ jest.mock('@/lib/supabase', () => ({
                             ...data,
                             id: '1',
                             status: data.status || 'onboarding',
-                            topic: data.topic || 'Test Topic'
+                            topic: data.topic || 'Test Topic',
+                            slug: data.slug || data.name?.toLowerCase().replace(/\s+/g, '-')
                         },
                         error: null
                     }))
@@ -99,6 +141,14 @@ jest.mock('@/lib/supabase', () => ({
             }))
         }))
     }
+}));
+
+// Mock email service
+jest.mock('@/lib/emails/transactional-email-service', () => ({
+    queueTransactionalEmail: jest.fn(() => Promise.resolve({
+        success: true,
+        jobId: 'test-job-123'
+    }))
 }));
 
 describe('Merchant Portal APIs', () => {
@@ -119,8 +169,9 @@ describe('Merchant Portal APIs', () => {
                 method: 'POST',
                 body: JSON.stringify({
                     name: 'Test Company',
-                    website_url: 'test.com',
-                    primary_contact_email: 'hello@test.com',
+                    website: 'test.com',
+                    contact_email: 'hello@test.com',
+                    contact_name: 'John Doe',
                     onboarding_method: 'site_scan'
                 }),
             });
@@ -131,7 +182,6 @@ describe('Merchant Portal APIs', () => {
             expect(response.status).toBe(200);
             expect(data.success).toBe(true);
             expect(data.client.name).toBe('Test Company');
-            // slug removed
             expect(data.client.status).toBe('onboarding');
         });
 
