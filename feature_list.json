@@ -551,7 +551,9 @@
         "Thread view shows conversation",
         "Emails can be linked to clients"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-12T22:00:00Z",
+      "notes": "Complete Gmail integration with OAuth2 flow, email sync, thread/message viewing, and client/project linking. Backend: GmailService class with OAuth, sync, send APIs. Frontend: Gmail settings page (/app/settings/gmail) and inbox with thread view (/app/inbox). API endpoints for connect, callback, sync, threads, messages, link, send. Database: gmail_connections, email_threads, email_messages, email_attachments tables with RLS. Setup guide created in docs/GMAIL_INTEGRATION_SETUP.md. Requires Google OAuth credentials to be configured in production. Note: Send email functionality implemented but compose UI can be added as future enhancement."
     },
     {
       "id": "feat-025",
