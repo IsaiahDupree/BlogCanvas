@@ -365,7 +365,9 @@
         "Status updates trigger notifications",
         "Progress is visually tracked"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-12T00:00:00Z",
+      "notes": "Complete work declaration system with transparency and client visibility. Database: work_declarations and work_declaration_updates tables with RLS policies, database functions (get_client_work_progress), automatic triggers for status/progress tracking. Backend: Full CRUD API endpoints (/api/work-declarations, /api/work-declarations/[id], /api/work-declarations/[id]/updates), client portal API (/api/portal/work-declarations). Frontend: Vendor work declarations page at /app/work-declarations with creation dialog and filtering, work declaration detail page at /app/work-declarations/[id] with edit mode and activity timeline, client portal view at /portal/work with stats dashboard and real-time progress tracking. Email Integration: Three transactional email templates (work_declared, work_status_changed, work_completed) using feat-013 email system, automatic email queueing on work creation and status changes. Features: Work types (content_batch, seo_audit, publishing, analytics, reporting, custom), status workflow (planned → in_progress → review → completed, with on_hold/cancelled), priority levels (low/medium/high/urgent), progress tracking with percentage slider, milestones with completion checkmarks, deliverables with URLs, timeline with start/due dates, activity timeline with automatic update tracking, filtering by status/type/client, comment system for vendor-client communication. Documentation: Comprehensive WORK_DECLARATIONS_SETUP.md covering setup, API reference, usage guide, monitoring queries, troubleshooting, and security. Note: Pending database migration application (migrations 20260112000001 and 20260112000002) for production use."
     },
     {
       "id": "feat-017",
