@@ -1,13 +1,24 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+import { queueTransactionalEmail } from '@/lib/emails/transactional-email-service';
+import { createClient, requireStaff } from '@/lib/supabase/server';
 
-// GET /api/clients - List all clients
+// GET /api/clients - List all clients with stats
 export async function GET(request: Request) {
     try {
-        // Fetch all clients from Supabase
-        const { data: clients, error } = await supabaseAdmin
+        await requireStaff();
+
+        const supabase = createClient();
+
+        // Fetch all clients with relationship data
+        const { data: clients, error } = await supabase
             .from('clients')
-            .select('*')
+            .select(`
+                *,
+                websites (count),
+                blog_posts (count),
+                content_batches (count)
+            `)
             .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -16,30 +27,73 @@ export async function GET(request: Request) {
             success: true,
             clients
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error fetching clients:', error);
         return NextResponse.json(
-            { success: false, error: 'Failed to fetch clients' },
-            { status: 500 }
+            { success: false, error: error.message || 'Failed to fetch clients' },
+            { status: error.message?.includes('Staff access required') ? 403 : 500 }
         );
     }
 }
 
-// POST /api/clients - Create new client
+// POST /api/clients - Create new client and send invitation
 export async function POST(request: Request) {
     try {
-        const body = await request.json();
-        const { name, website, contact_email, onboarding_method } = body;
+        await requireStaff();
 
-        if (!name) {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
             return NextResponse.json(
-                { success: false, error: 'Client name is required' },
+                { success: false, error: 'Unauthorized' },
+                { status: 401 }
+            );
+        }
+
+        const body = await request.json();
+        const {
+            name,
+            website,
+            contact_email,
+            contact_name,
+            onboarding_method,
+            send_invitation = true,
+            client_role = 'client_admin'
+        } = body;
+
+        if (!name || !contact_email) {
+            return NextResponse.json(
+                { success: false, error: 'Client name and contact email are required' },
                 { status: 400 }
             );
         }
 
         // Generate slug from name
-        const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+
+        // Check for duplicate slug
+        const { data: existingClient } = await supabase
+            .from('clients')
+            .select('id')
+            .eq('slug', slug)
+            .single();
+
+        if (existingClient) {
+            return NextResponse.json(
+                { success: false, error: `A client with slug "${slug}" already exists` },
+                { status: 400 }
+            );
+        }
+
+        // Get vendor info for email
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('vendor_id, vendors!inner(name)')
+            .eq('id', user.id)
+            .single();
+
+        const vendorName = profile?.vendors?.name || 'BlogCanvas';
 
         // Insert client into Supabase
         const { data: client, error } = await supabaseAdmin
@@ -47,30 +101,95 @@ export async function POST(request: Request) {
             .insert({
                 name,
                 slug,
-                website: website || '',
+                website_url: website || '',
                 contact_email: contact_email || '',
+                contact_name: contact_name || '',
                 status: 'onboarding',
-                onboarded_via: onboarding_method || 'manual_intake'
+                onboarded_via: onboarding_method || 'manual_intake',
+                vendor_id: profile?.vendor_id
             })
             .select()
             .single();
 
-        if (error) throw error;
+        if (error) {
+            console.error('Client creation error:', error);
+            throw error;
+        }
 
         console.log('Client created:', client);
 
-        // TODO: Create client user account, send welcome email
+        // Send invitation email if requested
+        let invitationResult = null;
+        if (send_invitation && contact_email) {
+            try {
+                // Create invitation token
+                const { data: tokenData } = await supabase.rpc('generate_invitation_token');
+                const token = tokenData as string;
+
+                const expiresAt = new Date();
+                expiresAt.setDate(expiresAt.getDate() + 7); // 7 days expiration
+
+                // Create invitation record
+                const { data: invitation, error: inviteError } = await supabaseAdmin
+                    .from('client_invitations')
+                    .insert({
+                        client_id: client.id,
+                        email: contact_email,
+                        token: token,
+                        role: client_role,
+                        invited_by: user.id,
+                        expires_at: expiresAt.toISOString()
+                    })
+                    .select()
+                    .single();
+
+                if (inviteError) {
+                    console.error('Invitation creation error:', inviteError);
+                } else {
+                    // Queue invitation email
+                    const portalUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:4848'}/auth/client?token=${token}`;
+
+                    const emailResult = await queueTransactionalEmail({
+                        templateKey: 'client_invitation',
+                        to: contact_email,
+                        toName: contact_name || name,
+                        variables: {
+                            client_name: contact_name || name,
+                            vendor_name: vendorName,
+                            portal_url: portalUrl
+                        },
+                        priority: 1 // High priority for invitations
+                    });
+
+                    if (!emailResult.success) {
+                        console.error('Failed to queue invitation email:', emailResult.error);
+                    }
+
+                    invitationResult = {
+                        sent: emailResult.success,
+                        invitationUrl: portalUrl,
+                        expiresAt: expiresAt.toISOString()
+                    };
+                }
+            } catch (emailError) {
+                console.error('Error sending invitation:', emailError);
+                // Don't fail the whole request if email fails
+            }
+        }
 
         return NextResponse.json({
             success: true,
             client,
-            message: 'Client created successfully'
+            invitation: invitationResult,
+            message: send_invitation
+                ? 'Client created and invitation sent successfully'
+                : 'Client created successfully'
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error creating client:', error);
         return NextResponse.json(
-            { success: false, error: 'Failed to create client' },
-            { status: 500 }
+            { success: false, error: error.message || 'Failed to create client' },
+            { status: error.message?.includes('Staff access required') ? 403 : 500 }
         );
     }
 }

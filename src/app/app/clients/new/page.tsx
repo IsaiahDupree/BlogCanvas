@@ -28,22 +28,31 @@ export default function NewClientPage() {
         setLoading(true)
 
         try {
-            // TODO: Replace with actual API call
-            // const response = await fetch('/api/clients', {
-            //     method: 'POST',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify(formData)
-            // })
-            // const data = await response.json()
+            const response = await fetch('/api/clients', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: formData.name,
+                    website: formData.website,
+                    contact_email: formData.contact_email,
+                    contact_name: formData.contact_name,
+                    onboarding_method: onboardingMethod,
+                    send_invitation: true,
+                    client_role: 'client_admin'
+                })
+            })
 
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000))
+            const data = await response.json()
 
-            // Redirect to client overview
-            router.push(`/app/clients/${formData.slug}/overview`)
-        } catch (error) {
+            if (!response.ok || !data.success) {
+                throw new Error(data.error || 'Failed to create client')
+            }
+
+            // Success - redirect to client overview
+            router.push(`/app/clients/${data.client.slug}/overview`)
+        } catch (error: any) {
             console.error('Failed to create client:', error)
-            alert('Failed to create client. Please try again.')
+            alert(error.message || 'Failed to create client. Please try again.')
         } finally {
             setLoading(false)
         }
