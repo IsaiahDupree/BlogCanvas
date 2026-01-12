@@ -86,17 +86,27 @@ export default function ReportsPage() {
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-8">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
-                <div className="mb-8 flex justify-between items-center">
-                    <div>
-                        <h1 className="text-4xl font-bold text-slate-900">Reports</h1>
-                        <p className="text-slate-600 mt-2">View and manage your SEO performance reports</p>
+                <div className="mb-8">
+                    <div className="flex justify-between items-center mb-4">
+                        <div>
+                            <h1 className="text-4xl font-bold text-slate-900">Reports</h1>
+                            <p className="text-slate-600 mt-2">View and manage your SEO performance reports</p>
+                        </div>
+                        <div className="flex gap-3">
+                            <Link
+                                href="/app/reports/schedules"
+                                className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium shadow-lg"
+                            >
+                                📅 Scheduled Reports
+                            </Link>
+                            <button
+                                onClick={() => setShowGenerateForm(true)}
+                                className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium shadow-lg"
+                            >
+                                + Generate Report
+                            </button>
+                        </div>
                     </div>
-                    <button
-                        onClick={() => setShowGenerateForm(true)}
-                        className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium shadow-lg"
-                    >
-                        + Generate Report
-                    </button>
                 </div>
 
                 {/* Generate Report Form */}

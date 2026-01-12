@@ -13,5 +13,11 @@
     "enabled": true,
     "autoAlias": true,
     "silent": false
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/scheduled-reports/process",
+      "schedule": "0 * * * *"
+    }
+  ]
 }
