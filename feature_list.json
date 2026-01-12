@@ -482,7 +482,9 @@
         "Confirmation prevents accidental actions",
         "Single notification sent for batch"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-12T04:40:00Z",
+      "notes": "Complete batch approval feature for client portal. Backend: POST /api/portal/posts/batch-action endpoint with batch approve/reject logic, email notifications via Resend, activity logging. Frontend: Enhanced /portal/batches/[id] page with checkbox selection (individual + select all), batch action buttons (Approve Selected, Reject Selected), confirmation modal with feedback textarea for rejections, visual feedback with highlighted selected posts. Email: Professional HTML email template with post list, client feedback, action summary sent to vendor. Features: Multi-select with checkboxes, batch approve/reject with single API call, confirmation modal prevents accidental actions, required feedback for rejections, vendor notification email with all affected posts. All acceptance criteria verified: checkbox selection works, batch actions execute correctly, confirmation modal prevents accidents, single notification sent per batch action."
     },
     {
       "id": "feat-022",
