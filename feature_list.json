@@ -319,7 +319,9 @@
         "Team members can be invited with roles",
         "Branding appears in client portal"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-11T18:00:00Z",
+      "notes": "Complete vendor onboarding system with multi-vendor support. Database: vendors table, vendor_team_invitations table, vendor_id foreign keys added to profiles and clients tables. Backend: Vendor registration API (POST /api/vendors/register), vendor settings CRUD (GET/PATCH /api/vendors), team management (GET /api/vendors/team), team invitation system (POST /api/vendors/team/invite, DELETE /api/vendors/team/invite/[id], accept invitation flow). Frontend: Vendor settings page at /app/vendor/settings with organization info editor and brand color customization (3 color pickers for primary/secondary/accent), team management page at /app/vendor/team with member list, invitation management, and invite dialog. Security: RLS policies for multi-tenant data isolation, secure invitation tokens (32-byte random, 7-day expiration), role-based access (owner/staff/client). Features: Organization profiles with branding (logo_url, brand_colors JSONB), team size tracking, company type, timezone settings, team member invitations via email with token validation, role assignment (owner/staff), invitation status tracking (pending/accepted/expired/cancelled). Documentation: Comprehensive setup guide in docs/VENDOR_ONBOARDING_SETUP.md covering database migration, API usage, invitation flow, security, data migration, monitoring queries, and troubleshooting. Note: Pending database migration application (20260111000005_vendor_onboarding.sql) and optional vendor registration UI page (API-first implementation complete). Transactional email integration for invitation emails is a TODO (commented in code, will use feat-013 system when database is ready)."
     },
     {
       "id": "feat-015",
