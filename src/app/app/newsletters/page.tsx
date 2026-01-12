@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { NewsletterBuilder, NewsletterBlock } from '@/components/newsletters/NewsletterBuilder';
 
-interface Newsletter Campaign {
+interface NewsletterCampaign {
     id: string;
     subject: string;
     preview_text: string | null;

@@ -12,6 +12,8 @@ import { GapsAnalysisTab } from '@/components/website/GapsAnalysisTab'
 import { TopicClustersTab } from '@/components/website/TopicClustersTab'
 import { PitchBuilderTab } from '@/components/website/PitchBuilderTab'
 import { AnalyticsTab } from '@/components/website/AnalyticsTab'
+import { CompetitorComparisonTab } from '@/components/website/CompetitorComparisonTab'
+import { KeywordGapsTab } from '@/components/website/KeywordGapsTab'
 
 export default function WebsiteDetailPage() {
     const params = useParams()
@@ -194,6 +196,8 @@ export default function WebsiteDetailPage() {
                     <TabsList>
                         <TabsTrigger value="overview">Overview</TabsTrigger>
                         <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                        <TabsTrigger value="competitors">Competitors</TabsTrigger>
+                        <TabsTrigger value="keyword-gaps">Keyword Gaps</TabsTrigger>
                         <TabsTrigger value="gaps">Content Gaps</TabsTrigger>
                         <TabsTrigger value="topics">Topic Clusters</TabsTrigger>
                         <TabsTrigger value="pitch">Build Pitch</TabsTrigger>
@@ -268,6 +272,17 @@ export default function WebsiteDetailPage() {
 
                     <TabsContent value="analytics">
                         <AnalyticsTab websiteId={params.id as string} />
+                    </TabsContent>
+
+                    <TabsContent value="competitors">
+                        <CompetitorComparisonTab
+                            websiteId={params.id as string}
+                            ourScore={audit?.baseline_score || null}
+                        />
+                    </TabsContent>
+
+                    <TabsContent value="keyword-gaps">
+                        <KeywordGapsTab websiteId={params.id as string} />
                     </TabsContent>
 
                     <TabsContent value="gaps">
