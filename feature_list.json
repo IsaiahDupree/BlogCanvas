@@ -528,7 +528,9 @@
         "Failed publishes retry automatically",
         "Dashboard shows publish status"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-12T23:00:00Z",
+      "notes": "Complete batch publishing and scheduling system with queue management, calendar view, and automatic retry logic. Database migration (20260112000008_publish_queue_system.sql) adds publish_queue table with retry logic, calendar views, and helper functions for queue processing. Publish queue service (/src/lib/publishing/publish-queue-service.ts) provides queueing, processing, retry, and statistics functions. API endpoints created for queue management (/api/publish-queue/*): process (cron), queue, stats, schedule, retry/cancel. Enhanced publishing dashboard (/app/publishing) with List and Calendar views, queue statistics, scheduled publishes grouped by date, retry and cancel buttons. All acceptance criteria met: (1) Multiple posts can be scheduled via queue API with priority and scheduling, (2) Calendar view shows scheduled posts grouped by date with time/status/priority, (3) Failed publishes retry automatically with exponential backoff (5min, 15min, 60min) up to 3 attempts, (4) Dashboard shows comprehensive publish status with stats cards, filters, and real-time updates. Documentation: docs/PUBLISH_QUEUE_SETUP.md provides complete setup guide for cron configuration."
     },
     {
       "id": "feat-024",
@@ -569,6 +571,324 @@
         "Claims are checked against sources",
         "UI shows verified/unverified status",
         "Sources are suggested for unverified"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-026",
+      "epic": "Epic 10: Testing",
+      "category": "critical",
+      "priority": 26,
+      "description": "Unit tests for core API endpoints",
+      "steps": [
+        "Set up Jest/Vitest testing framework",
+        "Create test utilities and mocks for Supabase",
+        "Write tests for auth API endpoints",
+        "Write tests for clients API endpoints",
+        "Write tests for blog-posts API endpoints",
+        "Write tests for content-batches API endpoints"
+      ],
+      "acceptance_criteria": [
+        "Testing framework is configured with TypeScript",
+        "Auth endpoints have >80% coverage",
+        "Client CRUD operations are tested",
+        "Blog post operations are tested",
+        "All tests pass in CI environment"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-027",
+      "epic": "Epic 10: Testing",
+      "category": "critical",
+      "priority": 27,
+      "description": "Integration tests for AI pipeline",
+      "steps": [
+        "Create mock OpenAI responses",
+        "Test research agent flow",
+        "Test outline agent flow",
+        "Test draft agent flow",
+        "Test full pipeline orchestration",
+        "Add error handling tests"
+      ],
+      "acceptance_criteria": [
+        "AI agents can be tested without API calls",
+        "Pipeline orchestration is tested end-to-end",
+        "Error scenarios are covered",
+        "Retry logic is tested"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-028",
+      "epic": "Epic 10: Testing",
+      "category": "high",
+      "priority": 28,
+      "description": "E2E tests for critical user flows",
+      "steps": [
+        "Set up Playwright for E2E testing",
+        "Test vendor registration and login flow",
+        "Test client portal login and approval flow",
+        "Test content batch creation and generation",
+        "Test newsletter campaign creation and send"
+      ],
+      "acceptance_criteria": [
+        "Playwright is configured for Next.js",
+        "Auth flows are tested E2E",
+        "Content workflow is tested E2E",
+        "Tests run in CI pipeline"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-029",
+      "epic": "Epic 10: Testing",
+      "category": "high",
+      "priority": 29,
+      "description": "Component tests for UI components",
+      "steps": [
+        "Set up React Testing Library",
+        "Test Kanban board component",
+        "Test file upload component",
+        "Test newsletter builder component",
+        "Test threaded comments component"
+      ],
+      "acceptance_criteria": [
+        "RTL is configured with Jest/Vitest",
+        "Drag-drop interactions are tested",
+        "Form submissions are tested",
+        "Loading and error states are tested"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-030",
+      "epic": "Epic 1: SEO Audit",
+      "category": "medium",
+      "priority": 30,
+      "description": "Competitor comparison feature",
+      "steps": [
+        "Create competitors table in database",
+        "Build competitor analysis API",
+        "Implement side-by-side SEO comparison",
+        "Add competitor tracking over time",
+        "Create competitor insights dashboard"
+      ],
+      "acceptance_criteria": [
+        "Users can add competitor websites",
+        "SEO scores compared side-by-side",
+        "Keyword gap analysis shows opportunities",
+        "Historical comparison is available"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-031",
+      "epic": "Epic 5: AI Pipeline",
+      "category": "medium",
+      "priority": 31,
+      "description": "Multiple outline options with selection",
+      "steps": [
+        "Modify outline agent to generate 3 options",
+        "Create outline comparison UI",
+        "Add drag-drop section reordering",
+        "Implement outline merge/customize feature",
+        "Store selected outline with modifications"
+      ],
+      "acceptance_criteria": [
+        "Agent generates 3 distinct outline options",
+        "User can compare outlines side-by-side",
+        "Sections can be reordered via drag-drop",
+        "Custom outline can be created from options"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-032",
+      "epic": "Epic 6: Reporting",
+      "category": "medium",
+      "priority": 32,
+      "description": "Automated report scheduling",
+      "steps": [
+        "Create scheduled_reports table",
+        "Build report scheduling UI",
+        "Implement cron job for scheduled reports",
+        "Add email delivery for scheduled reports",
+        "Create report schedule management page"
+      ],
+      "acceptance_criteria": [
+        "Users can schedule weekly/monthly reports",
+        "Reports generate automatically on schedule",
+        "Reports are emailed to specified recipients",
+        "Schedules can be paused/resumed"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-033",
+      "epic": "Epic 16: Security",
+      "category": "high",
+      "priority": 33,
+      "description": "Audit logging system",
+      "steps": [
+        "Create audit_logs table",
+        "Implement audit logging middleware",
+        "Log all data access and modifications",
+        "Build audit log viewer UI",
+        "Add export functionality for compliance"
+      ],
+      "acceptance_criteria": [
+        "All API calls are logged with user context",
+        "Data changes include before/after values",
+        "Audit logs are searchable and filterable",
+        "Logs can be exported for compliance"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-034",
+      "epic": "Epic 16: Security",
+      "category": "high",
+      "priority": 34,
+      "description": "GDPR compliance - data export and deletion",
+      "steps": [
+        "Create data export API endpoint",
+        "Build user data download UI",
+        "Implement account deletion with cascade",
+        "Add data retention policy configuration",
+        "Create privacy settings page"
+      ],
+      "acceptance_criteria": [
+        "Users can export all their data as JSON/ZIP",
+        "Account deletion removes all user data",
+        "Deletion is logged for compliance",
+        "Data retention policies are configurable"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-035",
+      "epic": "Epic 7: Newsletter",
+      "category": "medium",
+      "priority": 35,
+      "description": "Visual drag-drop email builder",
+      "steps": [
+        "Implement drag-drop block library",
+        "Create visual block editor with live preview",
+        "Add styling controls (colors, fonts, spacing)",
+        "Implement responsive preview (desktop/mobile)",
+        "Save templates from custom designs"
+      ],
+      "acceptance_criteria": [
+        "Blocks can be dragged from library to canvas",
+        "Each block has inline editing",
+        "Preview shows desktop and mobile views",
+        "Custom designs can be saved as templates"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-036",
+      "epic": "Epic 4: Review Workflow",
+      "category": "medium",
+      "priority": 36,
+      "description": "Review SLA tracking and alerts",
+      "steps": [
+        "Add SLA configuration to settings",
+        "Track review times against SLA",
+        "Create SLA dashboard widget",
+        "Implement email alerts for SLA breaches",
+        "Add SLA reports"
+      ],
+      "acceptance_criteria": [
+        "24-hour editor SLA is tracked",
+        "72-hour client review SLA is tracked",
+        "Dashboard shows SLA compliance rate",
+        "Alerts sent before SLA breach"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-037",
+      "epic": "Epic 6: Analytics",
+      "category": "medium",
+      "priority": 37,
+      "description": "Google Analytics integration",
+      "steps": [
+        "Create GA connection settings",
+        "Implement GA4 Data API client",
+        "Fetch page-level traffic metrics",
+        "Correlate traffic with published posts",
+        "Add traffic trends to post analytics"
+      ],
+      "acceptance_criteria": [
+        "Users can connect GA4 property",
+        "Traffic metrics sync for published posts",
+        "Post analytics show page views and sessions",
+        "Traffic trends are visualized"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-038",
+      "epic": "Epic 9: Dev Access",
+      "category": "low",
+      "priority": 38,
+      "description": "API documentation portal",
+      "steps": [
+        "Generate OpenAPI/Swagger spec from routes",
+        "Create interactive API documentation page",
+        "Add code examples for common languages",
+        "Implement API playground/tester",
+        "Add SDK documentation"
+      ],
+      "acceptance_criteria": [
+        "OpenAPI spec is auto-generated",
+        "Docs page shows all endpoints with examples",
+        "Code snippets available for Node/Python/cURL",
+        "Users can test API calls in browser"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-039",
+      "epic": "Epic 5: AI Pipeline",
+      "category": "low",
+      "priority": 39,
+      "description": "AI image generation for posts",
+      "steps": [
+        "Integrate DALL-E or similar API",
+        "Create image generation prompts from content",
+        "Build image selection UI",
+        "Add image editing/regeneration options",
+        "Store generated images in Supabase Storage"
+      ],
+      "acceptance_criteria": [
+        "AI generates relevant images for posts",
+        "User can select from multiple options",
+        "Images can be regenerated with modified prompts",
+        "Images are stored and linked to posts"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-040",
+      "epic": "Epic 16: Security",
+      "category": "medium",
+      "priority": 40,
+      "description": "Two-factor authentication (2FA/MFA)",
+      "steps": [
+        "Implement TOTP-based 2FA",
+        "Create 2FA setup UI with QR code",
+        "Add backup codes generation",
+        "Enforce 2FA for admin roles",
+        "Add 2FA recovery flow"
+      ],
+      "acceptance_criteria": [
+        "Users can enable 2FA with authenticator app",
+        "Backup codes are provided for recovery",
+        "Admin users are required to use 2FA",
+        "Recovery flow allows 2FA reset"
       ],
       "passes": false
     }

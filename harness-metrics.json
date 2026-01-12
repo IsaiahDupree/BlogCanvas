@@ -1,10 +1,10 @@
 {
-  "totalSessions": 798,
-  "successfulSessions": 18,
-  "failedSessions": 780,
-  "totalTokens": 2334233,
-  "rateLimitHits": 31,
-  "authErrors": 2,
-  "consecutiveErrors": 0,
-  "lastSessionTime": "2026-01-12T09:43:31.631Z"
+  "totalSessions": 1080,
+  "successfulSessions": 19,
+  "failedSessions": 1061,
+  "totalTokens": 2414154,
+  "rateLimitHits": 38,
+  "authErrors": 3,
+  "consecutiveErrors": 5,
+  "lastSessionTime": "2026-01-12T12:44:36.933Z"
 }
