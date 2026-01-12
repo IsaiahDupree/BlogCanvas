@@ -1,6 +1,6 @@
 /**
  * Outline Agent
- * Creates structured content outlines
+ * Creates structured content outlines with multiple options
  */
 
 import { LLMProvider, AgentResult, OutlineResult, OutlineSection, ResearchResult } from './types';
@@ -17,8 +17,13 @@ export interface OutlineAgentInput {
     };
 }
 
+export interface OutlineOptionsResult {
+    options: OutlineResult[];
+    totalGenerated: number;
+}
+
 /**
- * Run the Outline agent to create content structure
+ * Run the Outline agent to create content structure (single outline - legacy)
  */
 export async function runOutlineAgent(
     provider: LLMProvider,
@@ -66,6 +71,84 @@ Requirements:
         });
 
         const result: OutlineResult = JSON.parse(response);
+
+        return {
+            success: true,
+            data: result
+        };
+    } catch (error: any) {
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+}
+
+/**
+ * Run the Outline agent to create 3 distinct outline options
+ */
+export async function runOutlineAgentWithOptions(
+    provider: LLMProvider,
+    input: OutlineAgentInput
+): Promise<AgentResult<OutlineOptionsResult>> {
+    try {
+        const systemPrompt = `You are a Content Strategist creating blog post outlines.`;
+
+        const userPrompt = `Create 3 DISTINCT outline options for a blog post:
+
+TOPIC: ${input.topic}
+TARGET KEYWORD: ${input.targetKeyword}
+WORD COUNT GOAL: ${input.wordCountGoal}
+PRODUCT/SERVICE: ${input.clientProfile.productServiceSummary}
+TARGET AUDIENCE: ${input.clientProfile.targetAudience}
+
+INSTRUCTIONS:
+Analyze the provided research and create 3 DIFFERENT outline approaches. Each outline should take a unique angle or structure.
+
+RESEARCH INSIGHTS:
+- Pain Points: ${(input.research || input.researchData)?.painPoints?.join(', ') || ''}
+- Key Facts: ${(input.research || input.researchData)?.keyFacts?.join(', ') || ''}
+- Differentiators: ${(input.research || input.researchData)?.differentiators?.join(', ') || ''}
+- Related Subtopics: ${(input.research || input.researchData)?.relatedSubtopics?.join(', ') || ''}
+- Suggested Angles: ${(input.research || input.researchData)?.suggestedAngles?.join(', ') || ''}
+
+VARIATION STRATEGY:
+Option 1: Problem-Solution approach (focus on pain points, then solutions)
+Option 2: Educational/How-To approach (step-by-step guide structure)
+Option 3: Comprehensive Guide approach (broad overview with deep dives)
+
+Return a JSON object with:
+- options: array of 3 outline objects, each with:
+  - sections: array of {key, title, type, keyPoints, estimatedWords}
+    - key: unique identifier (e.g., 'intro', 'body1', 'conclusion')
+    - title: section heading
+    - type: one of 'intro', 'body', 'conclusion', 'cta'
+    - keyPoints: array of key points to cover
+    - estimatedWords: word count for this section
+  - totalEstimatedWords: sum of all section word counts
+- totalGenerated: 3
+
+Requirements for EACH outline:
+- Must have at least 4 sections minimum
+- Must include intro, at least 2 body sections, conclusion, and CTA
+- Total words should be close to word count goal
+- Each outline must be structurally different from the others`;
+
+        const response = await provider.call({
+            systemPrompt,
+            userPrompt,
+            temperature: 0.8 // Higher temperature for more variation
+        });
+
+        const result: OutlineOptionsResult = JSON.parse(response);
+
+        // Validate we got 3 options
+        if (!result.options || result.options.length !== 3) {
+            return {
+                success: false,
+                error: `Expected 3 outline options, got ${result.options?.length || 0}`
+            };
+        }
 
         return {
             success: true,
