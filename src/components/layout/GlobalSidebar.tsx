@@ -20,7 +20,8 @@ import {
     LogOut,
     Mail,
     Key,
-    Shield
+    Shield,
+    Lock
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -64,6 +65,7 @@ const staffNavigation: NavGroup[] = [
         name: 'Settings',
         items: [
             { name: 'Configuration', href: '/app/settings', icon: Settings },
+            { name: 'Privacy & Data', href: '/settings/privacy', icon: Lock },
             { name: 'API Keys', href: '/app/api-keys', icon: Key },
             { name: 'Audit Logs', href: '/app/audit-logs', icon: Shield },
         ]
@@ -90,6 +92,7 @@ const clientNavigation: NavGroup[] = [
         items: [
             { name: 'Brand Guide', href: '/portal/brand', icon: Settings },
             { name: 'Notifications', href: '/portal/settings/notifications', icon: Bell },
+            { name: 'Privacy & Data', href: '/settings/privacy', icon: Lock },
         ]
     }
 ]
