@@ -9,7 +9,9 @@ import {
     CheckSquare,
     Settings,
     ChevronRight,
-    Mail
+    Mail,
+    Book,
+    Code2
 } from 'lucide-react'
 
 interface NavItem {
@@ -37,6 +39,12 @@ const navigation: NavGroup[] = [
             { name: 'Content Batches', href: '/app/batches', icon: FileText },
             { name: 'Review Board', href: '/app/review', icon: CheckSquare },
             { name: 'Newsletters', href: '/app/newsletters', icon: Mail },
+        ]
+    },
+    {
+        name: 'Developer',
+        items: [
+            { name: 'API Documentation', href: '/app/api-docs', icon: Code2 },
         ]
     },
     {
