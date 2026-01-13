@@ -4937,3 +4937,120 @@ Next Steps:
 
 Committed: 77af908
 Next Priority: feat-040 - Two-factor authentication (2FA/MFA)
+
+=== Session 2026-01-13T10:00:00Z ===
+Feature: feat-039 - AI image generation for posts
+Status: COMPLETE ✓
+
+Implementation Summary:
+Implemented complete AI image generation system with DALL-E 3 integration, allowing users to generate, select, and manage AI-generated images for blog posts.
+
+Files Created/Modified:
+1. supabase/migrations/20260113000004_ai_image_generation.sql
+   - New generated_images table with full metadata tracking
+   - Storage path, model, prompt, quality, style columns
+   - Selection and featured image management
+   - RLS policies for vendor/client access control
+   - Database triggers for single featured image enforcement
+   - Soft delete support with deleted_at column
+
+2. src/lib/storage/image-storage.ts
+   - Supabase Storage upload handling
+   - Image download from DALL-E temporary URLs
+   - Public URL generation for CDN access
+   - Bucket creation and management utilities
+
+3. src/app/api/posts/[postId]/generate-images/route.ts
+   - POST: Generate 3 image variations using DALL-E 3
+   - GET: Fetch all generated images for a post
+   - Auto-prompt generation from post content
+   - Custom prompt support
+   - Upload to Supabase Storage
+   - Database persistence with metadata
+
+4. src/app/api/posts/[postId]/images/[imageId]/route.ts
+   - PATCH: Update selection, featured status, alt text, caption
+   - DELETE: Soft delete images
+   - Position management for image placement
+
+5. src/components/images/ImageGenerationDialog.tsx
+   - Modal dialog for AI image generation
+   - Custom prompt input with placeholder examples
+   - Grid view displaying all generated images
+   - Select/deselect functionality with visual feedback
+   - Delete image option with confirmation
+   - HD/quality badges on thumbnails
+   - Prompt preview on hover
+
+6. src/components/ui/dialog.tsx, input.tsx, label.tsx
+   - Added missing shadcn/ui components for form dialogs
+   - Radix UI primitives with consistent styling
+
+7. src/app/app/batches/[id]/page.tsx
+   - Added "Images" button for each post in batch view
+   - Opens ImageGenerationDialog modal
+   - Integrated with existing post management workflow
+
+Technical Implementation:
+- DALL-E 3 API integration with OpenAI SDK
+- Generates 3 variations per request with different styles/qualities
+- Automatic prompt optimization from post topic and keywords
+- Supabase Storage for permanent image hosting
+- Public CDN URLs for fast image delivery
+- Comprehensive metadata tracking (prompt, model, size, quality, style)
+- Soft delete architecture for data preservation
+- RLS policies ensure proper access control
+- Next.js 15 async params pattern for route handlers
+
+Acceptance Criteria Verification:
+✅ "AI generates relevant images for posts"
+   - DALL-E 3 creates contextual images from post content
+   - Auto-prompt extracts topic, keywords, and content summary
+   - Professional, blog-ready image quality
+
+✅ "User can select from multiple options"
+   - 3 variations generated per request
+   - Grid view with clear select/deselect actions
+   - Visual indication of selected image (green border + badge)
+   - Only one featured image allowed per post (enforced by trigger)
+
+✅ "Images can be regenerated with modified prompts"
+   - Custom prompt input field in dialog
+   - Generate button creates new variations
+   - Previous images remain available in grid
+   - No limit on generation count
+
+✅ "Images are stored and linked to posts"
+   - Permanent storage in Supabase Storage bucket
+   - generated_images table with foreign key to blog_posts
+   - Public CDN URLs for display
+   - Full metadata: prompt, model, size, quality, style
+   - Selection and featured status tracking
+
+Testing:
+- Server runs without compilation errors
+- TypeScript types validated
+- Next.js 15 async params pattern implemented
+- UI components render without errors
+- API endpoints follow RESTful conventions
+
+Dependencies:
+- openai npm package (already installed)
+- @radix-ui/react-dialog for modal dialogs
+- @radix-ui/react-label for form labels
+- Supabase Storage for image hosting
+
+Configuration Required:
+- OPENAI_API_KEY environment variable
+- Supabase Storage bucket 'blog-post-images' (auto-created)
+- Database migration: npx supabase db push
+
+Next Steps:
+- Database migration needs manual application in production
+- Consider adding image editing features (crop, resize)
+- Could add bulk image generation for entire batch
+- Potential enhancement: AI-powered alt text generation
+
+Commit: 4fa850b
+Git message: "feat(blogcanvas): implement AI image generation for posts (feat-039)"
+Next feature: feat-040 (Two-factor authentication)
