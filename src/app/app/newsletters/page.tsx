@@ -36,6 +36,7 @@ export default function NewslettersPage() {
     const [loading, setLoading] = useState(true);
     const [showCreateDialog, setShowCreateDialog] = useState(false);
     const [selectedTemplate, setSelectedTemplate] = useState<NewsletterTemplate | null>(null);
+    const [savingTemplate, setSavingTemplate] = useState(false);
 
     // Fetch campaigns and templates
     useEffect(() => {
@@ -294,6 +295,7 @@ function CreateNewsletterDialog({
     const [previewText, setPreviewText] = useState('');
     const [recipientEmails, setRecipientEmails] = useState('');
     const [creating, setCreating] = useState(false);
+    const [savingTemplate, setSavingTemplate] = useState(false);
 
     const handleTemplateSelect = (template: NewsletterTemplate) => {
         setSelectedTemplate(template);
@@ -302,6 +304,37 @@ function CreateNewsletterDialog({
         }
         setHtmlContent(template.html_content);
         setStep('build');
+    };
+
+    const handleSaveTemplate = async () => {
+        const templateName = prompt('Enter a name for this template:');
+        if (!templateName) return;
+
+        setSavingTemplate(true);
+        try {
+            const response = await fetch('/api/newsletters/templates', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: templateName,
+                    description: 'Custom template',
+                    html_content: htmlContent,
+                    json_content: { blocks }
+                })
+            });
+
+            if (response.ok) {
+                alert('Template saved successfully!');
+            } else {
+                const { error } = await response.json();
+                alert(`Failed to save template: ${error}`);
+            }
+        } catch (error) {
+            console.error('Error saving template:', error);
+            alert('Failed to save template');
+        } finally {
+            setSavingTemplate(false);
+        }
     };
 
     const handleBuilderChange = (newBlocks: NewsletterBlock[], newHtml: string) => {
@@ -411,8 +444,9 @@ function CreateNewsletterDialog({
                             <NewsletterBuilder
                                 initialBlocks={blocks}
                                 onChange={handleBuilderChange}
+                                onSaveTemplate={handleSaveTemplate}
                             />
-                            <div className="mt-6 flex justify-end gap-3">
+                            <div className="mt-6 flex justify-between">
                                 <button
                                     onClick={() => setStep('template')}
                                     className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
