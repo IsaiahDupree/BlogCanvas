@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { TrendingUp, TrendingDown, Minus, Eye, MousePointerClick, Target, BarChart3 } from 'lucide-react'
+import { TrendingUp, TrendingDown, Minus, Eye, MousePointerClick, Target, BarChart3, Users, Clock, Activity } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
@@ -12,6 +12,12 @@ interface Metric {
     avg_position: number
     seo_score: number
     snapshot_date: string
+    // GA4 metrics
+    page_views?: number
+    unique_users?: number
+    sessions?: number
+    avg_engagement_time?: number
+    bounce_rate?: number
 }
 
 interface Trend {
@@ -164,6 +170,9 @@ export default function PerformanceMetrics({ postId, limit = 30 }: PerformanceMe
     const positionHistory = data.metrics.slice(0, 10).reverse().map(m => m.avg_position)
     const scoreHistory = data.metrics.slice(0, 10).reverse().map(m => m.seo_score)
 
+    // Check if we have GA4 data
+    const hasGA4Data = latestMetric.page_views !== undefined && latestMetric.page_views !== null
+
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -258,6 +267,62 @@ export default function PerformanceMetrics({ postId, limit = 30 }: PerformanceMe
                 </div>
             </Card>
 
+            {/* GA4 Metrics Section */}
+            {hasGA4Data && (
+                <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                        <h3 className="text-lg font-bold text-gray-900">Traffic & Engagement (GA4)</h3>
+                        <Badge variant="secondary" className="text-xs">Google Analytics</Badge>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {/* Page Views */}
+                        <Card className="p-4 border-2 hover:border-blue-300 transition-colors">
+                            <div className="flex items-center justify-between mb-2">
+                                <Eye className="w-5 h-5 text-blue-600" />
+                            </div>
+                            <p className="text-2xl font-bold text-gray-900">
+                                {(latestMetric.page_views || 0).toLocaleString()}
+                            </p>
+                            <p className="text-sm text-gray-600">Page Views</p>
+                        </Card>
+
+                        {/* Unique Users */}
+                        <Card className="p-4 border-2 hover:border-purple-300 transition-colors">
+                            <div className="flex items-center justify-between mb-2">
+                                <Users className="w-5 h-5 text-purple-600" />
+                            </div>
+                            <p className="text-2xl font-bold text-gray-900">
+                                {(latestMetric.unique_users || 0).toLocaleString()}
+                            </p>
+                            <p className="text-sm text-gray-600">Unique Users</p>
+                        </Card>
+
+                        {/* Avg Engagement Time */}
+                        <Card className="p-4 border-2 hover:border-green-300 transition-colors">
+                            <div className="flex items-center justify-between mb-2">
+                                <Clock className="w-5 h-5 text-green-600" />
+                            </div>
+                            <p className="text-2xl font-bold text-gray-900">
+                                {formatTime(latestMetric.avg_engagement_time || 0)}
+                            </p>
+                            <p className="text-sm text-gray-600">Avg Engagement</p>
+                        </Card>
+
+                        {/* Bounce Rate */}
+                        <Card className="p-4 border-2 hover:border-orange-300 transition-colors">
+                            <div className="flex items-center justify-between mb-2">
+                                <Activity className="w-5 h-5 text-orange-600" />
+                            </div>
+                            <p className="text-2xl font-bold text-gray-900">
+                                {(latestMetric.bounce_rate || 0).toFixed(1)}%
+                            </p>
+                            <p className="text-sm text-gray-600">Bounce Rate</p>
+                        </Card>
+                    </div>
+                </div>
+            )}
+
             {/* Historical Data Count */}
             <div className="text-center text-sm text-gray-500">
                 Showing {data.metrics.length} data point{data.metrics.length !== 1 ? 's' : ''}
@@ -268,4 +333,16 @@ export default function PerformanceMetrics({ postId, limit = 30 }: PerformanceMe
             </div>
         </div>
     )
+}
+
+/**
+ * Format seconds into readable time (e.g., "2m 30s")
+ */
+function formatTime(seconds: number): string {
+    if (seconds < 60) {
+        return `${Math.round(seconds)}s`
+    }
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = Math.round(seconds % 60)
+    return remainingSeconds > 0 ? `${minutes}m ${remainingSeconds}s` : `${minutes}m`
 }

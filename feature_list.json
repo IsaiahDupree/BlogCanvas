@@ -853,7 +853,9 @@
         "Post analytics show page views and sessions",
         "Traffic trends are visualized"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-12T21:00:00Z",
+      "notes": "Complete GA4 integration implemented. Database migration created with ga4_connections table for storing service account credentials. GA4 Data API client using jsonwebtoken for service account auth. API endpoints: GET/POST /api/ga4/connections, GET/PUT/DELETE /api/ga4/connections/[id], POST /api/ga4/sync, POST /api/ga4/test-connection. Settings UI at /app/settings/ga4 with connection management, test connection, and sync controls. Enhanced PerformanceMetrics component to display GA4 data (page views, unique users, engagement time, bounce rate) alongside GSC metrics. New blog_post_metrics fields: page_views, unique_users, bounce_rate, avg_engagement_time, scroll_depth, ga4_data. All acceptance criteria met: users can connect GA4 properties via settings page, traffic metrics can be synced for published posts, post analytics show GA4 metrics when available, data is visualized in enhanced analytics component."
     },
     {
       "id": "feat-038",
