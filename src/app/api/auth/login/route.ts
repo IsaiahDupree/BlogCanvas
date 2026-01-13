@@ -27,6 +27,35 @@ export async function POST(request: NextRequest) {
             )
         }
 
+        // Check if user has 2FA enabled
+        const { data: twoFASettings } = await supabase
+            .from('user_2fa_settings')
+            .select('enabled, enforced')
+            .eq('user_id', data.user.id)
+            .single()
+
+        // If 2FA is enabled, require verification before completing login
+        if (twoFASettings?.enabled) {
+            return NextResponse.json({
+                success: true,
+                requires2FA: true,
+                userId: data.user.id,
+                email: data.user.email,
+                enforced: twoFASettings.enforced,
+            })
+        }
+
+        // Check if 2FA is enforced but not enabled (admin users)
+        if (twoFASettings?.enforced && !twoFASettings?.enabled) {
+            return NextResponse.json({
+                success: true,
+                requires2FASetup: true,
+                userId: data.user.id,
+                email: data.user.email,
+                message: 'Two-factor authentication is required for your account. Please set it up to continue.',
+            })
+        }
+
         // Get user profile to determine redirect
         const { data: profile } = await supabase
             .from('profiles')

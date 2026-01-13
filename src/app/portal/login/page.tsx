@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react'
+import { Mail, Lock, ArrowRight, AlertCircle, Shield } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 
 export default function PortalLoginPage() {
@@ -13,6 +13,11 @@ export default function PortalLoginPage() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
     const [magicLinkSent, setMagicLinkSent] = useState(false)
+
+    // 2FA state
+    const [requires2FA, setRequires2FA] = useState(false)
+    const [twoFAToken, setTwoFAToken] = useState('')
+    const [redirectUrl, setRedirectUrl] = useState('/portal/dashboard')
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -34,12 +39,62 @@ export default function PortalLoginPage() {
                 return
             }
 
+            // Check if 2FA is required
+            if (data.requires2FA) {
+                setRequires2FA(true)
+                setRedirectUrl(data.redirectUrl || '/portal/dashboard')
+                setLoading(false)
+                return
+            }
+
+            // Check if 2FA setup is required
+            if (data.requires2FASetup) {
+                setError(data.message || '2FA setup required')
+                setLoading(false)
+                // Redirect to 2FA setup page
+                router.push('/app/settings/security')
+                return
+            }
+
             // Redirect based on user role
             router.push(data.redirectUrl || '/portal/dashboard')
             router.refresh()
 
         } catch (err: any) {
             setError(err.message || 'An error occurred')
+            setLoading(false)
+        }
+    }
+
+    const handleVerify2FA = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setLoading(true)
+        setError('')
+
+        try {
+            const response = await fetch('/api/auth/2fa/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    token: twoFAToken,
+                    purpose: 'login'
+                })
+            })
+
+            const data = await response.json()
+
+            if (!data.success) {
+                setError(data.error || 'Invalid verification code')
+                setLoading(false)
+                return
+            }
+
+            // 2FA verified, redirect
+            router.push(redirectUrl)
+            router.refresh()
+
+        } catch (err: any) {
+            setError(err.message || 'Verification failed')
             setLoading(false)
         }
     }
@@ -87,24 +142,79 @@ export default function PortalLoginPage() {
                 </div>
 
                 <Card className="p-8 bg-white shadow-2xl">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome back</h2>
-                    <p className="text-muted-foreground mb-6">Sign in to review your content</p>
+                    {requires2FA ? (
+                        <>
+                            <div className="flex items-center gap-3 mb-4">
+                                <Shield className="w-6 h-6 text-indigo-600" />
+                                <h2 className="text-2xl font-bold text-gray-900">Two-Factor Authentication</h2>
+                            </div>
+                            <p className="text-muted-foreground mb-6">Enter the 6-digit code from your authenticator app</p>
 
-                    {error && (
-                        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700">
-                            <AlertCircle className="w-5 h-5" />
-                            <span className="text-sm">{error}</span>
-                        </div>
-                    )}
+                            {error && (
+                                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700">
+                                    <AlertCircle className="w-5 h-5" />
+                                    <span className="text-sm">{error}</span>
+                                </div>
+                            )}
 
-                    {magicLinkSent && (
-                        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700">
-                            <p className="text-sm font-medium">Magic link sent!</p>
-                            <p className="text-sm mt-1">Check your email and click the link to sign in.</p>
-                        </div>
-                    )}
+                            <form onSubmit={handleVerify2FA} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Verification Code</label>
+                                    <input
+                                        type="text"
+                                        value={twoFAToken}
+                                        onChange={(e) => setTwoFAToken(e.target.value.replace(/\D/g, ''))}
+                                        maxLength={6}
+                                        placeholder="000000"
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all text-center text-2xl font-mono tracking-widest"
+                                        required
+                                        disabled={loading}
+                                        autoFocus
+                                    />
+                                </div>
 
-                    <form onSubmit={handleLogin} className="space-y-4">
+                                <button
+                                    type="submit"
+                                    disabled={loading || twoFAToken.length !== 6}
+                                    className="w-full px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 shadow-lg flex items-center justify-center gap-2"
+                                >
+                                    {loading ? 'Verifying...' : 'Verify & Continue'}
+                                    <ArrowRight className="w-5 h-5" />
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setRequires2FA(false)
+                                        setTwoFAToken('')
+                                        setError('')
+                                    }}
+                                    className="w-full px-6 py-3 bg-white border-2 border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                                >
+                                    Back to Login
+                                </button>
+                            </form>
+                        </>
+                    ) : (
+                        <>
+                            <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome back</h2>
+                            <p className="text-muted-foreground mb-6">Sign in to review your content</p>
+
+                            {error && (
+                                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700">
+                                    <AlertCircle className="w-5 h-5" />
+                                    <span className="text-sm">{error}</span>
+                                </div>
+                            )}
+
+                            {magicLinkSent && (
+                                <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700">
+                                    <p className="text-sm font-medium">Magic link sent!</p>
+                                    <p className="text-sm mt-1">Check your email and click the link to sign in.</p>
+                                </div>
+                            )}
+
+                            <form onSubmit={handleLogin} className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
                             <div className="relative">
@@ -183,6 +293,8 @@ export default function PortalLoginPage() {
                             {magicLinkSent ? 'Magic Link Sent ✓' : 'Send Magic Link'}
                         </button>
                     </div>
+                        </>
+                    )}
                 </Card>
 
                 <p className="text-center text-sm text-indigo-100 mt-6">
