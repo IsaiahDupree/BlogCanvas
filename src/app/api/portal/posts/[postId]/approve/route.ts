@@ -32,11 +32,11 @@ export async function POST(
 
         // Update post in Supabase
         const updateData: any = {
-            status: 'approved'
+            status: 'approved',
+            approved_by: approvedBy,
+            approved_at: new Date().toISOString()
         }
-        
-        // Add approved_at and approved_by if columns exist
-        // Check if columns exist by trying to update
+
         const { data: post, error } = await supabaseAdmin
             .from('blog_posts')
             .update(updateData)
