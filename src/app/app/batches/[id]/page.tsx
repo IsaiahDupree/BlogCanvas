@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Play, Pause, CheckCircle2, AlertCircle, Loader2, TrendingUp, FileText, Upload, Download, Send } from 'lucide-react'
+import { ArrowLeft, Play, Pause, CheckCircle2, AlertCircle, Loader2, TrendingUp, FileText, Upload, Download, Send, Image as ImageIcon } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import ImageGenerationDialog from '@/components/images/ImageGenerationDialog'
 
 export default function BatchDetailPage() {
     const params = useParams()
@@ -18,6 +19,8 @@ export default function BatchDetailPage() {
     const [importing, setImporting] = useState(false)
     const [importFile, setImportFile] = useState<File | null>(null)
     const [publishing, setPublishing] = useState(false)
+    const [imageDialogOpen, setImageDialogOpen] = useState(false)
+    const [selectedPostForImages, setSelectedPostForImages] = useState<{ id: string; topic: string } | null>(null)
 
     useEffect(() => {
         fetchBatchDetails()
@@ -367,6 +370,18 @@ export default function BatchDetailPage() {
                                         >
                                             {post.status}
                                         </Badge>
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => {
+                                                setSelectedPostForImages({ id: post.id, topic: post.topic })
+                                                setImageDialogOpen(true)
+                                            }}
+                                            className="flex items-center gap-1"
+                                        >
+                                            <ImageIcon className="w-4 h-4" />
+                                            Images
+                                        </Button>
                                     </div>
                                 </div>
                             ))}
@@ -374,6 +389,23 @@ export default function BatchDetailPage() {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Image Generation Dialog */}
+            {selectedPostForImages && (
+                <ImageGenerationDialog
+                    postId={selectedPostForImages.id}
+                    postTitle={selectedPostForImages.topic}
+                    isOpen={imageDialogOpen}
+                    onClose={() => {
+                        setImageDialogOpen(false)
+                        setSelectedPostForImages(null)
+                    }}
+                    onImagesGenerated={() => {
+                        // Optionally refresh post list
+                        fetchBatchDetails()
+                    }}
+                />
+            )}
         </div>
     )
 }
