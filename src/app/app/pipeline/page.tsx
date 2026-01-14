@@ -120,8 +120,10 @@ export default function PipelinePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          url: websiteUrl,
-          clientId: selectedClient || undefined
+          websiteUrl: websiteUrl,
+          websiteId: selectedClient || undefined,
+          action: 'quick',
+          maxPages: 30
         })
       })
       const crawlData = await crawlRes.json()
@@ -149,11 +151,10 @@ export default function PipelinePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          url: websiteUrl,
-          action: 'gaps',
-          clientGoals,
-          targetMarket,
-          icp
+          websiteUrl: websiteUrl,
+          action: 'keywords',
+          industry: targetMarket || 'General',
+          maxPages: 20
         })
       })
       const gapsData = await gapsRes.json()
@@ -167,12 +168,13 @@ export default function PipelinePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          url: websiteUrl,
-          clientId: selectedClient || undefined,
-          clientGoals,
-          targetMarket,
-          icp,
-          count: 15
+          websiteUrl: websiteUrl,
+          websiteId: selectedClient || undefined,
+          industry: targetMarket || 'General Business',
+          niche: icp || 'Business Services',
+          targetAudience: icp || 'Business professionals',
+          businessGoals: clientGoals || 'Increase organic traffic',
+          generateForecast: true
         })
       })
       const topicsData = await topicsRes.json()
@@ -223,11 +225,9 @@ export default function PipelinePage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             topic: topic.name,
-            keyword: topic.primary_keyword,
+            targetKeyword: topic.primary_keyword,
             clientId: selectedClient || undefined,
-            clientGoals,
-            targetMarket,
-            icp
+            wordCountGoal: 1500
           })
         })
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { 
@@ -35,7 +35,7 @@ export default function CreateBlogPostPage() {
   const [contentType, setContentType] = useState<'blog' | 'guide' | 'listicle' | 'comparison'>('blog')
   const [wordCount, setWordCount] = useState(1500)
 
-  useState(() => {
+  useEffect(() => {
     const fetchClients = async () => {
       setLoadingClients(true)
       try {
@@ -49,7 +49,7 @@ export default function CreateBlogPostPage() {
       }
     }
     fetchClients()
-  })
+  }, [])
 
   const handleSubmit = async () => {
     if (!topic) return

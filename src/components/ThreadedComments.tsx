@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { MessageSquare, Reply, CheckCircle, RotateCcw } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
@@ -167,11 +167,6 @@ export default function ThreadedComments({ postId, onRefresh }: ThreadedComments
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
-    // Fetch comments on mount
-    useState(() => {
-        fetchComments()
-    })
-
     const fetchComments = async () => {
         try {
             const res = await fetch(`/api/portal/posts/${postId}/comments`)
@@ -183,6 +178,11 @@ export default function ThreadedComments({ postId, onRefresh }: ThreadedComments
             console.error('Error fetching comments:', err)
         }
     }
+
+    // Fetch comments on mount
+    useEffect(() => {
+        fetchComments()
+    }, [postId])
 
     const handleAddComment = async () => {
         if (!newComment.trim()) return

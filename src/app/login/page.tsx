@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Mail, Lock, ArrowRight, AlertCircle, Shield, Briefcase, User } from 'lucide-react'
+import { Mail, Lock, ArrowRight, AlertCircle, Shield, Briefcase, User, UserPlus } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { createClient } from '@supabase/supabase-js'
 
@@ -12,13 +12,19 @@ const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
+// Check if registration is allowed (set via env)
+const allowRegistration = process.env.NEXT_PUBLIC_ALLOW_REGISTRATION === 'true'
+
 export default function LoginPage() {
     const router = useRouter()
+    const [mode, setMode] = useState<'login' | 'register'>('login')
     const [userType, setUserType] = useState<'vendor' | 'client'>('vendor')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [fullName, setFullName] = useState('')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
+    const [success, setSuccess] = useState('')
 
     const [requires2FA, setRequires2FA] = useState(false)
     const [twoFAToken, setTwoFAToken] = useState('')
@@ -29,11 +35,15 @@ export default function LoginPage() {
         setLoading(true)
         setError('')
 
+        console.log('[Login] Starting login process')
+        console.log('[Login] Selected user type:', userType)
+        console.log('[Login] Target redirect:', getRedirectUrl())
+
         try {
             const response = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
+                body: JSON.stringify({ email, password, userType })
             })
 
             const data = await response.json()
@@ -45,13 +55,23 @@ export default function LoginPage() {
             }
 
             if (data.requires2FA) {
+                console.log('[Login] 2FA required, storing redirect URL:', getRedirectUrl())
                 setRequires2FA(true)
-                setRedirectUrl(data.redirectUrl || '/app')
+                // Use selected userType for redirect after 2FA
+                setRedirectUrl(getRedirectUrl())
                 setLoading(false)
                 return
             }
 
-            router.push(data.redirectUrl || getRedirectUrl())
+            // Always use selected userType for redirect
+            const targetUrl = getRedirectUrl()
+            console.log('[Login] Login successful')
+            console.log('[Login] User type selected:', userType)
+            console.log('[Login] API returned redirectUrl:', data.redirectUrl)
+            console.log('[Login] Using target URL based on selection:', targetUrl)
+            console.log('[Login] User email:', data.user?.email)
+            console.log('[Login] User role from profile:', data.userRole || 'unknown')
+            router.push(targetUrl)
             router.refresh()
 
         } catch (err: any) {
@@ -89,15 +109,65 @@ export default function LoginPage() {
         }
     }
 
+    const handleRegister = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setLoading(true)
+        setError('')
+        setSuccess('')
+
+        try {
+            const response = await fetch('/api/auth/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    email, 
+                    password, 
+                    fullName,
+                    role: userType 
+                })
+            })
+
+            const data = await response.json()
+
+            if (!data.success) {
+                setError(data.error || 'Registration failed')
+                setLoading(false)
+                return
+            }
+
+            if (data.requiresConfirmation) {
+                setSuccess('Account created! Please check your email to confirm.')
+            } else {
+                setSuccess('Account created successfully!')
+                setTimeout(() => {
+                    router.push(getRedirectUrl())
+                    router.refresh()
+                }, 1500)
+            }
+
+        } catch (err: any) {
+            setError(err.message || 'Registration failed')
+        } finally {
+            setLoading(false)
+        }
+    }
+
     const handleGoogleSignIn = async () => {
         setLoading(true)
         setError('')
 
+        console.log('[Login] Starting Google OAuth sign-in')
+        console.log('[Login] Selected user type for OAuth:', userType)
+
         try {
+            // Pass userType in the redirect URL so callback knows where to redirect
+            const callbackUrl = `${window.location.origin}/auth/callback?userType=${userType}`
+            console.log('[Login] OAuth callback URL:', callbackUrl)
+            
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: `${window.location.origin}/api/auth/callback`,
+                    redirectTo: callbackUrl,
                     queryParams: {
                         access_type: 'offline',
                         prompt: 'consent',
@@ -218,6 +288,35 @@ export default function LoginPage() {
                         </>
                     ) : (
                         <>
+                            {/* Login/Register Toggle */}
+                            {allowRegistration && (
+                                <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
+                                    <button
+                                        type="button"
+                                        onClick={() => { setMode('login'); setError(''); setSuccess(''); }}
+                                        className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+                                            mode === 'login' 
+                                                ? 'bg-white shadow text-gray-900' 
+                                                : 'text-gray-500 hover:text-gray-700'
+                                        }`}
+                                    >
+                                        Sign In
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => { setMode('register'); setError(''); setSuccess(''); }}
+                                        className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+                                            mode === 'register' 
+                                                ? 'bg-white shadow text-gray-900' 
+                                                : 'text-gray-500 hover:text-gray-700'
+                                        }`}
+                                    >
+                                        <UserPlus className="w-4 h-4 inline mr-1" />
+                                        Create Account
+                                    </button>
+                                </div>
+                            )}
+
                             <div className="flex items-center gap-3 mb-2">
                                 {userType === 'vendor' ? (
                                     <Briefcase className="w-6 h-6 text-indigo-600" />
@@ -225,13 +324,17 @@ export default function LoginPage() {
                                     <User className="w-6 h-6 text-indigo-600" />
                                 )}
                                 <h2 className="text-2xl font-bold text-gray-900">
-                                    {userType === 'vendor' ? 'Vendor Login' : 'Client Login'}
+                                    {mode === 'register' 
+                                        ? `Create ${userType === 'vendor' ? 'Vendor' : 'Client'} Account`
+                                        : `${userType === 'vendor' ? 'Vendor' : 'Client'} Login`}
                                 </h2>
                             </div>
                             <p className="text-muted-foreground mb-6">
-                                {userType === 'vendor' 
-                                    ? 'Sign in to manage clients and create content' 
-                                    : 'Sign in to review and approve your content'}
+                                {mode === 'register'
+                                    ? `Create a new ${userType} account to get started`
+                                    : userType === 'vendor' 
+                                        ? 'Sign in to manage clients and create content' 
+                                        : 'Sign in to review and approve your content'}
                             </p>
 
                             {error && (
@@ -241,7 +344,31 @@ export default function LoginPage() {
                                 </div>
                             )}
 
-                            <form onSubmit={handleLogin} className="space-y-4">
+                            {success && (
+                                <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2 text-green-700">
+                                    <Shield className="w-5 h-5" />
+                                    <span className="text-sm">{success}</span>
+                                </div>
+                            )}
+
+                            <form onSubmit={mode === 'register' ? handleRegister : handleLogin} className="space-y-4">
+                                {mode === 'register' && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                                        <div className="relative">
+                                            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                            <input
+                                                type="text"
+                                                value={fullName}
+                                                onChange={(e) => setFullName(e.target.value)}
+                                                placeholder="John Doe"
+                                                className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
+                                                required
+                                                disabled={loading}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
                                     <div className="relative">
@@ -280,22 +407,26 @@ export default function LoginPage() {
                                     </div>
                                 </div>
 
-                                <div className="flex items-center justify-between text-sm">
-                                    <label className="flex items-center gap-2">
-                                        <input type="checkbox" className="w-4 h-4" />
-                                        <span className="text-gray-600">Remember me</span>
-                                    </label>
-                                    <Link href="/auth/reset-password" className="text-indigo-600 hover:text-indigo-700 font-medium">
-                                        Forgot password?
-                                    </Link>
-                                </div>
+                                {mode === 'login' && (
+                                    <div className="flex items-center justify-between text-sm">
+                                        <label className="flex items-center gap-2">
+                                            <input type="checkbox" className="w-4 h-4" />
+                                            <span className="text-gray-600">Remember me</span>
+                                        </label>
+                                        <Link href="/auth/reset-password" className="text-indigo-600 hover:text-indigo-700 font-medium">
+                                            Forgot password?
+                                        </Link>
+                                    </div>
+                                )}
 
                                 <button
                                     type="submit"
-                                    disabled={loading}
+                                    disabled={loading || !!success}
                                     className="w-full px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 shadow-lg flex items-center justify-center gap-2"
                                 >
-                                    {loading ? 'Signing in...' : 'Sign In'}
+                                    {loading 
+                                        ? (mode === 'register' ? 'Creating Account...' : 'Signing in...') 
+                                        : (mode === 'register' ? 'Create Account' : 'Sign In')}
                                     <ArrowRight className="w-5 h-5" />
                                 </button>
                             </form>

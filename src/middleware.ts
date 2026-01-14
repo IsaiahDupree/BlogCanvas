@@ -102,7 +102,8 @@ export async function middleware(request: NextRequest) {
         const { data: { user } } = await supabase.auth.getUser();
 
         if (!user) {
-            return NextResponse.redirect(new URL('/portal/login', request.url));
+            console.log('[Middleware] No user found, redirecting to login');
+            return NextResponse.redirect(new URL('/login', request.url));
         }
 
         const { data: profile } = await supabase
@@ -111,14 +112,24 @@ export async function middleware(request: NextRequest) {
             .eq('id', user.id)
             .single();
 
+        console.log('[Middleware] /app route access attempt');
+        console.log('[Middleware] User:', user.email);
+        console.log('[Middleware] User role from database:', profile?.role);
+        console.log('[Middleware] Path:', request.nextUrl.pathname);
+
         const isClientRole = profile?.role === 'client' ||
                             profile?.role === 'client_admin' ||
                             profile?.role === 'client_reviewer';
 
         if (isClientRole) {
             // Redirect clients to portal
+            console.log('[Middleware] WARNING: User has CLIENT role but tried to access VENDOR app');
+            console.log('[Middleware] Redirecting to /portal/dashboard');
+            console.log('[Middleware] To fix: Update user role in profiles table to owner/admin/staff');
             return NextResponse.redirect(new URL('/portal/dashboard', request.url));
         }
+        
+        console.log('[Middleware] User has vendor role, allowing access to /app');
     }
 
     // Handle CORS for API routes

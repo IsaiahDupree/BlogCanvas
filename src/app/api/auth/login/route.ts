@@ -3,7 +3,11 @@ import { createClient } from '@/lib/supabase/server'
 
 export async function POST(request: NextRequest) {
     try {
-        const { email, password } = await request.json()
+        const { email, password, userType } = await request.json()
+
+        console.log('[Login API] Login attempt')
+        console.log('[Login API] Email:', email)
+        console.log('[Login API] Selected userType from UI:', userType)
 
         if (!email || !password) {
             return NextResponse.json(
@@ -63,14 +67,31 @@ export async function POST(request: NextRequest) {
             .eq('id', data.user.id)
             .single()
 
-        const redirectUrl = profile?.role === 'client'
-            ? '/portal/dashboard'
-            : '/app'
+        console.log('[Login API] User profile role:', profile?.role)
+        console.log('[Login API] User selected type:', userType)
+
+        // Determine redirect based on user's selection, but warn if it doesn't match their role
+        const isClientRole = profile?.role === 'client' || 
+                            profile?.role === 'client_admin' || 
+                            profile?.role === 'client_reviewer'
+        
+        // Use the selected userType for redirect
+        const redirectUrl = userType === 'client' ? '/portal/dashboard' : '/app'
+        
+        // Log if there's a mismatch between selection and actual role
+        if (userType === 'client' && !isClientRole) {
+            console.log('[Login API] WARNING: User selected client but has vendor role:', profile?.role)
+        } else if (userType === 'vendor' && isClientRole) {
+            console.log('[Login API] WARNING: User selected vendor but has client role:', profile?.role)
+        }
+
+        console.log('[Login API] Final redirect URL:', redirectUrl)
 
         return NextResponse.json({
             success: true,
             user: data.user,
-            redirectUrl
+            redirectUrl,
+            userRole: profile?.role
         })
 
     } catch (error: any) {

@@ -39,9 +39,9 @@ export default function AuditLogsPage() {
     const [logs, setLogs] = useState<AuditLog[]>([])
     const [loading, setLoading] = useState(true)
     const [filters, setFilters] = useState({
-        actionType: '',
-        resourceType: '',
-        success: '',
+        actionType: 'all',
+        resourceType: 'all',
+        success: 'all',
         startDate: '',
         endDate: '',
         limit: 50,
@@ -59,9 +59,9 @@ export default function AuditLogsPage() {
             setLoading(true)
             const params = new URLSearchParams()
 
-            if (filters.actionType) params.set('actionType', filters.actionType)
-            if (filters.resourceType) params.set('resourceType', filters.resourceType)
-            if (filters.success) params.set('success', filters.success)
+            if (filters.actionType && filters.actionType !== 'all') params.set('actionType', filters.actionType)
+            if (filters.resourceType && filters.resourceType !== 'all') params.set('resourceType', filters.resourceType)
+            if (filters.success && filters.success !== 'all') params.set('success', filters.success)
             if (filters.startDate) params.set('startDate', filters.startDate)
             if (filters.endDate) params.set('endDate', filters.endDate)
             params.set('limit', filters.limit.toString())
@@ -192,7 +192,7 @@ export default function AuditLogsPage() {
                                 <SelectValue placeholder="All actions" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="">All actions</SelectItem>
+                                <SelectItem value="all">All actions</SelectItem>
                                 <SelectItem value="read">Read</SelectItem>
                                 <SelectItem value="create">Create</SelectItem>
                                 <SelectItem value="update">Update</SelectItem>
@@ -218,7 +218,7 @@ export default function AuditLogsPage() {
                                 <SelectValue placeholder="All resources" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="">All resources</SelectItem>
+                                <SelectItem value="all">All resources</SelectItem>
                                 <SelectItem value="blog_post">Blog Post</SelectItem>
                                 <SelectItem value="content_batch">Content Batch</SelectItem>
                                 <SelectItem value="client">Client</SelectItem>
@@ -243,7 +243,7 @@ export default function AuditLogsPage() {
                                 <SelectValue placeholder="All statuses" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="">All statuses</SelectItem>
+                                <SelectItem value="all">All statuses</SelectItem>
                                 <SelectItem value="true">Success</SelectItem>
                                 <SelectItem value="false">Failed</SelectItem>
                             </SelectContent>

@@ -4,9 +4,19 @@ import { createClient } from '@/lib/supabase/server'
 /**
  * POST /api/auth/signup - Create new user account
  * Requires email confirmation if enabled in Supabase
+ * Set ALLOW_REGISTRATION=true to enable public signup
  */
 export async function POST(request: NextRequest) {
     try {
+        // Check if registration is enabled
+        const allowRegistration = process.env.ALLOW_REGISTRATION === 'true'
+        if (!allowRegistration) {
+            return NextResponse.json(
+                { success: false, error: 'Registration is currently disabled. Contact your administrator.' },
+                { status: 403 }
+            )
+        }
+
         const { email, password, fullName, role = 'client' } = await request.json()
 
         if (!email || !password) {
