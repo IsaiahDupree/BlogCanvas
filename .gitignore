@@ -28,6 +28,11 @@ dist
 # Environment
 .env
 .env.local
+
+# Secrets/Credentials
+config/
+*.credentials.json
+client_secret*.json
 .env.development.local
 .env.test.local
 .env.production.local

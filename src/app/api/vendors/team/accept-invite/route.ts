@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 
 /**
  * POST /api/vendors/team/accept-invite
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const supabase = await createServerClient()
+    const supabase = await createClient()
 
     // Get invitation by token
     const { data: invitation, error: inviteError } = await supabase
@@ -161,7 +161,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Missing token parameter' }, { status: 400 })
     }
 
-    const supabase = await createServerClient()
+    const supabase = await createClient()
 
     // Get invitation by token
     const { data: invitation, error: inviteError } = await supabase
