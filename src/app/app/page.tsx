@@ -6,6 +6,7 @@ import { Globe, FileText, TrendingUp, CheckCircle2, Clock, Zap, ArrowRight, Play
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { WorkKanbanWidget } from '@/components/dashboard/WorkKanbanWidget'
 
 export default function DashboardPage() {
     const [stats, setStats] = useState({
@@ -217,6 +218,11 @@ export default function DashboardPage() {
                             </div>
                         </CardContent>
                     </Card>
+                </div>
+
+                {/* Work Declarations Kanban */}
+                <div className="mb-8">
+                    <WorkKanbanWidget />
                 </div>
 
                 {/* Recent Activity */}

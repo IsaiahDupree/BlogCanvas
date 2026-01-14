@@ -62,11 +62,17 @@ const staffNavigation: NavGroup[] = [
         ]
     },
     {
+        name: 'Developer',
+        items: [
+            { name: 'Developer Portal', href: '/app/developer', icon: Key },
+            { name: 'API Keys', href: '/app/api-keys', icon: Key },
+            { name: 'Webhooks', href: '/app/webhooks', icon: Bell },
+        ]
+    },
+    {
         name: 'Settings',
         items: [
             { name: 'Configuration', href: '/app/settings', icon: Settings },
-            { name: 'API Keys', href: '/app/api-keys', icon: Key },
-            { name: 'Webhooks', href: '/app/webhooks', icon: Bell },
             { name: 'Audit Logs', href: '/app/audit-logs', icon: Shield },
         ]
     }
