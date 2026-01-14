@@ -481,14 +481,38 @@ Previously missing routes have been added:
 
 ## Remaining Work (UI Enhancements)
 
-| Task | Priority | Effort |
-|------|----------|--------|
-| Work Declarations UI page | High | 4-6 hrs |
-| File Manager UI page | High | 6-8 hrs |
-| API Keys Management UI | Medium | 3-4 hrs |
-| Developer Portal UI | Medium | 6-8 hrs |
-| Vendor Registration UI | Medium | 3-4 hrs |
-| Kanban Dashboard Widget | Low | 4-6 hrs |
+| Task | Priority | Effort | Status |
+|------|----------|--------|--------|
+| **Kanban Dashboard Widget** | High | 4-6 hrs | 🔄 In Progress |
+| Review Analytics Dashboard | Medium | 4-6 hrs | ⏳ Pending |
+| Developer Portal UI | Medium | 6-8 hrs | ⏳ Pending |
+| Vendor Registration Public Page | Low | 3-4 hrs | ⏳ Pending |
+
+## Not Yet Implemented (Features)
+
+| Feature | Priority | Effort | Status |
+|---------|----------|--------|--------|
+| **Competitor Comparison** | High | 4-6 hrs | ⏳ Pending |
+| **AI Image Generation UI** | Medium | 3-4 hrs | ⏳ Pending (API exists) |
+| Sandbox/Test Environment | Low | 8-10 hrs | ⏳ Pending |
+| Review Analytics (metrics) | Medium | 4-6 hrs | ⏳ Pending |
+
+## Recently Implemented AI Features ✅
+
+| Feature | API Endpoint | Status |
+|---------|--------------|--------|
+| Website Crawler & SEO Audit | `/api/ai/website-audit` | ✅ Complete |
+| Content Gap Analysis | `/api/ai/content-analysis` | ✅ Complete |
+| Keyword Analyzer | `/api/ai/content-analysis?action=keywords` | ✅ Complete |
+| Content Rewriter | `/api/ai/rewrite` | ✅ Complete |
+| Revision History Manager | `/api/ai/revisions` | ✅ Complete |
+| Headline Generator | `/api/ai/headlines` | ✅ Complete |
+| Image Prompt Generator | `/api/ai/images` | ✅ Complete |
+| Content Repurposing | `/api/ai/repurpose` | ✅ Complete |
+| Internal Linking | `/api/ai/internal-links` | ✅ Complete |
+| Readability Optimizer | `/api/ai/readability` | ✅ Complete |
+| Topic Cluster Generator | `/api/ai/topic-clusters` | ✅ Complete |
+| Pitch Generator | `/api/ai/pitch` | ✅ Complete |
 
 ---
 

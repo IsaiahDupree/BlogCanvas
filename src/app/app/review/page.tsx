@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Search, Filter, Download } from 'lucide-react'
+import { ArrowLeft, Search, Filter, Download, BarChart3, LayoutGrid } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { ReviewAnalyticsDashboard } from '@/components/dashboard/ReviewAnalyticsDashboard'
 
 interface Post {
     id: string
@@ -38,6 +39,7 @@ export default function ReviewBoardPage() {
     const [filter, setFilter] = useState('')
     const [draggedPost, setDraggedPost] = useState<string | null>(null)
     const [dragOverColumn, setDragOverColumn] = useState<string | null>(null)
+    const [view, setView] = useState<'kanban' | 'analytics'>('kanban')
 
     useEffect(() => {
         fetchPosts()
@@ -147,7 +149,28 @@ export default function ReviewBoardPage() {
                                 Manage content workflow and approvals
                             </p>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 items-center">
+                            {/* View Toggle */}
+                            <div className="flex bg-gray-100 rounded-lg p-1 mr-4">
+                                <Button
+                                    variant={view === 'kanban' ? 'default' : 'ghost'}
+                                    size="sm"
+                                    onClick={() => setView('kanban')}
+                                    className="gap-2"
+                                >
+                                    <LayoutGrid className="w-4 h-4" />
+                                    Kanban
+                                </Button>
+                                <Button
+                                    variant={view === 'analytics' ? 'default' : 'ghost'}
+                                    size="sm"
+                                    onClick={() => setView('analytics')}
+                                    className="gap-2"
+                                >
+                                    <BarChart3 className="w-4 h-4" />
+                                    Analytics
+                                </Button>
+                            </div>
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                                 <input
@@ -162,7 +185,13 @@ export default function ReviewBoardPage() {
                     </div>
                 </div>
 
+                {/* Analytics View */}
+                {view === 'analytics' && (
+                    <ReviewAnalyticsDashboard />
+                )}
+
                 {/* Kanban Board */}
+                {view === 'kanban' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
                     {COLUMNS.map(column => {
                         const columnPosts = getPostsByStatus(column.status)
@@ -284,6 +313,7 @@ export default function ReviewBoardPage() {
                         )
                     })}
                 </div>
+                )}
             </div>
         </div>
     )
