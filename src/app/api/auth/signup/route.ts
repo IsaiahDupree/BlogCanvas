@@ -17,7 +17,10 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        const { email, password, fullName, role = 'client' } = await request.json()
+        const { email, password, fullName, role: requestedRole = 'client' } = await request.json()
+        
+        // Map userType to actual role - vendors get 'owner' role for full access
+        const role = requestedRole === 'vendor' ? 'owner' : requestedRole
 
         if (!email || !password) {
             return NextResponse.json(
