@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { runOutlineAgentWithOptions } from '@/lib/agents/outline';
-import { createProvider } from '@/lib/providers';
+import { createOpenAIProvider } from '@/lib/agents/openai-provider';
 
 export async function GET(
   request: NextRequest,
@@ -72,11 +72,7 @@ export async function POST(
     const researchData = post.research_context as any;
 
     // Create provider
-    const provider = createProvider({
-      provider: 'openai',
-      apiKey: process.env.OPENAI_API_KEY || '',
-      model: 'gpt-4o-mini'
-    });
+    const provider = createOpenAIProvider();
 
     // Generate 3 outline options
     const result = await runOutlineAgentWithOptions(provider, {

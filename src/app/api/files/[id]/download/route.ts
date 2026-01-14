@@ -5,10 +5,11 @@ import { supabaseAdmin } from '@/lib/supabase';
 // GET /api/files/[id]/download - Download file
 export async function GET(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const supabase = createClient();
+        const { id } = await params;
+        const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
         if (!user) {
@@ -17,8 +18,6 @@ export async function GET(
                 { status: 401 }
             );
         }
-
-        const { id } = params;
 
         // Get file details
         const { data: file, error: fileError } = await supabase

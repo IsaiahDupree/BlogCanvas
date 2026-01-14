@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { ArrowLeft, Mail, CheckCircle, XCircle, RefreshCw, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Mail, CheckCircle, XCircle, RefreshCw, AlertCircle, Loader2 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -16,7 +16,7 @@ interface GmailConnection {
   created_at: string
 }
 
-export default function GmailSettingsPage() {
+function GmailSettingsContent() {
   const [loading, setLoading] = useState(true)
   const [connecting, setConnecting] = useState(false)
   const [syncing, setSyncing] = useState(false)
@@ -327,5 +327,17 @@ export default function GmailSettingsPage() {
         </Card>
       </div>
     </div>
+  )
+}
+
+export default function GmailSettingsPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+      </div>
+    }>
+      <GmailSettingsContent />
+    </Suspense>
   )
 }

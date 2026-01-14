@@ -8,7 +8,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 // Create Supabase client with service role for queue management (bypasses RLS)
 const supabaseServiceRole = createClient(

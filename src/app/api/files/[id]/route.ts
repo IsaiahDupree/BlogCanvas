@@ -5,10 +5,11 @@ import { supabaseAdmin } from '@/lib/supabase';
 // GET /api/files/[id] - Get file details
 export async function GET(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const supabase = createClient();
+        const { id } = await params;
+        const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
         if (!user) {
@@ -17,8 +18,6 @@ export async function GET(
                 { status: 401 }
             );
         }
-
-        const { id } = params;
 
         // Fetch file with related data
         const { data: file, error } = await supabase
@@ -73,10 +72,11 @@ export async function GET(
 // PATCH /api/files/[id] - Update file metadata
 export async function PATCH(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const supabase = createClient();
+        const { id } = await params;
+        const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
         if (!user) {
@@ -85,8 +85,6 @@ export async function PATCH(
                 { status: 401 }
             );
         }
-
-        const { id } = params;
         const body = await request.json();
 
         const {

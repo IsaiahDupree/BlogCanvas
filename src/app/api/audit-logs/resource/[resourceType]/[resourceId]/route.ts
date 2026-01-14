@@ -8,12 +8,12 @@ import { createAuditLogger } from '@/lib/audit-logger';
  */
 export async function GET(
     request: NextRequest,
-    { params }: { params: { resourceType: string; resourceId: string } }
+    { params }: { params: Promise<{ resourceType: string; resourceId: string }> }
 ) {
     try {
         await requireAuth();
 
-        const { resourceType, resourceId } = params;
+        const { resourceType, resourceId } = await params;
 
         if (!resourceType || !resourceId) {
             return NextResponse.json(

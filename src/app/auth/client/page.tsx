@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Mail, Lock, User, ArrowRight, AlertCircle, CheckCircle, Loader2 } from 'lucide-react'
@@ -16,7 +16,7 @@ interface InvitationData {
     }
 }
 
-export default function ClientInvitationPage() {
+function ClientInvitationContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const token = searchParams.get('token')
@@ -306,5 +306,17 @@ export default function ClientInvitationPage() {
                 </p>
             </div>
         </div>
+    )
+}
+
+export default function ClientInvitationPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-800">
+                <Loader2 className="h-8 w-8 animate-spin text-white" />
+            </div>
+        }>
+            <ClientInvitationContent />
+        </Suspense>
     )
 }
