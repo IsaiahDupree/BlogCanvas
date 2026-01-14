@@ -6,34 +6,43 @@ test.describe('Mobile Layout', () => {
     test.use({ viewport: { width: 375, height: 667 } });
 
     test('should stack stats cards on mobile', async ({ page }) => {
-        await page.goto('/');
+        await page.goto('/app');
+        await page.waitForLoadState('networkidle');
 
-        // Use text locator which is more robust than class names
-        // Find the card containing "Total Blog Posts"
-        const totalPostsCard = page.locator('div:has-text("Total Blog Posts")').locator('..').locator('..').first();
-        // Text -> p -> div (card content) -> div (card)
-        // Wait for it
-        await totalPostsCard.waitFor();
+        // Wait for the stats cards to load
+        await page.waitForSelector('text=Websites', { timeout: 10000 });
 
-        // Find the card containing "published" (case insensitive usually but let's be approximate)
-        const publishedCard = page.locator('div:has-text("Published")').locator('..').locator('..').first();
+        // Find stats cards by looking for the stat container grid
+        const statsGrid = page.locator('div.grid').first();
+        await statsGrid.waitFor();
 
-        const card1 = await totalPostsCard.boundingBox();
-        const card2 = await publishedCard.boundingBox();
+        // Get all the cards within the grid
+        const cards = statsGrid.locator('> div');
+        const cardCount = await cards.count();
 
-        if (card1 && card2) {
-            // In mobile stack, card 2 should be below card 1
-            expect(card2.y).toBeGreaterThan(card1.y);
+        // Verify we have cards
+        expect(cardCount).toBeGreaterThan(0);
 
-            // Also they should have similar x coordinates (stacked vertically)
-            // Allowing for some margin error
-            expect(Math.abs(card1.x - card2.x)).toBeLessThan(50);
+        // Get positions of first two cards
+        const card1 = cards.nth(0);
+        const card2 = cards.nth(1);
+
+        const box1 = await card1.boundingBox();
+        const box2 = await card2.boundingBox();
+
+        if (box1 && box2) {
+            // In mobile view (375px), cards should stack vertically
+            // Card 2 should be below card 1
+            expect(box2.y).toBeGreaterThan(box1.y);
+
+            // They should have similar x coordinates (stacked vertically)
+            // Allowing for some margin/padding
+            expect(Math.abs(box1.x - box2.x)).toBeLessThan(50);
         } else {
-            // If we can't find bounds, logging for debug but failing test
             throw new Error('Could not get bounding boxes for stats cards');
         }
 
         // Capture screenshot for evidence
-        await page.screenshot({ path: 'mobile-layout-verified.png', fullPage: true });
+        await page.screenshot({ path: 'test-results/mobile-layout-verified.png', fullPage: true });
     });
 });

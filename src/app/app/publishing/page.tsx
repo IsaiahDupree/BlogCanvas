@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { CheckCircle2, Clock, XCircle, FileText, RefreshCw, ExternalLink, AlertCircle, Calendar, List } from 'lucide-react'
+import { CheckCircle2, Clock, XCircle, FileText, RefreshCw, ExternalLink, AlertCircle, Calendar, List, Globe, Loader2, Settings } from 'lucide-react'
+import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -59,11 +60,47 @@ export default function PublishingDashboardPage() {
     const [filter, setFilter] = useState<string>('all')
     const [retrying, setRetrying] = useState<string | null>(null)
     const [view, setView] = useState<'list' | 'calendar'>('list')
+    const [publishing, setPublishing] = useState<string | null>(null)
+    const [hasWordPressConnection, setHasWordPressConnection] = useState(false)
 
     useEffect(() => {
         fetchPublishingStatus()
         fetchQueueStatus()
+        checkWordPressConnection()
     }, [filter])
+
+    const checkWordPressConnection = async () => {
+        try {
+            const res = await fetch('/api/wordpress/connections')
+            const data = await res.json()
+            setHasWordPressConnection((data.connections || []).some((c: any) => c.connection_status === 'connected'))
+        } catch (error) {
+            console.error('Failed to check WordPress connection:', error)
+        }
+    }
+
+    const handlePublishToWordPress = async (postId: string) => {
+        setPublishing(postId)
+        try {
+            const res = await fetch('/api/wordpress/publish', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ blogPostId: postId, status: 'publish' })
+            })
+            const data = await res.json()
+            
+            if (data.success) {
+                alert(`Published successfully! View at: ${data.postUrl}`)
+                fetchPublishingStatus()
+            } else {
+                alert(`Failed to publish: ${data.error}`)
+            }
+        } catch (error: any) {
+            alert(`Error: ${error.message}`)
+        } finally {
+            setPublishing(null)
+        }
+    }
 
     const fetchQueueStatus = async () => {
         try {
@@ -422,6 +459,32 @@ export default function PublishingDashboardPage() {
                                                         </>
                                                     )}
                                                 </Button>
+                                            )}
+                                            {(post.status === 'approved' || post.publishStatus === 'draft') && !post.publishedUrl && (
+                                                hasWordPressConnection ? (
+                                                    <Button
+                                                        size="sm"
+                                                        onClick={() => handlePublishToWordPress(post.id)}
+                                                        disabled={publishing === post.id}
+                                                        className="bg-blue-600 hover:bg-blue-700"
+                                                    >
+                                                        {publishing === post.id ? (
+                                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                                        ) : (
+                                                            <>
+                                                                <Globe className="w-4 h-4 mr-2" />
+                                                                Publish to WP
+                                                            </>
+                                                        )}
+                                                    </Button>
+                                                ) : (
+                                                    <Link href="/app/settings/wordpress">
+                                                        <Button size="sm" variant="outline">
+                                                            <Settings className="w-4 h-4 mr-2" />
+                                                            Connect WP
+                                                        </Button>
+                                                    </Link>
+                                                )
                                             )}
                                         </div>
                                     </div>

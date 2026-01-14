@@ -1,8 +1,7 @@
-export default function PortalLayout({
+export default function PortalLoginLayout({
     children,
 }: {
     children: React.ReactNode
 }) {
-    // Portal has no sidebar - clean layout
     return <>{children}</>
 }

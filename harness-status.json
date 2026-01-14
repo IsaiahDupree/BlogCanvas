@@ -1,12 +1,13 @@
 {
-  "lastUpdated": "2026-01-13T13:31:10.729Z",
+  "lastUpdated": "2026-01-13T22:37:43.868Z",
   "sessionType": "CODING",
-  "status": "running",
+  "status": "failed",
   "stats": {
     "total": 55,
-    "passing": 40,
-    "pending": 15,
-    "percentComplete": "72.7"
+    "passing": 42,
+    "pending": 13,
+    "percentComplete": "76.4"
   },
-  "pid": 15347
+  "pid": 37444,
+  "errorType": "rate_limit"
 }
