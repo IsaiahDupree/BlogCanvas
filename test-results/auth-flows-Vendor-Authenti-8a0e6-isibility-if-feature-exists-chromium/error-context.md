@@ -1,0 +1,47 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - heading "BlogCanvas" [level=1] [ref=e5]
+      - paragraph [ref=e6]: Client Portal
+    - generic [ref=e7]:
+      - heading "Welcome back" [level=2] [ref=e8]
+      - paragraph [ref=e9]: Sign in to review your content
+      - generic [ref=e10]:
+        - generic [ref=e11]:
+          - generic [ref=e12]: Email
+          - generic [ref=e13]:
+            - img [ref=e14]
+            - textbox "you@company.com" [ref=e17]
+        - generic [ref=e18]:
+          - generic [ref=e19]: Password
+          - generic [ref=e20]:
+            - img [ref=e21]
+            - textbox "••••••••" [ref=e24]
+        - generic [ref=e25]:
+          - generic [ref=e26]:
+            - checkbox "Remember me" [ref=e27]
+            - generic [ref=e28]: Remember me
+          - link "Forgot password?" [ref=e29] [cursor=pointer]:
+            - /url: /portal/forgot-password
+        - button "Sign In" [ref=e30]:
+          - text: Sign In
+          - img [ref=e31]
+      - generic [ref=e33]:
+        - generic [ref=e38]: Or continue with
+        - button "Continue with Google" [ref=e39]:
+          - img [ref=e40]
+          - text: Continue with Google
+        - button "Send Magic Link" [ref=e45]
+    - paragraph [ref=e46]: Need help? Contact your account manager
+  - button "Open Next.js Dev Tools" [ref=e52] [cursor=pointer]:
+    - generic [ref=e55]:
+      - text: Compiling
+      - generic [ref=e56]:
+        - generic [ref=e57]: .
+        - generic [ref=e58]: .
+        - generic [ref=e59]: .
+  - alert [ref=e60]
+```

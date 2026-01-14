@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     // Handle errors
     if (error) {
         console.error('Auth callback error:', error, errorDescription)
-        const errorUrl = new URL('/portal/login', request.url)
+        const errorUrl = new URL('/login', request.url)
         errorUrl.searchParams.set('error', error)
         if (errorDescription) {
             errorUrl.searchParams.set('error_description', errorDescription)
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
 
         if (exchangeError) {
             console.error('Code exchange error:', exchangeError)
-            const errorUrl = new URL('/portal/login', request.url)
+            const errorUrl = new URL('/login', request.url)
             errorUrl.searchParams.set('error', 'code_exchange_failed')
             errorUrl.searchParams.set('error_description', exchangeError.message)
             return NextResponse.redirect(errorUrl)
@@ -93,6 +93,6 @@ export async function GET(request: NextRequest) {
     }
 
     // No code provided, redirect to login
-    return NextResponse.redirect(new URL('/portal/login', request.url))
+    return NextResponse.redirect(new URL('/login', request.url))
 }
 
