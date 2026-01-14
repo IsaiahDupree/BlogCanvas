@@ -65,8 +65,8 @@ const staffNavigation: NavGroup[] = [
         name: 'Settings',
         items: [
             { name: 'Configuration', href: '/app/settings', icon: Settings },
-            { name: 'Privacy & Data', href: '/settings/privacy', icon: Lock },
             { name: 'API Keys', href: '/app/api-keys', icon: Key },
+            { name: 'Webhooks', href: '/app/webhooks', icon: Bell },
             { name: 'Audit Logs', href: '/app/audit-logs', icon: Shield },
         ]
     }
@@ -91,8 +91,7 @@ const clientNavigation: NavGroup[] = [
         name: 'Account',
         items: [
             { name: 'Brand Guide', href: '/portal/brand', icon: Settings },
-            { name: 'Notifications', href: '/portal/settings/notifications', icon: Bell },
-            { name: 'Privacy & Data', href: '/settings/privacy', icon: Lock },
+            { name: 'Notifications', href: '/portal/notifications', icon: Bell },
         ]
     }
 ]
@@ -128,15 +127,41 @@ export function GlobalSidebar() {
     const isApp = pathname.startsWith('/app')
     const navigation = isPortal ? clientNavigation : staffNavigation
 
-    // Don't show sidebar on login/auth pages
-    if (pathname.startsWith('/portal/login') || 
-        pathname.startsWith('/auth/') ||
-        pathname === '/portal/login') {
+    // Don't show sidebar on login/auth pages or public pages
+    const hideSidebarRoutes = [
+        '/portal/login',
+        '/auth/',
+        '/login',
+        '/register',
+        '/signup',
+        '/forgot-password',
+        '/reset-password',
+    ]
+    
+    // Hide on home page and non-app/portal routes
+    const isPublicPage = pathname === '/' || 
+        hideSidebarRoutes.some(route => pathname.startsWith(route)) ||
+        (!pathname.startsWith('/app') && !pathname.startsWith('/portal'))
+    
+    if (isPublicPage) {
         return null
     }
 
     return (
         <>
+            {/* Mobile menu button - visible when sidebar is closed */}
+            {!isOpen && (
+                <Button
+                    variant="default"
+                    size="icon"
+                    onClick={toggle}
+                    className="fixed top-4 left-4 z-30 lg:hidden bg-gray-900 hover:bg-gray-800 text-white shadow-lg"
+                    aria-label="Open sidebar"
+                >
+                    <Menu className="w-5 h-5" />
+                </Button>
+            )}
+
             {/* Mobile overlay */}
             {isOpen && (
                 <div
@@ -148,12 +173,10 @@ export function GlobalSidebar() {
             {/* Sidebar */}
             <aside
                 className={`
-                    fixed top-0 left-0 z-50 h-full bg-gray-900 text-white
+                    fixed top-0 left-0 z-50 h-full w-64 bg-gray-900 text-white
                     transform transition-transform duration-300 ease-in-out
                     ${isOpen ? 'translate-x-0' : '-translate-x-full'}
                     lg:translate-x-0
-                    ${isOpen ? 'w-64' : 'w-0'}
-                    lg:w-64
                     flex flex-col
                     shadow-xl
                 `}

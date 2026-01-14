@@ -31,7 +31,7 @@ export default function RootLayout({
       >
         <SidebarProvider>
           <GlobalSidebar />
-          <main className="lg:pl-64 transition-all duration-300 min-h-screen">
+          <main className="transition-all duration-300 min-h-screen">
             {children}
           </main>
         </SidebarProvider>
