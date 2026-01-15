@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { TrendingUp, Calendar, FileText, Zap, ArrowRight, Download, Send, Mail, FileDown, Presentation } from 'lucide-react'
+import { TrendingUp, Calendar, FileText, Zap, ArrowRight, Download, Send, Mail, FileDown, Presentation, DollarSign } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -9,6 +9,15 @@ import { DepthLevelSelector } from '@/components/DepthLevelSelector'
 import { DepthLevel } from '@/lib/content-depth'
 import { ToneVoiceSelector } from '@/components/ToneVoiceSelector'
 import { ToneVoice } from '@/lib/tone-voice'
+
+interface CostEstimate {
+    perPost: number
+    totalPosts: number
+    subtotal: number
+    monthlyRetainer: number
+    totalCost: number
+    priceRange: string
+}
 
 interface ScoreProjection {
     current_score: number
@@ -27,6 +36,7 @@ interface ScoreProjection {
         postsPerWeek: number
         schedule: string
     }
+    costEstimate?: CostEstimate
 }
 
 export function PitchBuilderTab({ websiteId }: { websiteId: string }) {
@@ -291,7 +301,7 @@ export function PitchBuilderTab({ websiteId }: { websiteId: string }) {
                     </Card>
 
                     {/* Recommendation Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <Card className="border-purple-200 bg-purple-50">
                             <CardContent className="p-6 text-center">
                                 <FileText className="w-8 h-8 mx-auto text-purple-600 mb-2" />
@@ -330,6 +340,21 @@ export function PitchBuilderTab({ websiteId }: { websiteId: string }) {
                                 </p>
                             </CardContent>
                         </Card>
+
+                        {projection.costEstimate && (
+                            <Card className="border-green-200 bg-green-50">
+                                <CardContent className="p-6 text-center">
+                                    <DollarSign className="w-8 h-8 mx-auto text-green-600 mb-2" />
+                                    <div className="text-sm text-muted-foreground mb-1">Investment</div>
+                                    <div className="text-3xl font-bold text-green-600">
+                                        {projection.costEstimate.priceRange}
+                                    </div>
+                                    <p className="text-xs text-muted-foreground mt-2">
+                                        ${projection.costEstimate.monthlyRetainer.toLocaleString()}/mo retainer
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        )}
                     </div>
 
                     {/* Impact Breakdown */}

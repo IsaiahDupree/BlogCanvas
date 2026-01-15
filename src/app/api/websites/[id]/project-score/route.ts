@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
-import { projectSEOScore, getRecommendedTarget, calculateCadence, generateForecast } from '@/lib/analysis/score-projection';
+import { projectSEOScore, getRecommendedTarget, calculateCadence, generateForecast, calculateCostEstimate } from '@/lib/analysis/score-projection';
 
 // POST /api/websites/[id]/project-score - Calculate SEO score projection
 export async function POST(
@@ -81,12 +81,19 @@ export async function POST(
             projection.timeline_months
         );
 
+        // Calculate cost estimate
+        const costEstimate = calculateCostEstimate(
+            projection.recommended_posts,
+            projection.timeline_months
+        );
+
         return NextResponse.json({
             success: true,
             projection: {
                 ...projection,
                 cadence,
-                forecast
+                forecast,
+                costEstimate
             }
         });
 

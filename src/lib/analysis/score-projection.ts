@@ -3,7 +3,7 @@
  * Functions for projecting SEO score improvements and recommendations
  */
 
-interface ProjectionResult {
+export interface ProjectionResult {
     current_score: number;
     target_score: number;
     score_increase: number;
@@ -11,6 +11,15 @@ interface ProjectionResult {
     timeline_months: number;
     confidence: 'high' | 'medium' | 'low';
     monthly_cadence: number;
+}
+
+export interface CostEstimate {
+    perPost: number;
+    totalPosts: number;
+    subtotal: number;
+    monthlyRetainer: number;
+    totalCost: number;
+    priceRange: string;
 }
 
 /**
@@ -189,5 +198,44 @@ export function generateForecast(
             `Monitor SEO score monthly to track progress`,
             `Review and update existing content for quick wins`
         ]
+    };
+}
+
+/**
+ * Calculate cost estimate for content batch
+ * Based on typical content agency pricing models
+ */
+export function calculateCostEstimate(
+    totalPosts: number,
+    timelineMonths: number,
+    pricePerPost: number = 300
+): CostEstimate {
+    // Calculate per-post costs
+    const subtotal = totalPosts * pricePerPost;
+
+    // Calculate monthly retainer (spread cost over timeline)
+    const monthlyRetainer = timelineMonths > 0 ? Math.ceil(subtotal / timelineMonths) : subtotal;
+
+    // Determine price range based on total
+    let priceRange: string;
+    if (subtotal < 3000) {
+        priceRange = '$1,500 - $3,000';
+    } else if (subtotal < 6000) {
+        priceRange = '$3,000 - $6,000';
+    } else if (subtotal < 12000) {
+        priceRange = '$6,000 - $12,000';
+    } else if (subtotal < 24000) {
+        priceRange = '$12,000 - $24,000';
+    } else {
+        priceRange = '$24,000+';
+    }
+
+    return {
+        perPost: pricePerPost,
+        totalPosts,
+        subtotal,
+        monthlyRetainer,
+        totalCost: subtotal,
+        priceRange
     };
 }
