@@ -2145,7 +2145,9 @@
         "Alt text included",
         "Stored in revision"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T21:00:00Z",
+      "notes": "Enhancement agent fully implemented with comprehensive image prompt functionality. Agent generates 2-3 image suggestions per post with: (1) insertAfterSection for placement, (2) detailed AI generation prompts, (3) SEO-friendly alt text, (4) type classification (hero/inline/infographic/diagram), (5) reasoning for each suggestion. Integrated in blog pipeline (lines 374-397), saved to blog_post_revisions with type='enhancement'. API endpoint /api/blog-posts/[id]/generate includes enhancement by default (skipEnhancement: false). Created comprehensive test suite with 9/9 tests passing. Files: enhancement.ts, blog-pipeline.ts, types.ts, __tests__/agents/enhancement.test.ts"
     },
     {
       "id": "feat-096",
