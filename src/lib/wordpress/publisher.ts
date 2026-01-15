@@ -180,6 +180,23 @@ export async function publishToWordPress(
     if (result.success) {
         const publishedAt = options?.scheduleDate ? options.scheduleDate : new Date();
 
+        // PRD feat-104: Verify URL accessibility
+        let verificationResult = null;
+        if (result.url && !options?.scheduleDate) {
+            try {
+                const { verifyPublishedURL } = await import('@/lib/wordpress/url-verifier');
+                verificationResult = await verifyPublishedURL(result.url);
+
+                // If URL verification finds a canonical/redirect URL, use that instead
+                if (verificationResult.canonicalUrl) {
+                    result.url = verificationResult.canonicalUrl;
+                }
+            } catch (error) {
+                console.error('URL verification failed:', error);
+                // Don't fail the publish if verification fails
+            }
+        }
+
         await supabaseAdmin
             .from('blog_posts')
             .update({
@@ -189,7 +206,9 @@ export async function publishToWordPress(
                     url: result.url,
                     published_at: publishedAt.toISOString(),
                     cms_type: 'wordpress',
-                    status: wpPost.status
+                    status: wpPost.status,
+                    url_verified: verificationResult?.accessible || false,
+                    url_verification: verificationResult || null
                 },
                 cms_url: result.url, // PRD: Set cms_url column
                 published_at: publishedAt.toISOString(), // PRD: Set published_at timestamp

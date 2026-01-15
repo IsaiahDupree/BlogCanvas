@@ -24,9 +24,10 @@ export async function GET(
         }
 
         // Get all posts in batch
+        // PRD feat-104: Include cms_url and cms_publish_info for displaying published URLs
         const { data: posts, error: postsError } = await supabaseAdmin
             .from('blog_posts')
-            .select('id, topic, target_keyword, status, seo_quality_score, created_at')
+            .select('id, topic, target_keyword, status, seo_quality_score, created_at, cms_url, cms_publish_info')
             .eq('content_batch_id', id)
             .order('created_at', { ascending: true });
 

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Play, Pause, CheckCircle2, AlertCircle, Loader2, TrendingUp, FileText, Upload, Download, Send, Image as ImageIcon } from 'lucide-react'
+import { ArrowLeft, Play, Pause, CheckCircle2, AlertCircle, Loader2, TrendingUp, FileText, Upload, Download, Send, Image as ImageIcon, ExternalLink } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -353,6 +353,27 @@ export default function BatchDetailPage() {
                                         <div className="font-medium mb-1">{post.topic}</div>
                                         <div className="text-sm text-muted-foreground">
                                             {post.target_keyword && `Keyword: ${post.target_keyword}`}
+                                            {/* PRD feat-104: Show published URL */}
+                                            {post.cms_url && (
+                                                <div className="mt-1">
+                                                    <a
+                                                        href={post.cms_url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline"
+                                                    >
+                                                        <ExternalLink className="w-3 h-3" />
+                                                        View on WordPress
+                                                    </a>
+                                                    {/* Show verification status if available */}
+                                                    {post.cms_publish_info?.url_verified === true && (
+                                                        <span className="ml-2 text-green-600 text-xs">✓ Verified</span>
+                                                    )}
+                                                    {post.cms_publish_info?.url_verified === false && (
+                                                        <span className="ml-2 text-red-600 text-xs">⚠ Not accessible</span>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-4">

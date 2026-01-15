@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
-import { CheckCircle2, XCircle, MessageCircle, Download, TrendingUp, Clock } from 'lucide-react'
+import { CheckCircle2, XCircle, MessageCircle, Download, TrendingUp, Clock, ExternalLink } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -15,6 +15,8 @@ interface Post {
     seo_quality_score: number | null
     target_keyword: string | null
     word_count_goal: number | null
+    cms_url: string | null
+    cms_publish_info: any | null
 }
 
 export default function ClientPortalPage() {
@@ -411,6 +413,23 @@ export default function ClientPortalPage() {
                                             <p className="text-green-700 text-sm">
                                                 This post will be published to your website
                                             </p>
+                                            {/* PRD feat-104: Show published URL if available */}
+                                            {selectedPost.cms_url && (
+                                                <div className="mt-4">
+                                                    <a
+                                                        href={selectedPost.cms_url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-green-300 rounded-lg text-green-700 hover:bg-green-100 transition-colors"
+                                                    >
+                                                        <ExternalLink className="w-4 h-4" />
+                                                        View Published Post
+                                                    </a>
+                                                    {selectedPost.cms_publish_info?.url_verified === true && (
+                                                        <p className="text-green-600 text-xs mt-2">✓ URL verified and accessible</p>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </CardContent>
