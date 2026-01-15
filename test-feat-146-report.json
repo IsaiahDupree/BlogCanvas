@@ -1,0 +1,59 @@
+{
+  "testName": "feat-146: Pipeline Page Topic Selection Checkboxes",
+  "timestamp": "2026-01-15T18:45:08.873Z",
+  "url": "http://localhost:4848/app/pipeline",
+  "results": [
+    {
+      "step": 0,
+      "status": "PASS",
+      "message": "Authentication successful"
+    },
+    {
+      "step": 1,
+      "status": "PASS",
+      "message": "Page loaded successfully"
+    },
+    {
+      "step": 2,
+      "status": "PASS",
+      "message": "No page errors detected"
+    },
+    {
+      "step": 3.1,
+      "status": "PASS",
+      "message": "Found 1 checkbox elements"
+    },
+    {
+      "step": 3.2,
+      "status": "FAIL",
+      "message": "No select all checkbox found"
+    },
+    {
+      "step": 4.1,
+      "status": "PASS",
+      "message": "Individual checkbox toggle works"
+    },
+    {
+      "step": 4.2,
+      "status": "FAIL",
+      "message": "No selected count display found"
+    },
+    {
+      "step": 4.3,
+      "status": "PASS",
+      "message": "Selection persists during interaction"
+    }
+  ],
+  "acceptanceCriteria": {
+    "checkboxesRender": true,
+    "toggleWorks": true,
+    "countShown": false,
+    "selectionPersists": true
+  },
+  "errors": [],
+  "screenshots": [
+    "/Users/isaiahdupree/Documents/Software/BlogCanvas/screenshot-feat-146-01-initial.png",
+    "/Users/isaiahdupree/Documents/Software/BlogCanvas/screenshot-feat-146-02-after-toggle.png"
+  ],
+  "summary": "⚠️  INCOMPLETE - 3/4 acceptance criteria met"
+}

@@ -371,13 +371,17 @@ export type Database = {
           donts: Json | null
           full_content: string | null
           id: string
+          image_guidelines: Json | null
           messaging_hierarchy: Json | null
           name: string
           products_services: Json | null
           source: string | null
           source_url: string | null
+          styles_to_avoid: Json | null
+          styles_to_keep: Json | null
           tagline: string | null
           target_audiences: Json | null
+          title_guidelines: Json | null
           tone_guidelines: Json | null
           updated_at: string | null
           value_propositions: Json | null
@@ -389,13 +393,17 @@ export type Database = {
           donts?: Json | null
           full_content?: string | null
           id?: string
+          image_guidelines?: Json | null
           messaging_hierarchy?: Json | null
           name: string
           products_services?: Json | null
           source?: string | null
           source_url?: string | null
+          styles_to_avoid?: Json | null
+          styles_to_keep?: Json | null
           tagline?: string | null
           target_audiences?: Json | null
+          title_guidelines?: Json | null
           tone_guidelines?: Json | null
           updated_at?: string | null
           value_propositions?: Json | null
@@ -407,13 +415,17 @@ export type Database = {
           donts?: Json | null
           full_content?: string | null
           id?: string
+          image_guidelines?: Json | null
           messaging_hierarchy?: Json | null
           name?: string
           products_services?: Json | null
           source?: string | null
           source_url?: string | null
+          styles_to_avoid?: Json | null
+          styles_to_keep?: Json | null
           tagline?: string | null
           target_audiences?: Json | null
+          title_guidelines?: Json | null
           tone_guidelines?: Json | null
           updated_at?: string | null
           value_propositions?: Json | null
