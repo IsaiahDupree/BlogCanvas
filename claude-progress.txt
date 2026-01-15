@@ -10325,3 +10325,110 @@ Documentation:
 
 Next Priority: feat-128 - Downloadable CSV template
 
+
+=== Session 2026-01-15T19:30:00Z ===
+✅ Implemented: feat-128 - Downloadable CSV template for batch imports
+
+Files Changed:
+- NEW: /src/app/api/content-batches/[id]/download-csv-template/route.ts (100 lines)
+  * GET endpoint that generates and returns CSV template
+  * Includes all 11 supported columns
+  * Instructions row formatted as comment
+  * Example data row with realistic SEO content
+  * 3 empty rows for user input
+
+- MODIFIED: /src/app/app/batches/[id]/page.tsx
+  * Added FileDown icon import
+  * Added handleDownloadTemplate function
+  * Added "Download Template" button (positioned before Import CSV)
+  * Proper file download with descriptive filename
+
+- UPDATED: feature_list.json
+  * Marked feat-128 as passes: true
+  * Added implementation timestamp and notes
+
+Template Columns:
+1. topic (REQUIRED) - Blog post title/topic
+2. target_keyword - Target SEO keyword
+3. target_wordcount - Desired word count (default: 1500)
+4. topic_cluster - Content cluster/category
+5. priority - Priority level (0-10)
+6. notes - Additional notes or description
+7. search_intent - informational/commercial/transactional/navigational
+8. tone_voice - professional/casual/technical/friendly/authoritative
+9. due_date - Due date (YYYY-MM-DD format)
+10. publish_window_start - Publish window start (YYYY-MM-DD)
+11. publish_window_end - Publish window end (YYYY-MM-DD)
+
+Tests Passed:
+✅ App loads correctly on port 4848
+✅ Template endpoint returns valid CSV
+✅ All columns present and correctly ordered
+✅ Instructions row clear and comprehensive
+✅ Example data realistic and helpful
+✅ Download button appears in UI
+✅ File downloads with proper filename
+
+Committed: "feat(blogcanvas): downloadable CSV template for batch imports (feat-128)"
+
+Next Priority: feat-129 - CSV Export with filtering options
+
+=== Session 2026-01-15T20:00:00Z ===
+✅ Implemented: feat-129 - CSV Export with filtering options
+
+Files Changed:
+- NEW: /src/components/batches/CSVExportDialog.tsx (295 lines)
+  * Dialog component with three filter sections
+  * Status filter: dropdown with 9 status options (all, idea, ai_drafting, draft, editor_review, client_review, approved, published, scheduled, failed)
+  * Date range filter: from/to date inputs for created_at filtering
+  * Column selection: 12 available columns with checkboxes (topic, target_keyword, target_wordcount, topic_cluster, priority, notes, status, due_date, publish_window_start, publish_window_end, seo_quality_score, created_at)
+  * Select All / Deselect All functionality
+  * Export button triggers filtered download
+
+- MODIFIED: /src/app/app/batches/[id]/page.tsx
+  * Added CSVExportDialog import
+  * Added exportDialogOpen state
+  * Changed handleExportCSV to open dialog instead of direct download
+  * Rendered CSVExportDialog component with batch props
+
+- MODIFIED: /src/app/api/content-batches/[id]/export-csv/route.ts (enhanced)
+  * Added query parameter parsing (status, dateFrom, dateTo, columns)
+  * Enhanced database query with conditional filters
+  * Status filter: eq() filter when not 'all'
+  * Date range filters: gte() and lte() on created_at
+  * Dynamic column selection: builds CSV with only selected columns
+  * Column definitions with extraction functions for consistent data mapping
+  * Added seo_quality_score and created_at columns to available fields
+
+Acceptance Criteria Verification:
+✅ Export works - Dialog opens, API accepts filters, CSV downloads
+✅ Status filter works - Query param applied, posts filtered by status
+✅ Date filter works - created_at range filters working correctly
+✅ Column selection works - Only selected columns included in CSV output
+
+Tests Passed:
+✅ App compiles without errors (TypeScript unrelated errors in help-content.tsx)
+✅ Export button opens modal dialog
+✅ All filter UI elements render correctly
+✅ API endpoint accepts and processes filter parameters
+✅ CSV generation with dynamic columns works
+
+Technical Details:
+- Uses shadcn/ui Dialog component for modal
+- Status filter: 9 options covering all blog post statuses
+- Date range: uses HTML5 date inputs for created_at filtering
+- Column selection: 12 total columns, checkboxes with visual feedback
+- API filters: status (eq), dateFrom (gte), dateTo (lte), columns (split/map)
+- CSV generation: csv-stringify with dynamic column mapping
+- File naming: batch_name_export_YYYY-MM-DD.csv
+
+Metrics:
+- New component: 295 lines
+- Modified files: 2
+- API enhancements: +50 lines
+- Total additions: ~345 lines
+
+Committed: "feat(blogcanvas): CSV export with filtering options (feat-129)"
+
+Next Priority: feat-130 - CSV import POST endpoint
+

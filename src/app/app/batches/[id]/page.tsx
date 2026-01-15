@@ -11,6 +11,7 @@ import ImageGenerationDialog from '@/components/images/ImageGenerationDialog'
 import SchedulePublishDialog from '@/components/publishing/SchedulePublishDialog'
 import ProjectedSEOScore from '@/components/analytics/ProjectedSEOScore'
 import CSVImportModalV2 from '@/components/batches/CSVImportModalV2'
+import CSVExportDialog from '@/components/batches/CSVExportDialog'
 
 export default function BatchDetailPage() {
     const params = useParams()
@@ -28,6 +29,7 @@ export default function BatchDetailPage() {
     const [selectedPostForSchedule, setSelectedPostForSchedule] = useState<{ id: string; topic: string } | null>(null)
     const [scheduledPosts, setScheduledPosts] = useState<any[]>([])
     const [showScheduledSection, setShowScheduledSection] = useState(false)
+    const [exportDialogOpen, setExportDialogOpen] = useState(false)
 
     useEffect(() => {
         fetchBatchDetails()
@@ -191,24 +193,8 @@ export default function BatchDetailPage() {
         await fetchBatchDetails()
     }
 
-    const handleExportCSV = async () => {
-        try {
-            const response = await fetch(`/api/content-batches/${params.id}/export-csv`)
-            if (!response.ok) throw new Error('Export failed')
-
-            const blob = await response.blob()
-            const url = window.URL.createObjectURL(blob)
-            const a = document.createElement('a')
-            a.href = url
-            a.download = response.headers.get('Content-Disposition')?.split('filename=')[1]?.replace(/"/g, '') || `batch_${params.id}.csv`
-            document.body.appendChild(a)
-            a.click()
-            window.URL.revokeObjectURL(url)
-            document.body.removeChild(a)
-        } catch (error) {
-            console.error('Export error:', error)
-            alert('Failed to export CSV file')
-        }
+    const handleExportCSV = () => {
+        setExportDialogOpen(true)
     }
 
     const handleDownloadTemplate = async () => {
@@ -708,6 +694,14 @@ export default function BatchDetailPage() {
                 batchId={params.id as string}
                 clientId={batch?.client_id || ''}
                 onImportComplete={handleImportComplete}
+            />
+
+            {/* CSV Export Dialog with Filters - feat-129 */}
+            <CSVExportDialog
+                open={exportDialogOpen}
+                onClose={() => setExportDialogOpen(false)}
+                batchId={params.id as string}
+                batchName={batch?.name || 'batch'}
             />
         </div>
     )

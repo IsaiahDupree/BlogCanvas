@@ -2897,7 +2897,9 @@
         "Date filter works",
         "Column selection works"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T20:00:00Z",
+      "notes": "Complete CSV export with filtering. Export button opens modal dialog with status filter (9 statuses), date range filter (created_at), and column selection (12 columns). API endpoint enhanced to support all filters via query params. All acceptance criteria verified: Export works (modal + API), status filter works (query param filtering), date filter works (created_at range), column selection works (dynamic CSV columns)."
     },
     {
       "id": "feat-130",
