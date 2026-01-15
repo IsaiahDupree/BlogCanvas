@@ -2875,7 +2875,9 @@
         "Example helpful",
         "Instructions clear"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T19:00:00Z",
+      "notes": "Complete CSV template download feature. Created GET /api/content-batches/[id]/download-csv-template endpoint that returns a ready-to-use CSV template with all 11 supported columns (topic, target_keyword, target_wordcount, topic_cluster, priority, notes, search_intent, tone_voice, due_date, publish_window_start, publish_window_end). Template includes: (1) header row with all columns, (2) instructions row formatted as comment explaining each field, (3) example data row with realistic SEO content example, (4) 3 empty rows for user input. Added 'Download Template' button to batch detail page (/app/batches/[id]/page.tsx) positioned before Import CSV button. Button triggers handleDownloadTemplate function that fetches template and downloads with proper filename. All acceptance criteria verified: template downloads correctly with proper filename, all columns included and correctly ordered, example data is helpful and realistic, instructions clear and comprehensive."
     },
     {
       "id": "feat-129",

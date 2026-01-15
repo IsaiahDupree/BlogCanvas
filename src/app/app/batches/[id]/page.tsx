@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Play, Pause, CheckCircle2, AlertCircle, Loader2, TrendingUp, FileText, Upload, Download, Send, Image as ImageIcon, ExternalLink, Calendar, Clock, AlertTriangle, CalendarClock } from 'lucide-react'
+import { ArrowLeft, Play, Pause, CheckCircle2, AlertCircle, Loader2, TrendingUp, FileText, Upload, Download, Send, Image as ImageIcon, ExternalLink, Calendar, Clock, AlertTriangle, CalendarClock, FileDown } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -211,6 +211,26 @@ export default function BatchDetailPage() {
         }
     }
 
+    const handleDownloadTemplate = async () => {
+        try {
+            const response = await fetch(`/api/content-batches/${params.id}/download-csv-template`)
+            if (!response.ok) throw new Error('Template download failed')
+
+            const blob = await response.blob()
+            const url = window.URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = response.headers.get('Content-Disposition')?.split('filename=')[1]?.replace(/"/g, '') || `blogcanvas-import-template.csv`
+            document.body.appendChild(a)
+            a.click()
+            window.URL.revokeObjectURL(url)
+            document.body.removeChild(a)
+        } catch (error) {
+            console.error('Template download error:', error)
+            alert('Failed to download CSV template')
+        }
+    }
+
     const handlePublishAll = async () => {
         if (!confirm('This will publish all approved posts in this batch to WordPress. Continue?')) {
             return
@@ -277,12 +297,12 @@ export default function BatchDetailPage() {
                         </div>
                         <div className="flex gap-2">
                             <Button
-                                onClick={handleExportCSV}
+                                onClick={handleDownloadTemplate}
                                 variant="outline"
                                 className="flex items-center gap-2"
                             >
-                                <Download className="w-4 h-4" />
-                                Export CSV
+                                <FileDown className="w-4 h-4" />
+                                Download Template
                             </Button>
                             <Button
                                 onClick={() => setImportModalOpen(true)}
@@ -291,6 +311,14 @@ export default function BatchDetailPage() {
                             >
                                 <Upload className="w-4 h-4" />
                                 Import CSV
+                            </Button>
+                            <Button
+                                onClick={handleExportCSV}
+                                variant="outline"
+                                className="flex items-center gap-2"
+                            >
+                                <Download className="w-4 h-4" />
+                                Export CSV
                             </Button>
                             <Button
                                 onClick={startGeneration}
