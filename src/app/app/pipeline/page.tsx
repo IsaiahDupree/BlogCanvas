@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { 
-  Globe, 
-  Sparkles, 
-  ArrowRight, 
-  CheckCircle, 
-  Loader2, 
+import {
+  Globe,
+  Sparkles,
+  ArrowRight,
+  CheckCircle,
+  Loader2,
   AlertCircle,
   Target,
   BarChart3,
@@ -24,7 +24,8 @@ import {
   Search,
   ExternalLink,
   Trash2,
-  RotateCcw
+  RotateCcw,
+  Download
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -392,15 +393,15 @@ export default function PipelinePage() {
 
   const generateAllBlogs = async () => {
     if (!result?.topics.length) return
-    
+
     setGeneratingBlogs(true)
     setGeneratedCount(0)
 
     const topicsToGenerate = result.topics.filter(t => !t.blog_generated)
-    
+
     for (let i = 0; i < topicsToGenerate.length; i++) {
       const topic = topicsToGenerate[i]
-      
+
       try {
         const res = await fetch('/api/blog-posts/generate-full', {
           method: 'POST',
@@ -417,7 +418,7 @@ export default function PipelinePage() {
           setGeneratedCount(i + 1)
           setResult(prev => prev ? {
             ...prev,
-            topics: prev.topics.map(t => 
+            topics: prev.topics.map(t =>
               t.id === topic.id ? { ...t, blog_generated: true } : t
             )
           } : null)
@@ -433,6 +434,42 @@ export default function PipelinePage() {
     }
 
     setGeneratingBlogs(false)
+  }
+
+  const exportTopicsToCSV = async () => {
+    if (!currentJobId) {
+      alert('No job ID available for export')
+      return
+    }
+
+    try {
+      const res = await fetch(`/api/pipeline-jobs/${currentJobId}/export-topics`)
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Failed to export topics')
+      }
+
+      // Get the filename from the Content-Disposition header
+      const contentDisposition = res.headers.get('Content-Disposition')
+      const filenameMatch = contentDisposition?.match(/filename="(.+)"/)
+      const filename = filenameMatch ? filenameMatch[1] : `topics_${new Date().toISOString().split('T')[0]}.csv`
+
+      // Download the CSV file
+      const blob = await res.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+
+    } catch (error: any) {
+      console.error('Failed to export CSV:', error)
+      alert('Failed to export CSV: ' + error.message)
+    }
   }
 
   const getScoreColor = (score: number) => {
@@ -949,23 +986,33 @@ export default function PipelinePage() {
                         AI-generated topics based on content gaps, goals, and target audience
                       </CardDescription>
                     </div>
-                    <Button
-                      onClick={generateAllBlogs}
-                      disabled={generatingBlogs || result.topics.every(t => t.blog_generated)}
-                      className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg shadow-emerald-200"
-                    >
-                      {generatingBlogs ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Generating ({generatedCount}/{result.topics.filter(t => !t.blog_generated).length})
-                        </>
-                      ) : (
-                        <>
-                          <Play className="w-4 h-4 mr-2" />
-                          Generate All Blogs
-                        </>
-                      )}
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        onClick={exportTopicsToCSV}
+                        variant="outline"
+                        className="border-indigo-200 text-indigo-600 hover:bg-indigo-50"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Export CSV
+                      </Button>
+                      <Button
+                        onClick={generateAllBlogs}
+                        disabled={generatingBlogs || result.topics.every(t => t.blog_generated)}
+                        className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg shadow-emerald-200"
+                      >
+                        {generatingBlogs ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Generating ({generatedCount}/{result.topics.filter(t => !t.blog_generated).length})
+                          </>
+                        ) : (
+                          <>
+                            <Play className="w-4 h-4 mr-2" />
+                            Generate All Blogs
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="p-0">
