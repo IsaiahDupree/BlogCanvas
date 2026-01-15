@@ -9834,3 +9834,69 @@ Updated: feature_list.json
 - Documented all acceptance criteria verification
 
 Next Priority: feat-125 - PRD Revision: GET/POST /api/blog-posts/{id}/revisions endpoints
+
+=== Session 2026-01-15T15:30:00Z ===
+Feature: feat-125 - PRD Revision: GET/POST /api/blog-posts/{id}/revisions endpoints
+
+Status: ✅ COMPLETE - Implemented with filtering and pagination
+
+Implementation:
+- Created new API endpoint at /api/blog-posts/[id]/revisions/route.ts
+- Implemented both GET and POST methods
+- Added query parameter filtering by revision_type
+- Implemented pagination with metadata
+
+Acceptance Criteria Verification:
+✅ GET works
+  - Returns all revisions ordered by created_at DESC
+  - Includes complete revision data (id, blog_post_id, revision_type, content, etc.)
+  - Proper authentication required (401 if unauthorized)
+  - Error handling for database failures (500)
+
+✅ POST works
+  - Creates new revision with user-provided data
+  - Validates required fields (revision_type, content)
+  - Validates revision_type against allowed values
+  - Verifies blog post exists (404 if not found)
+  - Auto-tracks created_by from authenticated user
+  - Returns 201 with created revision
+  - Comprehensive validation (400 for bad input)
+
+✅ Filtering works
+  - Query parameter: ?type=<revision_type>
+  - Optional filter applied before pagination
+  - Example: ?type=draft returns only draft revisions
+
+✅ Pagination works
+  - Query parameters: ?page=<number>&limit=<number>
+  - Defaults: page=1, limit=20
+  - Validation: page >= 1, limit 1-100
+  - Returns metadata:
+    * page, limit, total, totalPages
+    * hasNextPage, hasPrevPage
+  - Efficient range-based pagination using Supabase
+
+Technical Details:
+- Endpoint: /api/blog-posts/[id]/revisions
+- Methods: GET, POST
+- File: src/app/api/blog-posts/[id]/revisions/route.ts (172 lines)
+- TypeScript: No compilation errors
+- Security: Authentication required, RLS enforced
+- Validation: Input validation and error handling
+
+API Examples:
+- GET /api/blog-posts/{id}/revisions
+- GET /api/blog-posts/{id}/revisions?page=2&limit=10
+- GET /api/blog-posts/{id}/revisions?type=draft
+- GET /api/blog-posts/{id}/revisions?type=human_edit&page=1&limit=5
+- POST /api/blog-posts/{id}/revisions
+  Body: { revision_type, content, content_text?, notes? }
+
+Files Created:
+- src/app/api/blog-posts/[id]/revisions/route.ts
+
+Updated:
+- feature_list.json (feat-125 passes: true)
+- claude-progress.txt
+
+Next Priority: feat-126 - PRD CSV: Import modal with validation preview
