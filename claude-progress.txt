@@ -9049,3 +9049,34 @@ Acceptance Criteria Verification:
 ✅ Status updates - updatePostStatus API call to /api/blog-posts/[id]/status
 ✅ Count per column - Badge component displays columnPosts.length
 
+
+=== Session 2026-01-15T11:35:00Z ===
+- Verified: feat-112 - PRD: Client sees project overview dashboard
+- Files verified:
+  - Existing: src/app/portal/dashboard/page.tsx (client portal dashboard)
+  - Existing: src/components/portal/ProjectOverview.tsx (project metrics component)
+  - Existing: src/app/api/portal/project-overview/route.ts (backend API)
+- Tests passed:
+  ✅ Summary visible - ProjectOverview component displays SEO baseline, target, uplift
+  ✅ Status counts shown - Quick Stats grid with 4 cards (Pending Review, Approved, Scheduled, Total)
+  ✅ Timeline displayed - Active Content Batch shows start/end dates with progress bar
+  ✅ Actions highlighted - "Needs Your Review" section with yellow/orange gradient background
+  ✅ Real-time data from API endpoint
+  ✅ Responsive grid layout
+- Committed: "chore(blogcanvas): verify feat-112 client portal dashboard (feat-112)"
+- Next priority: feat-113 - PRD: Client comment thread on posts
+
+Implementation Details (Already Existed):
+- Dashboard shows project summary with website URL
+- SEO metrics displayed in 3-card grid (baseline, target, uplift)
+- Active batch progress with completion percentage bar
+- Batch stats: Approved, Published, Remaining counts
+- Timeline with start/end dates
+- Needs Review section lists posts awaiting client approval
+- Recently Approved section shows approved posts with publish dates
+- Upcoming & Scheduled section shows scheduled posts
+- Quick Stats grid provides at-a-glance metrics
+- Top Performing Posts section at bottom
+- All data fetched from /api/portal/project-overview endpoint
+- Authenticated via Supabase client profiles
+

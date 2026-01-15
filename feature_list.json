@@ -2541,7 +2541,9 @@
         "Notifications sent",
         "Resolution tracked"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T11:40:00Z",
+      "notes": "Client comment thread system fully implemented with threading, notifications, and resolution tracking. Components: ThreadedComments.tsx (UI with reply/resolve), API endpoints at /api/portal/posts/[postId]/comments (GET/POST/PATCH). Features: nested comment threads with parent_comment_id, reply functionality with max depth 5, resolve/reopen comments, @mentions with mentioned_user_ids, activity_log for notifications, resolved_by tracking. UI shows comment count, author role badges, resolution status, relative timestamps. All acceptance criteria met."
     },
     {
       "id": "feat-114",
