@@ -3340,7 +3340,9 @@
         "Record deleted",
         "Response correct"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T21:30:00Z",
+      "notes": "DELETE endpoint already implemented at src/app/api/pipeline-jobs/[jobId]/route.ts (lines 116-145). Includes auth check via supabase.auth.getUser(), deletes record from pipeline_jobs table, returns { success: true } response. Frontend integration exists in pipeline page with deleteJob function (line 204) and delete button (line 1054) with confirmation dialog. All acceptance criteria verified."
     },
     {
       "id": "feat-150",
@@ -3360,7 +3362,9 @@
         "Status updated",
         "Cleanup done"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T21:35:00Z",
+      "notes": "Created dedicated POST /api/pipeline-jobs/[jobId]/cancel endpoint at src/app/api/pipeline-jobs/[jobId]/cancel/route.ts. Includes auth check, validates job exists, prevents cancellation of already-completed jobs, updates status to 'cancelled' with completed_at timestamp. Updated frontend cancelJob function in pipeline page to use new endpoint (line 232). Cancellation stops execution via existing checkIfCancelled() helper between pipeline steps. All acceptance criteria met."
     },
     {
       "id": "feat-151",
@@ -3380,7 +3384,9 @@
         "Job created",
         "ID returned"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T21:40:00Z",
+      "notes": "Created dedicated POST /api/pipeline-jobs/[jobId]/retry endpoint at src/app/api/pipeline-jobs/[jobId]/retry/route.ts. Fetches existing job, clones all input parameters (website_url, client_id, target_market, client_goals, ideal_customer_profile), creates new job with status 'pending', returns new job with ID and client data. Updated frontend retryJob function to use new endpoint (line 263). All acceptance criteria met."
     },
     {
       "id": "feat-152",

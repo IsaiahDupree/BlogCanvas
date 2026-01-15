@@ -229,13 +229,8 @@ export default function PipelinePage() {
     }
 
     try {
-      const res = await fetch(`/api/pipeline-jobs/${jobId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          status: 'cancelled',
-          completed_at: new Date().toISOString()
-        })
+      const res = await fetch(`/api/pipeline-jobs/${jobId}/cancel`, {
+        method: 'POST'
       })
       const data = await res.json()
 
@@ -265,16 +260,8 @@ export default function PipelinePage() {
     }
 
     try {
-      const res = await fetch('/api/pipeline-jobs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          website_url: job.website_url,
-          client_id: job.clients?.id || null,
-          target_market: job.target_market,
-          client_goals: job.client_goals,
-          ideal_customer_profile: job.ideal_customer_profile
-        })
+      const res = await fetch(`/api/pipeline-jobs/${job.id}/retry`, {
+        method: 'POST'
       })
       const data = await res.json()
 
