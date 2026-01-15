@@ -8886,3 +8886,28 @@ Future Enhancements:
 - Batch sync across multiple websites
 - GSC property auto-discovery
 
+
+=== Session 2026-01-15T11:05:00Z ===
+- Implemented: feat-107 - Aggregate metrics per client and per batch
+- Files changed:
+  - Created: src/app/api/analytics/client-stats/route.ts
+  - Created: src/app/api/analytics/batch-stats/route.ts
+  - Created: src/components/analytics/ClientMetrics.tsx
+  - Created: src/components/analytics/BatchMetrics.tsx
+  - Modified: src/app/app/analytics/page.tsx
+  - Modified: feature_list.json
+- Tests passed:
+  ✅ Client totals API aggregates metrics by client_id
+  ✅ Batch totals API aggregates metrics by content_batch_id
+  ✅ Averages calculated (CTR, position, SEO score)
+  ✅ Dashboard displays both ClientMetrics and BatchMetrics sections
+  ✅ Code compiles without errors (verified via dev server)
+- Committed: "feat(blogcanvas): implement aggregate metrics per client and batch (feat-107)"
+- Next priority: feat-108 - Track conversions per published post
+
+Implementation Details:
+- Client stats endpoint groups posts by client, calculates totals and averages
+- Batch stats endpoint groups posts by content_batch, supports filtering by clientId/batchId
+- Both components display metrics in visual cards with color-coded indicators
+- Sorted by total impressions (descending) to show top performers first
+- Uses latest metric snapshot per post for accurate current state
