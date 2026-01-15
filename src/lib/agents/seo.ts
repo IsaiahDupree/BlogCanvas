@@ -1,6 +1,7 @@
 /**
  * SEO Agent
  * Optimizes content for search engines
+ * PRD feat-093: Includes internal link hints
  */
 
 import { LLMProvider, AgentResult, SEOMetadata } from './types';
@@ -10,17 +11,35 @@ export interface SEOAgentInput {
     topic?: string;
     targetKeyword?: string;
     wordCount?: number;
+    existingContent?: {
+        title: string;
+        targetKeyword: string;
+        url?: string;
+    }[];
 }
 
 /**
  * Run the SEO agent to optimize content
+ * Enhanced with internal link hints (feat-093)
  */
 export async function runSEOAgent(
     provider: LLMProvider,
     input: SEOAgentInput
 ): Promise<AgentResult<SEOMetadata>> {
     try {
-        const systemPrompt = `You are an SEO expert optimizing blog content for search engines.`;
+        const systemPrompt = `You are an SEO expert optimizing blog content for search engines and internal linking strategy.`;
+
+        // Build existing content context for internal linking
+        const existingContentContext = input.existingContent && input.existingContent.length > 0
+            ? `\n\nEXISTING CONTENT FOR INTERNAL LINKING:
+${input.existingContent.map(c => `- "${c.title}" (keyword: ${c.targetKeyword})`).join('\n')}
+
+Analyze the content and suggest 3-5 internal link opportunities where this new content could naturally link to existing content. For each link hint, provide:
+- anchorText: The exact phrase in the content to turn into a link
+- suggestedTargetKeyword: The keyword of the existing post to link to
+- placement: Which section/paragraph the link should appear in
+- reasoning: Why this link makes sense from an SEO and user experience perspective`
+            : '';
 
         const userPrompt = `Optimize the following content for SEO:
 
@@ -28,7 +47,8 @@ TOPIC: ${input.topic}
 TARGET KEYWORD: ${input.targetKeyword}
 
 CONTENT:
-${input.fullDraftContent.substring(0, 2000)}... [truncated]
+${input.fullDraftContent.substring(0, 3000)}... [truncated]
+${existingContentContext}
 
 Return a JSON object with:
 - title: SEO-optimized title (50-60 chars, include keyword)
@@ -36,7 +56,15 @@ Return a JSON object with:
 - slug: URL-friendly slug
 - suggestions: array of improvement suggestions
 - keywordDensity: calculated keyword density percentage
-- readabilityScore: "Good", "Fair", or "Needs Improvement"`;
+- readabilityScore: "Good", "Fair", or "Needs Improvement"
+${input.existingContent && input.existingContent.length > 0 ? `- internalLinkHints: array of 3-5 internal link opportunities with {anchorText, suggestedTargetKeyword, placement, reasoning}` : ''}
+
+INTERNAL LINK BEST PRACTICES (feat-093):
+- Use descriptive, natural anchor text (not "click here")
+- Link to contextually relevant content
+- Place links where they add value for readers
+- Optimize anchor text for target keywords
+- Distribute links naturally throughout the content`;
 
         const response = await provider.call({
             systemPrompt,

@@ -283,26 +283,62 @@ export async function runBlogGenerationPipeline(
 
     updateProgress(2, 'completed');
 
-    // Step 4: SEO Optimization
+    // Step 4: SEO Optimization (with internal link hints - feat-093)
     updateProgress(3, 'running');
+
+    // Fetch existing content for internal linking hints
+    let existingContent: { title: string; targetKeyword: string; url?: string }[] = [];
+    if (input.supabaseClient && input.blogPostId) {
+      try {
+        // Get blog post to find its website/client
+        const { data: blogPost } = await input.supabaseClient
+          .from('blog_posts')
+          .select('website_id, content_batch_id')
+          .eq('id', input.blogPostId)
+          .single();
+
+        if (blogPost?.website_id) {
+          // Get other published posts from same website
+          const { data: existingPosts } = await input.supabaseClient
+            .from('blog_posts')
+            .select('title, target_keyword, cms_url')
+            .eq('website_id', blogPost.website_id)
+            .eq('status', 'published')
+            .limit(20);
+
+          if (existingPosts) {
+            existingContent = existingPosts.map(p => ({
+              title: p.title,
+              targetKeyword: p.target_keyword,
+              url: p.cms_url || undefined
+            }));
+          }
+        }
+      } catch (error) {
+        // If fetching existing content fails, continue without it
+        console.warn('Failed to fetch existing content for internal linking:', error);
+      }
+    }
+
     const seoInput: SEOAgentInput = {
       fullDraftContent,
       topic: input.topic,
       targetKeyword: input.targetKeyword,
-      wordCount: fullDraftContent.split(/\s+/).length
+      wordCount: fullDraftContent.split(/\s+/).length,
+      existingContent: existingContent.length > 0 ? existingContent : undefined
     };
 
     const seoResult = await runSEOAgent(provider, seoInput);
     if (seoResult.success) {
       seoMetadata = seoResult.data!;
 
-      // Save SEO pass revision
+      // Save SEO pass revision (now includes internal link hints)
       await saveRevision(
         input.supabaseClient,
         input.blogPostId,
         'seo_pass',
         seoMetadata,
-        `SEO optimization completed with score ${calculateSEOScore(seoMetadata)}`
+        `SEO optimization completed with score ${calculateSEOScore(seoMetadata)}${seoMetadata.internalLinkHints ? `, ${seoMetadata.internalLinkHints.length} link hints` : ''}`
       );
     }
     updateProgress(3, 'completed');

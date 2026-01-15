@@ -78,6 +78,13 @@ export interface DraftSectionResult {
     wordCount: number;
 }
 
+export interface InternalLinkHint {
+    anchorText: string;
+    suggestedTargetKeyword: string;
+    placement: string;
+    reasoning: string;
+}
+
 export interface SEOMetadata {
     title: string;
     metaDescription: string;
@@ -85,6 +92,7 @@ export interface SEOMetadata {
     suggestions: string[];
     keywordDensity: number;
     readabilityScore: string;
+    internalLinkHints?: InternalLinkHint[];
 }
 
 export interface QualityGate {
