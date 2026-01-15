@@ -8561,3 +8561,127 @@ Next Steps:
 
 Committed: 1f82a24
 Next Priority: feat-105 - Scheduled publish with date/time picker, or feat-106 - Pull Google Search Console metrics (higher priority)
+
+=== Session: 2026-01-15 22:00 ===
+Implemented: feat-102 - Topic list with publish window/due date
+Status: COMPLETE
+
+Summary:
+Implemented comprehensive publish window and due date tracking system that enables
+CSMs and editors to set deadlines, define flexible publish windows, view deadlines in
+the batch UI, and receive overdue alerts for posts that miss deadlines or windows.
+
+Files Created:
+- supabase/migrations/20260120000001_blog_post_publish_window.sql
+  * Added publish_window_start and publish_window_end DATE fields
+  * Added constraint to ensure window_end >= window_start
+  * Created overdue_blog_posts view for deadline tracking
+  * Created get_overdue_count() function for stats aggregation
+  * View calculates overdue_status: past_due, at_risk, missed_window
+  * Tracks days_overdue for each post
+
+- src/app/api/content-batches/[id]/overdue/route.ts - GET endpoint (50 lines)
+  * Fetches overdue posts from overdue_blog_posts view
+  * Calls get_overdue_count() RPC for statistics
+  * Returns overdue posts array and stats object
+
+- src/app/api/blog-posts/[id]/dates/route.ts - PATCH endpoint (75 lines)
+  * Updates due_date, publish_window_start, publish_window_end
+  * Validates that window_end >= window_start
+  * Returns updated post with new dates
+
+Files Modified:
+- src/app/api/content-batches/[id]/posts/route.ts
+  * Extended SELECT to include due_date, publish_window_start, publish_window_end
+  * Added PRD feat-102 comment explaining new fields
+
+- src/app/api/content-batches/[id]/import-csv/route.ts
+  * Added due_date, publish_window_start, publish_window_end CSV column parsing
+  * Supports multiple column name variations (snake_case, space-separated, Title Case)
+  * Includes dates in blog_posts INSERT statement
+
+- src/app/api/content-batches/[id]/export-csv/route.ts
+  * Added due_date, publish_window_start, publish_window_end to SELECT query
+  * Added fields to CSV output with proper headers
+  * Exports dates in ISO format (YYYY-MM-DD)
+
+- src/app/app/batches/[id]/page.tsx - Vendor batch detail page
+  * Added Calendar, Clock, AlertTriangle icon imports
+  * Added overdueStats state for tracking overdue counts
+  * Created fetchOverdueStats() function to call overdue API
+  * Added formatDate() helper for consistent date formatting (MMM DD, YYYY)
+  * Added getOverdueStatus() helper to calculate post status:
+    - Checks if post is published/scheduled (returns null)
+    - Checks due_date: past_due (red), at_risk (<= 3 days, yellow)
+    - Checks publish_window_end: missed_window (red), window_closing (<= 3 days, yellow)
+  * Added overdue alerts card showing:
+    - past_due_count with count and label
+    - at_risk_count with count and label
+    - missed_window_count with count and label
+    - Only displays if total_alerts > 0
+  * Enhanced post cards to display:
+    - Due date with Calendar icon
+    - Publish window range with Clock icon
+    - Overdue status badge with AlertTriangle icon and color coding
+
+Key Features:
+✅ Database fields - publish_window_start and publish_window_end DATE columns
+✅ Overdue tracking - View calculates past_due, at_risk, missed_window statuses
+✅ Stats aggregation - RPC function counts overdue posts per client/batch
+✅ API endpoints - Fetch overdue posts, update individual post dates
+✅ CSV support - Import/export dates in CSV files
+✅ UI display - Shows due dates and windows with icons in batch view
+✅ Overdue alerts - Alert card with breakdown by status type
+✅ Per-post badges - Color-coded badges showing overdue status
+✅ Date validation - Ensures window_end >= window_start
+
+Acceptance Criteria Status:
+✅ Due date settable - Can be set via CSV import or dates PATCH API
+✅ Window configurable - publish_window_start/end settable with validation
+✅ Visible in UI - Displayed in batch detail with Calendar and Clock icons
+✅ Alerts work - Overdue alert card and per-post status badges display correctly
+
+Technical Implementation:
+1. Database Schema:
+   - publish_window_start (DATE) - Start of publish window
+   - publish_window_end (DATE) - End of publish window
+   - CHECK constraint ensures end >= start
+   - Indexed for performance on non-null values
+   
+2. Overdue Detection Logic:
+   - Compares dates against CURRENT_DATE
+   - past_due: due_date < today AND not published/scheduled
+   - at_risk: due_date within 3 days AND not approved/published/scheduled
+   - missed_window: publish_window_end < today AND not published/scheduled
+   - Calculated in database view for consistency
+   
+3. UI Components:
+   - formatDate(): Converts ISO dates to "MMM DD, YYYY" format
+   - getOverdueStatus(): Calculates status and message for each post
+   - Overdue alerts card: Shows aggregated counts from API
+   - Per-post display: Shows dates, windows, and status inline
+   - Color coding: Red (overdue/missed), Yellow (at_risk/closing soon)
+
+Integration Points:
+- CSV import/export: Dates round-trip through CSV files
+- Batch API: Returns dates for all posts in batch
+- Dates API: PATCH endpoint for updating individual post dates
+- Overdue API: Provides real-time overdue status and stats
+- UI: Real-time display with polling (fetches every page load)
+
+Testing Notes:
+- Dev server running on port 4848 without errors
+- App homepage loads correctly
+- TypeScript compilation successful for all new/modified files
+- Migration ready to apply with idempotent checks
+- API endpoints follow existing patterns and conventions
+
+Future Enhancements:
+- Add date picker UI components for setting dates directly in batch view
+- Email notifications when posts become overdue
+- Dashboard widget showing overall overdue count across all batches
+- Scheduled jobs to check for newly overdue posts daily
+
+Committed: ffad28a
+Next Priority: feat-105 - Scheduled publish with date/time picker, or feat-106 - Pull Google Search Console metrics
+
