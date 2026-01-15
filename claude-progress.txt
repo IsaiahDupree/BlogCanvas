@@ -7303,3 +7303,98 @@ BlogPerformanceTab component features:
 ✅ Performance metrics captured - SEO scores, word counts, meta, images, links, headings tracked
 ✅ Benchmarks compared - Industry averages (75 score, 1500 words) used for comparison
 ✅ Gaps identified - Automatic gap detection for short posts, missing meta, missing images, few headings
+
+=== Session 2026-01-15T00:00:00Z ===
+- Implemented: feat-073 - PRD Stage 3: Output gap report document
+- Files changed:
+  - src/lib/reports/gap-report-generator.ts (new - report generation service)
+  - src/lib/reports/gap-report-pdf.ts (new - PDF generation with jsPDF)
+  - src/app/api/websites/[id]/gap-report/route.ts (new - API endpoint)
+  - src/components/website/GapsAnalysisTab.tsx (added Download Report button)
+  - scripts/test-gap-report.ts (new - test script)
+  - feature_list.json (marked feat-073 as passing)
+- Tests passed: All acceptance criteria verified
+  ✅ Gap report generated - Complete with executive summary, priorities, recommendations
+  ✅ Recommendations included - Organized by severity and timeframe with impact/effort ratings
+  ✅ PDF downloadable - Professional PDF export using jsPDF library
+  ✅ Shareable link created - POST endpoint stores report in database with shareable URL
+- Committed: "feat(blogcanvas): implement PRD Stage 3 gap report document generation (feat-073)"
+- Next priority: feat-079 - PRD Data: blog_post_revisions → blog_post_id with revision_type
+
+## Implementation Details
+
+### Gap Report Generator (gap-report-generator.ts)
+Core service that generates comprehensive gap analysis reports:
+- generateGapReport() - Main function that:
+  - Fetches website, gaps, and SEO audit data
+  - Calculates summary statistics (total, high/medium/low severity)
+  - Estimates improvement potential from fixing gaps
+  - Generates prioritized action lists (immediate, short-term, long-term)
+  - Creates detailed recommendations with impact and effort ratings
+- formatGapReportAsText() - Converts report to formatted plain text
+- Helper functions for:
+  - calculateEstimatedImprovement() - Sums potential score gains
+  - generatePrioritizedActions() - Organizes gaps by severity and timeline
+  - generateRecommendations() - Creates actionable recommendations by gap type
+
+### PDF Generator (gap-report-pdf.ts)
+Professional PDF generation using jsPDF:
+- generateGapReportPDF() - Creates formatted PDF with:
+  - Title page with website name and generation date
+  - Executive summary with score boxes
+  - Gap statistics with color-coded severity
+  - Priority actions organized by timeframe
+  - Detailed recommendations with badges
+  - Complete gap analysis with descriptions and actions
+  - Multi-page support with automatic page breaks
+  - Footer with page numbers
+- generateGapReportPDFBuffer() - Returns PDF as Buffer for download
+
+### API Endpoint (/api/websites/[id]/gap-report)
+RESTful API for gap report access:
+- GET with format parameter:
+  - ?format=json - Returns report data as JSON
+  - ?format=pdf - Downloads PDF file
+  - ?format=text - Downloads plain text file
+- POST for sharing:
+  - Generates report and stores in reports table
+  - Returns shareable link
+  - Optional email recipient parameter for future email integration
+
+### UI Integration
+GapsAnalysisTab component enhanced with Download Report button:
+- Opens PDF download in new tab
+- Positioned next to Re-analyze button
+- Uses Download icon from lucide-react
+
+### Report Content Structure
+1. Executive Summary
+   - Current SEO score
+   - Estimated improvement potential
+   - Gap statistics by severity
+
+2. Priority Actions
+   - Immediate (this week) - High severity items
+   - Short term (this month) - Medium severity items
+   - Long term (next quarter) - Low severity items
+
+3. Detailed Recommendations
+   - Category-based recommendations
+   - Impact rating (high/medium/low)
+   - Effort rating (low/medium/high)
+   - Generated based on gap types
+
+4. Gap Analysis Details
+   - Title, description, and severity for each gap
+   - Affected pages list
+   - Suggested actions
+   - Potential score improvement
+
+### Acceptance Criteria Verification
+✅ Gap report generated - generateGapReport() creates comprehensive report with all sections
+✅ Recommendations included - Automatically generated from gap analysis with impact ratings
+✅ PDF downloadable - Professional PDF via jsPDF with proper formatting and styling
+✅ Shareable link created - POST endpoint stores report and generates accessible URL
+
+The gap report system provides CSMs with professional documentation to share with clients,
+demonstrating SEO issues and actionable improvement plans with clear priorities and timelines.
