@@ -2739,7 +2739,9 @@
         "Unified view works",
         "Highlighting clear"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T12:07:03.211Z",
+      "notes": "Complete split/unified diff viewer implementation. Enhanced DiffViewer component with toggle buttons, split view (side-by-side), unified view, clear color highlighting (green for additions, red for deletions). Supports all acceptance criteria: diff renders correctly, split view works, unified view works, highlighting is clear."
     },
     {
       "id": "feat-123",
