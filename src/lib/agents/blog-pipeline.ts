@@ -13,12 +13,14 @@ import { runSEOAgent, SEOAgentInput } from './seo';
 import { runFactCheckAgent, FactCheckAgentInput, FactCheckResult as FCResult } from './fact-check';
 import { runEnhancementAgent, EnhancementAgentInput, EnhancementResult } from './enhancement';
 import { runVoiceToneAgent, VoiceToneAgentInput } from './voice-tone';
+import { getTargetWordCount, getAIPromptGuidance, DepthLevel } from '../content-depth';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export interface BlogGenerationInput {
   topic: string;
   targetKeyword: string;
   wordCountGoal: number;
+  depthLevel?: DepthLevel; // feat-099: Content depth level
   // Optional: For tracking revisions at each pipeline stage
   blogPostId?: string;
   supabaseClient?: SupabaseClient;
@@ -204,10 +206,17 @@ export async function runBlogGenerationPipeline(
 
     // Step 2: Outline
     updateProgress(1, 'running');
+
+    // feat-099: Adjust word count based on depth level
+    const wordCountTargets = getTargetWordCount(input.depthLevel);
+    const adjustedWordCount = input.depthLevel
+      ? Math.round((wordCountTargets.min + wordCountTargets.max) / 2)
+      : input.wordCountGoal;
+
     const outlineInput: OutlineAgentInput = {
       topic: input.topic,
       targetKeyword: input.targetKeyword,
-      wordCountGoal: input.wordCountGoal,
+      wordCountGoal: adjustedWordCount,
       research,
       clientProfile: input.clientProfile
     };
@@ -241,7 +250,10 @@ export async function runBlogGenerationPipeline(
     // Step 3: Draft (section by section)
     updateProgress(2, 'running');
     const sectionContents: { key: string; content: string }[] = [];
-    
+
+    // feat-099: Get depth-specific guidance for prompts
+    const depthGuidance = input.depthLevel ? getAIPromptGuidance(input.depthLevel) : '';
+
     for (const section of outline.sections) {
       const draftInput: DraftAgentInput = {
         section,
@@ -257,7 +269,8 @@ export async function runBlogGenerationPipeline(
           valueProposition: input.clientProfile.productServiceSummary || '',
           keyMessages: [],
           competitorDifferentiators: [],
-          contentDonts: []
+          contentDonts: [],
+          styleNotes: depthGuidance ? `Content Depth Guidance: ${depthGuidance}` : undefined
         }
       };
 

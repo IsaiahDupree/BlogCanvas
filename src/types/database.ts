@@ -621,6 +621,7 @@ export type Database = {
           client_id: string | null
           created_at: string | null
           created_by: string | null
+          depth_level: string | null
           end_date: string | null
           goal_score_from: number | null
           goal_score_to: number | null
@@ -639,6 +640,7 @@ export type Database = {
           client_id?: string | null
           created_at?: string | null
           created_by?: string | null
+          depth_level?: string | null
           end_date?: string | null
           goal_score_from?: number | null
           goal_score_to?: number | null
@@ -657,6 +659,7 @@ export type Database = {
           client_id?: string | null
           created_at?: string | null
           created_by?: string | null
+          depth_level?: string | null
           end_date?: string | null
           goal_score_from?: number | null
           goal_score_to?: number | null

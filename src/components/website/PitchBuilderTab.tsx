@@ -5,6 +5,8 @@ import { TrendingUp, Calendar, FileText, Zap, ArrowRight, Download, Send, Mail, 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { DepthLevelSelector } from '@/components/DepthLevelSelector'
+import { DepthLevel } from '@/lib/content-depth'
 
 interface ScoreProjection {
     current_score: number
@@ -32,6 +34,7 @@ export function PitchBuilderTab({ websiteId }: { websiteId: string }) {
     const [targetScore, setTargetScore] = useState(78)
     const [customMonths, setCustomMonths] = useState<number | null>(null)
     const [batchName, setBatchName] = useState('')
+    const [depthLevel, setDepthLevel] = useState<DepthLevel>('standard')
     const [creatingBatch, setCreatingBatch] = useState(false)
     const [generatingPitch, setGeneratingPitch] = useState(false)
     const [pitchContent, setPitchContent] = useState<{ format: string; content?: string; html?: string; subject?: string } | null>(null)
@@ -91,7 +94,8 @@ export function PitchBuilderTab({ websiteId }: { websiteId: string }) {
                     goalScoreTo: projection.target_score,
                     startDate: new Date().toISOString(),
                     endDate: new Date(Date.now() + projection.timeline_months * 30 * 24 * 60 * 60 * 1000).toISOString(),
-                    totalPosts: projection.recommended_posts
+                    totalPosts: projection.recommended_posts,
+                    depthLevel: depthLevel
                 })
             })
 
@@ -471,6 +475,11 @@ export function PitchBuilderTab({ websiteId }: { websiteId: string }) {
                                         className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-600"
                                     />
                                 </div>
+
+                                <DepthLevelSelector
+                                    value={depthLevel}
+                                    onChange={setDepthLevel}
+                                />
 
                                 <div className="bg-indigo-50 rounded-lg p-4">
                                     <h4 className="font-semibold mb-2">This will create:</h4>

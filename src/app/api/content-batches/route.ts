@@ -72,7 +72,8 @@ export async function POST(request: NextRequest) {
             goalScoreTo,
             startDate,
             endDate,
-            totalPosts
+            totalPosts,
+            depthLevel
         } = body;
 
         if (!websiteId || !name) {
@@ -94,6 +95,7 @@ export async function POST(request: NextRequest) {
                 start_date: startDate,
                 end_date: endDate,
                 total_posts: totalPosts,
+                depth_level: depthLevel || 'standard',
                 status: 'planned',
                 posts_approved: 0,
                 posts_completed: 0,
