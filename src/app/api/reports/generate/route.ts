@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { requireAuth } from '@/lib/supabase/server';
 import { generateReportNarrative, NarrativeSummary } from '@/lib/reports/narrative-generator';
+import { generateHTMLSlides } from '@/lib/reports/slide-deck-generator';
 
 /**
  * Generate analytics report for a website or content batch
@@ -244,12 +245,43 @@ export async function POST(request: NextRequest) {
 
         // Generate based on format
         let reportContent: any = {};
+        let storageUrl: string | null = null;
+
         if (format === 'email') {
             reportContent = generateEmailReport(reportData);
         } else if (format === 'pdf') {
             reportContent = generatePDFReport(reportData);
-        } else if (format === 'slide') {
-            reportContent = generateSlideReport(reportData);
+        } else if (format === 'slide' || format === 'slide_deck') {
+            // Generate HTML slide deck with charts
+            const htmlSlides = generateHTMLSlides(reportData);
+            reportContent = { html: htmlSlides };
+
+            // Upload to Supabase Storage
+            try {
+                const fileName = `slide-deck-${Date.now()}-${Math.random().toString(36).substring(7)}.html`;
+                const filePath = `reports/${websiteId || (website as any).id}/${fileName}`;
+
+                const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
+                    .from('reports')
+                    .upload(filePath, htmlSlides, {
+                        contentType: 'text/html',
+                        upsert: false
+                    });
+
+                if (uploadError) {
+                    console.error('Failed to upload slide deck to storage:', uploadError);
+                } else {
+                    // Get public URL
+                    const { data: urlData } = supabaseAdmin.storage
+                        .from('reports')
+                        .getPublicUrl(filePath);
+
+                    storageUrl = urlData.publicUrl;
+                    reportContent.url = storageUrl;
+                }
+            } catch (storageError) {
+                console.error('Error uploading to storage:', storageError);
+            }
         }
 
         // Save report to database
@@ -260,9 +292,10 @@ export async function POST(request: NextRequest) {
                 content_batch_id: batchId || null,
                 period_start: periodStart,
                 period_end: periodEnd,
-                report_type: format,
+                report_type: format === 'slide' ? 'slide_deck' : format,
                 generated_by: user.id,
-                report_data: reportData
+                report_data: reportData,
+                storage_url: storageUrl
             })
             .select()
             .single();

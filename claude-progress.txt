@@ -9080,3 +9080,46 @@ Implementation Details (Already Existed):
 - All data fetched from /api/portal/project-overview endpoint
 - Authenticated via Supabase client profiles
 
+
+=== Session 2026-01-15T11:40:00Z ===
+- Verified: feat-113 - PRD: Client comment thread on posts
+- Files verified:
+  - Existing: src/components/ThreadedComments.tsx (comment UI with threading)
+  - Existing: src/app/api/portal/posts/[postId]/comments/route.ts (API endpoints)
+  - Existing: src/app/portal/posts/[postId]/page.tsx (integrated component)
+- Tests passed:
+  ✅ Comments work - Full CRUD via API (GET, POST, PATCH)
+  ✅ Threading enabled - parent_comment_id with nested tree structure
+  ✅ Notifications sent - Activity log entries, @mentions tracked
+  ✅ Resolution tracked - is_resolved field with resolve/reopen actions
+  ✅ UI fully functional with reply, resolve buttons
+  ✅ Relative timestamps and author role badges
+- Committed: "chore(blogcanvas): verify feat-113 client comment thread system (feat-113)"
+- Next priority: feat-114 - PRD: Report type slide_deck generation
+
+Implementation Details (Already Existed):
+- ThreadedComments component provides full comment UI
+- API endpoints: GET (fetch threaded), POST (add comment/reply), PATCH (resolve/reopen)
+- Threaded structure built using parent_comment_id relationships
+- Maximum nesting depth of 5 levels to prevent excessive threading
+- Resolution tracking: is_resolved, resolved_by, resolved_at timestamps
+- @mention syntax support with mentioned_user_ids array
+- Activity logging for all comment actions (add, reply, resolve, reopen)
+- Author information includes name and role badge
+- Relative time formatting (just now, 5m ago, 2h ago, etc.)
+- Visual distinction for resolved comments (opacity-60)
+- Reply form appears inline when clicking Reply button
+- Comment count displayed in header
+- Empty state message when no comments exist
+- Error handling with user-friendly messages
+- Loading states for async operations
+
+Database Support:
+- comments table with parent_comment_id for threading
+- comment_mentions table for notification tracking
+- activity_log table for audit trail
+- RLS policies for secure access
+
+Note: Email notifications marked as TODO in code (line 156)
+Activity logging and mention tracking infrastructure in place.
+

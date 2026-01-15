@@ -9,6 +9,8 @@ interface Report {
     period_start: string;
     period_end: string;
     created_at: string;
+    storage_url?: string | null;
+    generated_by?: string | null;
     website: {
         id: string;
         url: string;
@@ -270,6 +272,11 @@ function ReportCard({ report, onRefresh }: { report: Report; onRefresh: () => vo
                 <div>
                     <span className="text-slate-600">Generated:</span>{' '}
                     <span className="text-slate-900">{formatDate(report.created_at)}</span>
+                    {report.generated_by && (
+                        <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">
+                            Manual
+                        </span>
+                    )}
                 </div>
             </div>
 
@@ -282,6 +289,16 @@ function ReportCard({ report, onRefresh }: { report: Report; onRefresh: () => vo
                     >
                         {downloading ? 'Downloading...' : 'Download PDF'}
                     </button>
+                )}
+                {report.report_type === 'slide_deck' && report.storage_url && (
+                    <a
+                        href={report.storage_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm font-medium transition-colors text-center"
+                    >
+                        📊 View Slides
+                    </a>
                 )}
                 <button
                     onClick={handleSendEmail}

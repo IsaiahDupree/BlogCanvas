@@ -2563,7 +2563,9 @@
         "Export works",
         "URL stored"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T12:00:00Z",
+      "notes": "Complete HTML slide deck generation with SVG charts (bar, pie, comparison). Generates standalone HTML files with navigation, stores in Supabase Storage (reports bucket), returns public URL. Includes executive summary, performance metrics, traffic trends, topic coverage, and recommendations. Files: slide-deck-generator.ts, reports/generate/route.ts (updated), reports/page.tsx (updated with View Slides button), migration 20260115000001_reports_storage.sql."
     },
     {
       "id": "feat-115",
@@ -2583,7 +2585,9 @@
         "Stored correctly",
         "History shows"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T12:00:00Z",
+      "notes": "Report generated_by tracking already implemented. The generated_by field stores user.id when reports are created manually via /api/reports/generate. UI updated to display Manual badge on reports with generated_by. Database column exists in reports table. System-generated reports (via cron/automation) would have null generated_by for distinction. Files: reports/generate/route.ts (line 296), reports/page.tsx (displays badge)."
     },
     {
       "id": "feat-116",
