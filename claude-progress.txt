@@ -12091,3 +12091,123 @@ Next Priority:
 - feat-157 (high) - "PRD Brand: Styles to Avoid UI in Brand Guide Editor"
 
 Note: Database migration needs to be applied via Supabase dashboard. ETA tracking will activate automatically once migration is applied and pipeline jobs are run.
+
+
+=== Session 2026-01-15T23:30:00Z ===
+
+Feature Implemented: feat-157 - PRD Brand: Styles to Avoid UI in Brand Guide Editor
+
+Implementation Summary:
+This feature adds a comprehensive brand style guidelines editor focused on defining
+styles to avoid for consistent, on-brand AI content generation.
+
+Backend Implementation:
+- Created API endpoint: /api/clients/[clientId]/brand-guide/route.ts
+  * GET handler: Retrieves brand guide for a specific client
+  * PATCH handler: Updates existing or creates new brand guide (upsert pattern)
+  * Authentication check via Supabase auth
+  * Error handling with proper HTTP status codes
+  * Returns null if no brand guide exists (graceful degradation)
+
+Frontend Implementation:
+- Created page: /app/app/clients/[clientId]/brand-guide/page.tsx (542 lines)
+  * Client-side React component with useState/useEffect hooks
+  * Tab-based interface (Avoid, Keep, Images, Titles)
+  * Fully implemented "Styles to Avoid" tab with 4 sections:
+
+1. Word Patterns to Avoid Section:
+   - Input field with "Enter" key support
+   - Add button to add patterns
+   - Badge display with X button to remove
+   - Empty state message
+   - Examples: "synergy", "leverage", "game-changer"
+
+2. Structural Rules Section:
+   - Max passive voice percentage input (0-100)
+   - Max sentence length input (words)
+   - Avoid ALL CAPS checkbox
+   - Clear labels and helper text
+   - Null value support (no limit)
+
+3. Data Backing Section:
+   - Three-field form: Rule, Evidence, Impact
+   - Add button to save data points
+   - List view of existing data points
+   - Remove button per data point
+   - Empty state message
+   - Supports evidence-based guidelines
+
+4. Preview Impact Section:
+   - Active rules summary with badges
+   - Color-coded by rule type:
+     * Red: Word patterns (shows count)
+     * Orange: Passive voice limit
+     * Blue: Sentence length limit
+     * Purple: ALL CAPS prohibition
+   - Example impact visualization:
+     * "Will be flagged" section (shows sample patterns)
+     * "Will be enforced" section (describes behavior)
+   - Info box explaining AI enforcement
+
+UI/UX Features:
+- Gradient header with save button
+- Back navigation to client page
+- Loading state with spinner
+- Save state with "Saving..." indicator
+- Success/error alerts on save
+- Responsive layout with Tailwind CSS
+- shadcn/ui components (Card, Button, Input, Textarea, Badge)
+- Lucide icons throughout
+
+Data Flow:
+1. Load: GET /api/clients/[clientId]/brand-guide on mount
+2. Edit: Local state updates (wordPatterns, maxPassiveVoice, etc.)
+3. Save: PATCH /api/clients/[clientId]/brand-guide with full styles_to_avoid object
+4. Persist: Updates brand_guides.styles_to_avoid JSONB column
+
+Integration with Existing System:
+- Uses existing brand_guides table from migration 20260124000001
+- styles_to_avoid column structure matches implementation
+- Ready for AI pipeline integration (noted in preview section)
+- Client-scoped via [clientId] dynamic route
+
+Acceptance Criteria Validation:
+✅ Patterns editable: Add/remove word patterns with intuitive UI
+✅ Rules configurable: Numeric inputs with validation and checkboxes
+✅ Metrics displayed: Data backing section with rule/evidence/impact fields
+✅ Preview works: Real-time preview showing active rules and example impact
+
+Testing:
+✅ Dev server running on port 4848
+✅ API endpoint created and accessible
+✅ Page renders without TypeScript errors
+✅ All UI components properly imported
+✅ State management working correctly
+✅ Data structure matches database schema
+
+Files Changed:
+- src/app/api/clients/[clientId]/brand-guide/route.ts (NEW - 120 lines)
+  * GET and PATCH handlers
+  * Supabase integration
+  * Authentication and error handling
+- src/app/app/clients/[clientId]/brand-guide/page.tsx (NEW - 542 lines)
+  * Complete UI implementation
+  * State management
+  * Form handling
+  * Preview logic
+- feature_list.json (MODIFIED - feat-157 marked as passing)
+- tsconfig.tsbuildinfo (MODIFIED - compilation cache)
+
+Commit: 93753b4 - "feat(blogcanvas): implement Styles to Avoid UI in brand guide editor (feat-157)"
+
+Next Priority Features (high):
+- feat-159 (high) - "PRD Brand: Styles to Keep UI with good/bad voice examples"
+- feat-161 (high) - "PRD Brand: Image Guidelines UI editor"
+- feat-163 (high) - "PRD Brand: Title Guidelines UI with format patterns"
+- feat-164 (critical) - "PRD Brand: getSharedClientContext() unified function"
+- feat-165 (critical) - "PRD Brand: GET /api/clients/{id}/context endpoint"
+
+Note: Database migration 20260124000001_brand_guides_style_enhancements.sql already
+applied, so the styles_to_avoid column exists and is ready to use. Other tabs (Styles
+to Keep, Image Guidelines, Title Guidelines) show placeholder content and can be
+implemented in future features.
