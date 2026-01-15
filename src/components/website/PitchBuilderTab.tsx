@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { TrendingUp, Calendar, FileText, Zap, ArrowRight, Download, Send, Mail, FileDown, Presentation, DollarSign } from 'lucide-react'
+import { TrendingUp, Calendar, FileText, Zap, ArrowRight, Download, Send, Mail, FileDown, Presentation, DollarSign, Copy } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -185,6 +185,18 @@ export function PitchBuilderTab({ websiteId }: { websiteId: string }) {
         a.download = `pitch-email-${websiteId}.txt`
         a.click()
         URL.revokeObjectURL(url)
+    }
+
+    const copyEmailToClipboard = () => {
+        if (!pitchContent?.content || !pitchContent?.subject) return
+
+        const emailBody = `Subject: ${pitchContent.subject}\n\n${pitchContent.content}`
+        navigator.clipboard.writeText(emailBody).then(() => {
+            alert('Email copied to clipboard!')
+        }).catch((err) => {
+            console.error('Failed to copy:', err)
+            alert('Failed to copy to clipboard')
+        })
     }
 
     return (
@@ -460,14 +472,24 @@ export function PitchBuilderTab({ websiteId }: { websiteId: string }) {
                                     <div className="mt-4 p-4 bg-white rounded-lg border">
                                         <div className="flex justify-between items-center mb-2">
                                             <h4 className="font-semibold">Email Draft</h4>
-                                            <Button
-                                                onClick={downloadEmail}
-                                                size="sm"
-                                                variant="outline"
-                                            >
-                                                <Download className="w-4 h-4 mr-2" />
-                                                Download
-                                            </Button>
+                                            <div className="flex gap-2">
+                                                <Button
+                                                    onClick={copyEmailToClipboard}
+                                                    size="sm"
+                                                    variant="outline"
+                                                >
+                                                    <Copy className="w-4 h-4 mr-2" />
+                                                    Copy
+                                                </Button>
+                                                <Button
+                                                    onClick={downloadEmail}
+                                                    size="sm"
+                                                    variant="outline"
+                                                >
+                                                    <Download className="w-4 h-4 mr-2" />
+                                                    Download
+                                                </Button>
+                                            </div>
                                         </div>
                                         <div className="text-sm space-y-2">
                                             <p><strong>Subject:</strong> {pitchContent.subject}</p>
