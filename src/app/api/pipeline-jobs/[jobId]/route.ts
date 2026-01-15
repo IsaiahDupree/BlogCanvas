@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { sendPipelineCompletionNotification } from '@/lib/notifications/pipeline-completion'
 
 /**
  * GET /api/pipeline-jobs/[jobId] - Get a specific pipeline job
@@ -105,6 +106,14 @@ export async function PATCH(
         if (error) {
             console.error('Error updating pipeline job:', error)
             return NextResponse.json({ success: false, error: error.message }, { status: 500 })
+        }
+
+        // Send notification if job just completed
+        if (status === 'completed' && job) {
+            // Fire and forget - don't wait for notification to complete
+            sendPipelineCompletionNotification({ jobId }).catch(err => {
+                console.error('Failed to send pipeline completion notification:', err)
+            })
         }
 
         return NextResponse.json({ success: true, job })

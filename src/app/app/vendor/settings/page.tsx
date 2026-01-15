@@ -28,6 +28,11 @@ export default function VendorSettingsPage() {
             secondary: '#7C3AED',
             accent: '#3B82F6',
         },
+        notification_settings: {
+            email_enabled: true,
+            slack_enabled: false,
+            pipeline_completion: true,
+        },
     })
 
     // Fetch vendor data
@@ -61,6 +66,11 @@ export default function VendorSettingsPage() {
                     primary: '#4F46E5',
                     secondary: '#7C3AED',
                     accent: '#3B82F6',
+                },
+                notification_settings: data.vendor.notification_settings || {
+                    email_enabled: true,
+                    slack_enabled: false,
+                    pipeline_completion: true,
                 },
             })
 
@@ -257,6 +267,83 @@ export default function VendorSettingsPage() {
                                 <option value="medium">Medium (11-50 people)</option>
                                 <option value="large">Large (51+ people)</option>
                             </select>
+                        </div>
+                    </div>
+                </Card>
+
+                {/* Notification Preferences */}
+                <Card className="p-6 bg-white shadow-xl mb-8">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                            <Bell className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <h2 className="text-2xl font-bold">Notification Preferences</h2>
+                    </div>
+
+                    <p className="text-sm text-muted-foreground mb-6">
+                        Control how and when you receive notifications
+                    </p>
+
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                            <div className="flex-1">
+                                <p className="font-medium text-sm">Email Notifications</p>
+                                <p className="text-xs text-muted-foreground">Receive notifications via email</p>
+                            </div>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={formData.notification_settings.email_enabled}
+                                    onChange={(e) => setFormData({
+                                        ...formData,
+                                        notification_settings: {
+                                            ...formData.notification_settings,
+                                            email_enabled: e.target.checked
+                                        }
+                                    })}
+                                    className="sr-only peer"
+                                />
+                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                            </label>
+                        </div>
+
+                        <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                            <div className="flex-1">
+                                <p className="font-medium text-sm">Pipeline Completion Notifications</p>
+                                <p className="text-xs text-muted-foreground">Get notified when website analysis pipelines complete</p>
+                            </div>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={formData.notification_settings.pipeline_completion}
+                                    onChange={(e) => setFormData({
+                                        ...formData,
+                                        notification_settings: {
+                                            ...formData.notification_settings,
+                                            pipeline_completion: e.target.checked
+                                        }
+                                    })}
+                                    disabled={!formData.notification_settings.email_enabled}
+                                    className="sr-only peer"
+                                />
+                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
+                            </label>
+                        </div>
+
+                        <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors opacity-50">
+                            <div className="flex-1">
+                                <p className="font-medium text-sm">Slack Notifications</p>
+                                <p className="text-xs text-muted-foreground">Coming soon - Receive notifications in Slack</p>
+                            </div>
+                            <label className="relative inline-flex items-center cursor-not-allowed">
+                                <input
+                                    type="checkbox"
+                                    checked={formData.notification_settings.slack_enabled}
+                                    disabled
+                                    className="sr-only peer"
+                                />
+                                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                            </label>
                         </div>
                     </div>
                 </Card>

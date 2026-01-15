@@ -3472,7 +3472,9 @@
         "Summary included",
         "Link works"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T21:00:00Z",
+      "notes": "Complete email notification system for pipeline job completion. Migration: 20260115210000_pipeline_completion_notifications.sql (email template). Library: src/lib/notifications/pipeline-completion.ts (notification service). API: Modified src/app/api/pipeline-jobs/[jobId]/route.ts to trigger notifications on completion. UI: Added notification preferences section to src/app/app/vendor/settings/page.tsx with toggle switches for email_enabled and pipeline_completion. System checks vendor notification_settings.pipeline_completion preference (defaults to true) before sending. Email includes SEO score, pages indexed, content gaps, topics generated, blogs created, duration, and link to results. Uses existing transactional email queue system with Resend. All acceptance criteria met: preference settable in vendor settings, email sends via queue on job completion, summary includes all key metrics, link goes to pipeline page with job ID parameter."
     },
     {
       "id": "feat-156",
