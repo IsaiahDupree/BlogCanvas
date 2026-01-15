@@ -2,9 +2,12 @@
  * SEO Agent
  * Optimizes content for search engines
  * PRD feat-093: Includes internal link hints
+ * feat-172: Enhanced to use full SharedClientContext for title guidelines
  */
 
 import { LLMProvider, AgentResult, SEOMetadata } from './types';
+import type { SharedClientContext } from '../brand/shared-context';
+import { formatContextForAI } from '../brand/shared-context';
 
 export interface SEOAgentInput {
     fullDraftContent: string;
@@ -16,11 +19,14 @@ export interface SEOAgentInput {
         targetKeyword: string;
         url?: string;
     }[];
+    // feat-172: Full brand context from shared-context service
+    brandContext?: SharedClientContext;
 }
 
 /**
  * Run the SEO agent to optimize content
  * Enhanced with internal link hints (feat-093)
+ * feat-172: Now uses full SharedClientContext for title guidelines
  */
 export async function runSEOAgent(
     provider: LLMProvider,
@@ -41,6 +47,17 @@ Analyze the content and suggest 3-5 internal link opportunities where this new c
 - reasoning: Why this link makes sense from an SEO and user experience perspective`
             : '';
 
+        // feat-172: Add title guidelines from brand context
+        const titleGuidelinesSection = input.brandContext?.titleGuidelines ? `
+
+TITLE GUIDELINES:
+- Preferred Formats: ${input.brandContext.titleGuidelines.preferredFormats.join(', ')}
+- Power Words: ${input.brandContext.titleGuidelines.powerWords.join(', ')}
+- Words to Avoid: ${input.brandContext.titleGuidelines.wordsToAvoid.join(', ')}
+- High-Performing Patterns: ${input.brandContext.titleGuidelines.highPerformingPatterns.join(', ')}
+
+Use these guidelines when crafting the SEO title.` : '';
+
         const userPrompt = `Optimize the following content for SEO:
 
 TOPIC: ${input.topic}
@@ -48,10 +65,10 @@ TARGET KEYWORD: ${input.targetKeyword}
 
 CONTENT:
 ${input.fullDraftContent.substring(0, 3000)}... [truncated]
-${existingContentContext}
+${existingContentContext}${titleGuidelinesSection}
 
 Return a JSON object with:
-- title: SEO-optimized title (50-60 chars, include keyword)
+- title: SEO-optimized title (50-60 chars, include keyword)${titleGuidelinesSection ? ' - Follow the title guidelines above' : ''}
 - metaDescription: compelling meta description (120-160 chars)
 - slug: URL-friendly slug
 - suggestions: array of improvement suggestions

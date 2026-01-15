@@ -1,9 +1,11 @@
 /**
  * Enhancement Agent
  * Proposes tables, bullets, image prompts, and content improvements
+ * feat-172: Enhanced to use full SharedClientContext for image guidelines
  */
 
 import { LLMProvider, AgentResult } from './types';
+import type { SharedClientContext } from '../brand/shared-context';
 
 export interface TableSuggestion {
   title: string;
@@ -50,10 +52,13 @@ export interface EnhancementAgentInput {
   targetKeyword: string;
   sectionKeys: string[];
   wordCount: number;
+  // feat-172: Full brand context from shared-context service
+  brandContext?: SharedClientContext;
 }
 
 /**
  * Run the Enhancement agent to propose improvements
+ * feat-172: Now uses full SharedClientContext for image guidelines
  */
 export async function runEnhancementAgent(
   provider: LLMProvider,
@@ -61,6 +66,19 @@ export async function runEnhancementAgent(
 ): Promise<AgentResult<EnhancementResult>> {
   try {
     const systemPrompt = `You are a Content Enhancement Specialist. Your role is to analyze blog content and suggest visual and structural improvements that increase engagement, readability, and SEO value.`;
+
+    // feat-172: Add image guidelines from brand context
+    const imageGuidelinesSection = input.brandContext?.imageGuidelines ? `
+
+IMAGE GUIDELINES:
+- AI Provider: ${input.brandContext.imageGuidelines.aiGenerationSettings.provider}
+- Style: ${input.brandContext.imageGuidelines.aiGenerationSettings.style}
+- Banned Elements: ${input.brandContext.imageGuidelines.aiGenerationSettings.bannedElements.join(', ')}
+- Alt Text Max Length: ${input.brandContext.imageGuidelines.altTextRules.maxLength}
+- Alt Text Should Include Keywords: ${input.brandContext.imageGuidelines.altTextRules.includeKeywords ? 'Yes' : 'No'}
+- Alt Text Avoid Phrases: ${input.brandContext.imageGuidelines.altTextRules.avoidPhrases.join(', ')}
+
+Follow these image guidelines when suggesting images.` : '';
 
     const userPrompt = `Analyze the following blog post and suggest enhancements:
 
@@ -70,11 +88,11 @@ WORD COUNT: ${input.wordCount}
 SECTION KEYS: ${input.sectionKeys.join(', ')}
 
 CONTENT:
-${input.fullDraftContent.substring(0, 6000)}
+${input.fullDraftContent.substring(0, 6000)}${imageGuidelinesSection}
 
 INSTRUCTIONS:
 1. Identify opportunities for DATA TABLES that would help readers compare or understand information
-2. Suggest IMAGE IDEAS with detailed prompts for AI image generation or stock photo searches
+2. Suggest IMAGE IDEAS with detailed prompts for AI image generation or stock photo searches${imageGuidelinesSection ? ' - Follow the image guidelines above' : ''}
 3. Find content that could be converted to BULLET LISTS for better scannability
 4. Propose CONTENT ENHANCEMENTS like callouts, quotes, statistics highlights, or examples
 
@@ -91,8 +109,8 @@ Return a JSON object with this structure:
   ],
   "images": [
     {
-      "altText": "Descriptive alt text for SEO",
-      "prompt": "Detailed image generation prompt or stock photo search terms",
+      "altText": "Descriptive alt text for SEO${imageGuidelinesSection ? ' - Follow alt text guidelines' : ''}",
+      "prompt": "Detailed image generation prompt${imageGuidelinesSection ? ' following the style and provider guidelines' : ''}",
       "type": "hero" | "inline" | "infographic" | "diagram",
       "insertAfterSection": "section key",
       "reasoning": "why this image enhances the content"
@@ -118,7 +136,7 @@ Return a JSON object with this structure:
   "suggestions": ["General improvement suggestion 1", "Suggestion 2"]
 }
 
-IMPORTANT: 
+IMPORTANT:
 - Suggest at least 1 table if data comparison is possible
 - Suggest at least 2-3 images including a hero image
 - Be specific with image prompts for AI generation

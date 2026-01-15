@@ -2,6 +2,7 @@
  * Blog Generation Pipeline
  * Orchestrates all agents to produce a complete blog post
  * Based on PRD: Research → Outline → Draft → SEO → Fact-Check → Enhancement
+ * feat-172: Enhanced to support full SharedClientContext for all agents
  */
 
 import { LLMProvider, ResearchResult, OutlineResult, SEOMetadata, FactCheckResult, VoiceToneResult } from './types';
@@ -17,6 +18,7 @@ import { getTargetWordCount, getAIPromptGuidance, DepthLevel } from '../content-
 import { SearchIntent, getAIGuidance as getSearchIntentGuidance } from '../search-intent';
 import { ToneVoice, getAIToneGuidance, parseToneVoice } from '../tone-voice';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import type { SharedClientContext } from '../brand/shared-context';
 
 export interface BlogGenerationInput {
   topic: string;
@@ -28,37 +30,40 @@ export interface BlogGenerationInput {
   // Optional: For tracking revisions at each pipeline stage
   blogPostId?: string;
   supabaseClient?: SupabaseClient;
-  clientProfile: {
+  // Legacy clientProfile (deprecated, use brandContext instead)
+  clientProfile?: {
     // Basic Info
     clientName?: string;
     industry?: string;
-    
+
     // Brand Snapshot - Core
     productServiceSummary?: string;
     targetAudience?: string;
     positioning?: string;
-    
+
     // Tone & Voice
     brandVoice?: string[];
     brandTone?: string;
     formalityLevel?: number;
     playfulnessLevel?: number;
-    
+
     // Brand Messaging
     tagline?: string;
     keyMessages?: string[];
     valuePropositions?: string[];
-    
+
     // Competitive Context
     competitors?: string[];
     keyDifferentiators?: string[];
-    
+
     // Content Guidelines
     keywordsToInclude?: string[];
     keywordsToAvoid?: string[];
     topicsToAvoid?: string[];
     styleNotes?: string;
   };
+  // feat-172: Full brand context from shared-context service
+  brandContext?: SharedClientContext;
   options?: {
     generateMultipleOutlines?: boolean;
     skipFactCheck?: boolean;
@@ -217,12 +222,14 @@ export async function runBlogGenerationPipeline(
       ? Math.round((wordCountTargets.min + wordCountTargets.max) / 2)
       : input.wordCountGoal;
 
+    // feat-172: Pass brand context to Outline agent
     const outlineInput: OutlineAgentInput = {
       topic: input.topic,
       targetKeyword: input.targetKeyword,
       wordCountGoal: adjustedWordCount,
       research,
-      clientProfile: input.clientProfile
+      clientProfile: input.clientProfile,
+      brandContext: input.brandContext
     };
 
     if (input.options?.generateMultipleOutlines) {
@@ -264,6 +271,7 @@ export async function runBlogGenerationPipeline(
     // feat-101: Get tone/voice-specific guidance for prompts
     const toneGuidance = input.toneVoice ? getAIToneGuidance(input.toneVoice) : '';
 
+    // feat-172: Pass brand context to Draft agent
     for (const section of outline.sections) {
       const draftInput: DraftAgentInput = {
         section,
@@ -271,12 +279,13 @@ export async function runBlogGenerationPipeline(
         targetKeyword: input.targetKeyword,
         previousSections: sectionContents.map(s => s.content),
         clientProfile: input.clientProfile,
+        brandContext: input.brandContext,
         marketingContext: {
           brandName: 'Client',
-          brandVoice: input.clientProfile.brandVoice || ['Professional', 'Helpful'],
-          brandTone: input.clientProfile.brandTone || 'Professional',
-          targetAudience: input.clientProfile.targetAudience || 'Business professionals',
-          valueProposition: input.clientProfile.productServiceSummary || '',
+          brandVoice: input.clientProfile?.brandVoice || input.brandContext?.voiceAndTone.voiceTraits || ['Professional', 'Helpful'],
+          brandTone: input.clientProfile?.brandTone || (input.brandContext?.voiceAndTone.voiceTraits[0] || 'Professional'),
+          targetAudience: input.clientProfile?.targetAudience || (input.brandContext?.targetAudiences[0] ? JSON.stringify(input.brandContext.targetAudiences[0]) : 'Business professionals'),
+          valueProposition: input.clientProfile?.productServiceSummary || (input.brandContext?.productsServices[0] ? JSON.stringify(input.brandContext.productsServices[0]) : ''),
           keyMessages: [],
           competitorDifferentiators: [],
           contentDonts: [],
@@ -343,12 +352,14 @@ export async function runBlogGenerationPipeline(
       }
     }
 
+    // feat-172: Pass brand context to SEO agent
     const seoInput: SEOAgentInput = {
       fullDraftContent,
       topic: input.topic,
       targetKeyword: input.targetKeyword,
       wordCount: fullDraftContent.split(/\s+/).length,
-      existingContent: existingContent.length > 0 ? existingContent : undefined
+      existingContent: existingContent.length > 0 ? existingContent : undefined,
+      brandContext: input.brandContext
     };
 
     const seoResult = await runSEOAgent(provider, seoInput);
@@ -396,12 +407,14 @@ export async function runBlogGenerationPipeline(
     // Step 6: Enhancement
     if (!input.options?.skipEnhancement) {
       updateProgress(5, 'running');
+      // feat-172: Pass brand context to Enhancement agent
       const enhancementInput: EnhancementAgentInput = {
         fullDraftContent,
         topic: input.topic,
         targetKeyword: input.targetKeyword,
         sectionKeys: outline.sections.map(s => s.key),
-        wordCount: fullDraftContent.split(/\s+/).length
+        wordCount: fullDraftContent.split(/\s+/).length,
+        brandContext: input.brandContext
       };
 
       const enhancementResult = await runEnhancementAgent(provider, enhancementInput);

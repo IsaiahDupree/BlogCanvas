@@ -87,13 +87,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Run the full blog generation pipeline
+    // feat-172: Pass full brandContext instead of just clientProfile
     const pipelineInput: BlogGenerationInput = {
       topic,
       targetKeyword: targetKeyword || topic,
       wordCountGoal,
       blogPostId: blogPostId || undefined, // Pass blogPostId for revision tracking
       supabaseClient: supabase as any, // Pass supabase client for revision tracking
-      clientProfile,
+      clientProfile, // Keep for backwards compatibility
+      brandContext: sharedContext || undefined, // feat-172: Pass full brand context
       options: {
         generateMultipleOutlines: options.generateMultipleOutlines || false,
         skipFactCheck: options.skipFactCheck || false,

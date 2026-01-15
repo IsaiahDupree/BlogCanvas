@@ -1,10 +1,13 @@
 /**
  * Draft Agent
  * Writes content sections based on outline
+ * feat-172: Enhanced to use full SharedClientContext for all brand guidelines
  */
 
 import { LLMProvider, AgentResult, DraftSectionResult, OutlineSection } from './types';
 import { MarketingContext } from '../context/marketing';
+import type { SharedClientContext } from '../brand/shared-context';
+import { formatContextForAI } from '../brand/shared-context';
 
 export interface DraftAgentInput {
     section: OutlineSection;
@@ -27,12 +30,15 @@ export interface DraftAgentInput {
         targetAudience?: string;
         positioning?: string;
     };
+    // feat-172: Full brand context from shared-context service
+    brandContext?: SharedClientContext;
 }
 
 /**
  * Run the Draft agent to write a section
  * Enhanced with full brand context for better alignment
  * PRD feat-092: Explicit intro/teaser/body/conclusion structure
+ * feat-172: Now uses full SharedClientContext when available
  */
 export async function runDraftAgent(
     provider: LLMProvider,
@@ -71,17 +77,12 @@ BODY SECTION REQUIREMENTS (feat-092):
 Your body content must be COMPREHENSIVE and valuable.`;
         }
 
-        const userPrompt = `Write the following section of a blog post:
-
-SECTION: ${input.section.title} (${input.section.type})
-KEY POINTS TO COVER:
-${input.section.keyPoints.map(p => `- ${p}`).join('\n')}
-
-TARGET WORD COUNT: ${input.section.estimatedWords} words
-TARGET KEYWORD: ${input.targetKeyword}
-TOPIC: ${input.topic}
-${sectionInstructions}
-
+        // feat-172: Use brand context if available, fallback to marketingContext
+        let brandGuidelinesSection = '';
+        if (input.brandContext) {
+            brandGuidelinesSection = `\n--- BRAND GUIDELINES ---\n${formatContextForAI(input.brandContext)}\n--- END BRAND GUIDELINES ---\n`;
+        } else if (input.marketingContext) {
+            brandGuidelinesSection = `
 --- BRAND VOICE GUIDELINES ---
 VOICE: ${input.marketingContext?.brandVoice?.join(', ') || 'Professional, Clear'}
 TONE: ${input.marketingContext?.brandTone || 'Professional'}
@@ -102,7 +103,20 @@ ${input.marketingContext?.styleNotes ? `STYLE NOTES: ${input.marketingContext.st
 
 CONTENT DON'TS: ${input.marketingContext?.contentDonts?.join(', ') || 'Jargon, Passive Voice'}
 --- END VOICE GUIDELINES ---
+`;
+        }
 
+        const userPrompt = `Write the following section of a blog post:
+
+SECTION: ${input.section.title} (${input.section.type})
+KEY POINTS TO COVER:
+${input.section.keyPoints.map(p => `- ${p}`).join('\n')}
+
+TARGET WORD COUNT: ${input.section.estimatedWords} words
+TARGET KEYWORD: ${input.targetKeyword}
+TOPIC: ${input.topic}
+${sectionInstructions}
+${brandGuidelinesSection}
 ${input.previousSections && input.previousSections.length > 0 ?
                 `PREVIOUS SECTIONS FOR CONTEXT:
 ${input.previousSections.slice(-2).join('\n\n---\n\n')}` : ''}

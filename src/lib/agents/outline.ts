@@ -1,9 +1,12 @@
 /**
  * Outline Agent
  * Creates structured content outlines with multiple options
+ * feat-172: Enhanced to use full SharedClientContext for all brand guidelines
  */
 
 import { LLMProvider, AgentResult, OutlineResult, OutlineSection, ResearchResult } from './types';
+import type { SharedClientContext } from '../brand/shared-context';
+import { formatContextForAI } from '../brand/shared-context';
 
 export interface OutlineAgentInput {
     topic: string;
@@ -11,10 +14,13 @@ export interface OutlineAgentInput {
     wordCountGoal: number;
     research?: ResearchResult;
     researchData?: ResearchResult;
-    clientProfile: {
+    // Legacy simple client profile (deprecated, use brandContext instead)
+    clientProfile?: {
         productServiceSummary?: string;
         targetAudience?: string;
     };
+    // feat-172: Full brand context from shared-context service
+    brandContext?: SharedClientContext;
 }
 
 export interface OutlineOptionsResult {
@@ -24,6 +30,7 @@ export interface OutlineOptionsResult {
 
 /**
  * Run the Outline agent to create content structure (single outline - legacy)
+ * feat-172: Now uses full brand context when available
  */
 export async function runOutlineAgent(
     provider: LLMProvider,
@@ -32,16 +39,18 @@ export async function runOutlineAgent(
     try {
         const systemPrompt = `You are a Content Strategist creating blog post outlines.`;
 
+        // feat-172: Use brand context if available, fallback to clientProfile
+        const brandContextSection = input.brandContext
+            ? `\n\nBRAND CONTEXT:\n${formatContextForAI(input.brandContext)}\n`
+            : `\nPRODUCT/SERVICE: ${input.clientProfile?.productServiceSummary}\nTARGET AUDIENCE: ${input.clientProfile?.targetAudience}\n`;
+
         const userPrompt = `Create a detailed outline for a blog post:
 
 TOPIC: ${input.topic}
 TARGET KEYWORD: ${input.targetKeyword}
-WORD COUNT GOAL: ${input.wordCountGoal}
-PRODUCT/SERVICE: ${input.clientProfile.productServiceSummary}
-TARGET AUDIENCE: ${input.clientProfile.targetAudience}
-
+WORD COUNT GOAL: ${input.wordCountGoal}${brandContextSection}
 INSTRUCTIONS:
-Analyze the provided research and create a blog post outline.
+Analyze the provided research and create a blog post outline that follows the brand voice, tone, and style guidelines provided above.
 
 RESEARCH INSIGHTS:
 - Pain Points: ${(input.research || input.researchData)?.painPoints?.join(', ') || ''}
@@ -70,7 +79,8 @@ Requirements:
 - Must include intro, at least 2 body sections, conclusion, and CTA
 - Total words should be close to word count goal
 - Include 3-5 relevant FAQs
-- Suggest 1-3 helpful tables if applicable to the topic`;
+- Suggest 1-3 helpful tables if applicable to the topic
+- Follow all brand voice, tone, and style guidelines provided`;
 
         const response = await provider.call({
             systemPrompt,
@@ -94,6 +104,7 @@ Requirements:
 
 /**
  * Run the Outline agent to create 3 distinct outline options
+ * feat-172: Now uses full brand context when available
  */
 export async function runOutlineAgentWithOptions(
     provider: LLMProvider,
@@ -102,16 +113,18 @@ export async function runOutlineAgentWithOptions(
     try {
         const systemPrompt = `You are a Content Strategist creating blog post outlines.`;
 
+        // feat-172: Use brand context if available, fallback to clientProfile
+        const brandContextSection = input.brandContext
+            ? `\n\nBRAND CONTEXT:\n${formatContextForAI(input.brandContext)}\n`
+            : `\nPRODUCT/SERVICE: ${input.clientProfile?.productServiceSummary}\nTARGET AUDIENCE: ${input.clientProfile?.targetAudience}\n`;
+
         const userPrompt = `Create 3 DISTINCT outline options for a blog post:
 
 TOPIC: ${input.topic}
 TARGET KEYWORD: ${input.targetKeyword}
-WORD COUNT GOAL: ${input.wordCountGoal}
-PRODUCT/SERVICE: ${input.clientProfile.productServiceSummary}
-TARGET AUDIENCE: ${input.clientProfile.targetAudience}
-
+WORD COUNT GOAL: ${input.wordCountGoal}${brandContextSection}
 INSTRUCTIONS:
-Analyze the provided research and create 3 DIFFERENT outline approaches. Each outline should take a unique angle or structure.
+Analyze the provided research and create 3 DIFFERENT outline approaches. Each outline should take a unique angle or structure, while all following the brand voice, tone, and style guidelines provided above.
 
 RESEARCH INSIGHTS:
 - Pain Points: ${(input.research || input.researchData)?.painPoints?.join(', ') || ''}
@@ -148,7 +161,8 @@ Requirements for EACH outline:
 - Total words should be close to word count goal
 - Each outline must be structurally different from the others
 - Include 3-5 relevant FAQs per outline
-- Suggest 1-3 helpful tables if applicable to the topic`;
+- Suggest 1-3 helpful tables if applicable to the topic
+- Follow all brand voice, tone, and style guidelines provided`;
 
         const response = await provider.call({
             systemPrompt,
