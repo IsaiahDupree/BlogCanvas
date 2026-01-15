@@ -14,6 +14,7 @@ import { PitchBuilderTab } from '@/components/website/PitchBuilderTab'
 import { AnalyticsTab } from '@/components/website/AnalyticsTab'
 import { CompetitorComparisonTab } from '@/components/website/CompetitorComparisonTab'
 import { KeywordGapsTab } from '@/components/website/KeywordGapsTab'
+import { CheckBackConfigTab } from '@/components/website/CheckBackConfigTab'
 
 export default function WebsiteDetailPage() {
     const params = useParams()
@@ -284,6 +285,7 @@ export default function WebsiteDetailPage() {
                     <TabsList>
                         <TabsTrigger value="overview">Overview</TabsTrigger>
                         <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                        <TabsTrigger value="check-backs">Check-Backs</TabsTrigger>
                         <TabsTrigger value="competitors">Competitors</TabsTrigger>
                         <TabsTrigger value="keyword-gaps">Keyword Gaps</TabsTrigger>
                         <TabsTrigger value="gaps">Content Gaps</TabsTrigger>
@@ -360,6 +362,10 @@ export default function WebsiteDetailPage() {
 
                     <TabsContent value="analytics">
                         <AnalyticsTab websiteId={params.id as string} />
+                    </TabsContent>
+
+                    <TabsContent value="check-backs">
+                        <CheckBackConfigTab websiteId={params.id as string} />
                     </TabsContent>
 
                     <TabsContent value="competitors">

@@ -1,29 +1,58 @@
 import { supabaseAdmin } from '@/lib/supabase'
 
 /**
+ * Get check-back configuration for a website
+ */
+async function getCheckBackConfig(websiteId: string): Promise<number[]> {
+    const { data, error } = await supabaseAdmin
+        .from('check_back_configurations')
+        .select('intervals, enabled')
+        .eq('website_id', websiteId)
+        .single()
+
+    if (error || !data || !data.enabled) {
+        // Return default intervals if no config or disabled
+        return [7, 30, 60, 90]
+    }
+
+    return data.intervals as number[]
+}
+
+/**
  * Schedule check-backs for a published post
  * Check-backs track post performance over time
+ * Uses configurable intervals from check_back_configurations table
  */
 export async function scheduleCheckBacks(
     postId: string,
-    publishedAt: Date
+    publishedAt: Date,
+    websiteId?: string
 ): Promise<void> {
-    const intervals = [
-        { days: 1, label: '1 Day' },
-        { days: 7, label: '1 Week' },
-        { days: 30, label: '1 Month' },
-        { days: 90, label: '3 Months' },
-        { days: 180, label: '6 Months' },
-    ]
+    // Get website ID from post if not provided
+    if (!websiteId) {
+        const { data: post } = await supabaseAdmin
+            .from('blog_posts')
+            .select('website_id:client_id(websites(id))')
+            .eq('id', postId)
+            .single()
 
-    const checkBacks = intervals.map(interval => {
+        if (!post) {
+            throw new Error('Post not found')
+        }
+    }
+
+    // Get configurable intervals
+    const intervals = websiteId ? await getCheckBackConfig(websiteId) : [7, 30, 60, 90]
+
+    const checkBacks = intervals.map(days => {
         const scheduledDate = new Date(publishedAt)
-        scheduledDate.setDate(scheduledDate.getDate() + interval.days)
+        scheduledDate.setDate(scheduledDate.getDate() + days)
 
         return {
             blog_post_id: postId,
             scheduled_date: scheduledDate.toISOString(),
-            check_type: interval.label,
+            check_type: `Day ${days}`,
+            days_after_publish: days,
             status: 'pending',
             created_at: new Date().toISOString()
         }

@@ -6358,3 +6358,130 @@ Next priority: feat-054 (User documentation - MEDIUM) or feat-056 (PRD: Run Audi
 - Committed: "feat(blogcanvas): implement SEO score slider with posts/months projection (feat-059)"
 - Next priority: feat-060 (PRD: Content batch with full topic parameters - HIGH) or feat-057/058 (MEDIUM)
 
+
+=== Session 2026-01-15T08:00:00Z ===
+- Implemented: feat-060 - PRD: Content batch with full topic parameters
+- Files changed:
+  * supabase/migrations/20260115000002_blog_post_due_date_and_intent.sql: New migration
+  * src/app/posts/new/page.tsx: Enhanced blog post creation form
+  * feature_list.json: Marked feat-060 as complete
+  
+- Database changes:
+  1. Added due_date column (DATE) to blog_posts table
+  2. Added search_intent column (TEXT) with CHECK constraint
+  3. Created indexes: idx_blog_posts_due_date, idx_blog_posts_search_intent
+  4. Created blog_posts_with_intent view for easy querying
+  5. View combines post.search_intent with cluster.search_intent (COALESCE)
+  
+- UI enhancements:
+  1. Added Search Intent dropdown (Step 2):
+     - Options: informational, commercial, transactional, navigational
+     - Help text explains each intent type
+     - Default: informational
+  2. Added Tone of Voice selector (Step 2):
+     - Options: professional, casual, authoritative, friendly, technical
+     - Default: professional
+  3. Added Due Date picker (Step 2):
+     - Type: date input
+     - Validation: min = today
+     - Optional field
+  4. Updated Step 3 review to show all new fields with badges
+  5. Enhanced API submission to include new fields
+  
+- Verified existing fields:
+  ✅ topic - Already exists (TEXT NOT NULL)
+  ✅ target_keyword - Already exists (TEXT)
+  ✅ topic_cluster_id - Already exists (UUID FK to topic_clusters)
+  ✅ word_count_goal - Already exists (INTEGER)
+  ✅ tone_of_voice - Already exists (TEXT)
+  
+- Tests passed (code analysis):
+  ✅ Each post has topic, keyword, cluster support
+  ✅ Search intent dropdown with 4 valid options
+  ✅ Target word count configurable (500-5000 range slider)
+  ✅ Due dates tracked with date input and validation
+  ✅ All parameters shown in review step
+  ✅ API call includes all new fields
+  
+- Committed: "feat(blogcanvas): implement content batch with full topic parameters (feat-060)"
+- Next priority: feat-061 (PRD: Editor diff view - MEDIUM) or feat-057/058 (MEDIUM)
+- Total features completed this session: 2 (feat-059, feat-060)
+
+
+=== Session 2026-01-15T10:00:00Z ===
+- Implemented: feat-057 - PRD: Check-back schedule configuration (Day 7, 30, 60, 90)
+- Files changed:
+  * supabase/migrations/20260115000003_check_back_configuration.sql: New migration
+  * src/app/api/websites/[id]/check-back-config/route.ts: API endpoints (GET/PUT/DELETE)
+  * src/lib/analytics/check-back-scheduler.ts: Updated to use configurable intervals
+  * src/components/website/CheckBackConfigTab.tsx: New UI component
+  * src/app/app/websites/[id]/page.tsx: Added Check-Backs tab
+  * feature_list.json: Marked feat-057 as complete
+  
+- Database changes:
+  1. Created check_back_configurations table:
+     - website_id (FK to websites, UNIQUE)
+     - intervals (JSONB, default [7,30,60,90])
+     - enabled (BOOLEAN, default true)
+     - created_at, updated_at timestamps
+  2. Added RLS policies for vendor access
+  3. Enhanced check_back_schedules table:
+     - Added check_type column (TEXT)
+     - Added days_after_publish column (INTEGER)
+     - Added metrics_snapshot column (JSONB)
+  4. Auto-populated default configs for existing websites
+  
+- API implementation:
+  1. GET /api/websites/[id]/check-back-config
+     - Fetches configuration or creates default
+     - Returns intervals array and enabled status
+  2. PUT /api/websites/[id]/check-back-config
+     - Updates intervals and/or enabled status
+     - Validates intervals are positive numbers
+     - Upserts configuration
+  3. DELETE /api/websites/[id]/check-back-config
+     - Resets to default [7,30,60,90]
+  
+- Scheduler updates:
+  1. New getCheckBackConfig() function
+     - Fetches per-website intervals from check_back_configurations
+     - Falls back to default [7,30,60,90] if disabled or missing
+  2. Updated scheduleCheckBacks() function
+     - Accepts optional websiteId parameter
+     - Uses configurable intervals instead of hardcoded
+     - Stores days_after_publish for better tracking
+     - Sets check_type as "Day N"
+  
+- UI component features:
+  1. Configuration management:
+     - Enable/disable automatic check-backs (Switch)
+     - View current intervals as badges
+     - Add custom intervals (numeric input)
+     - Remove intervals (trash icon on badges)
+     - Sort intervals automatically
+  2. Actions:
+     - Save configuration button
+     - Reset to default button
+  3. Preview section:
+     - Shows example dates for a post published today
+     - Calculates future check-back dates
+  4. Error/success feedback:
+     - Alert messages for errors
+     - Success confirmation with auto-dismiss
+  5. Loading states:
+     - Spinner during fetch
+     - Disabled buttons during save
+  
+- Tests passed (code analysis):
+  ✅ Check-back days are configurable via UI
+  ✅ System schedules Day 7, 30, 60, 90 by default
+  ✅ Custom intervals can be added/removed
+  ✅ Configuration stored per website with RLS
+  ✅ Scheduler uses configured intervals
+  ✅ Enable/disable toggle works
+  ✅ Preview shows calculated dates
+  ✅ Reset to default functionality
+  
+- Committed: "feat(blogcanvas): implement check-back schedule configuration (feat-057)"
+- Next priority: feat-058 (PRD: Topic cluster traffic estimates) or feat-061 (PRD: Editor diff view)
+- Total features completed this session: 1 (feat-057)

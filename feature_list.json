@@ -1307,7 +1307,9 @@
         "Check-back results display in timeline",
         "Metrics pulled automatically"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T10:00:00Z",
+      "notes": "Complete check-back schedule configuration system. Database migration creates check_back_configurations table for per-website interval settings. API endpoints (GET/PUT/DELETE /api/websites/[id]/check-back-config) manage configurations. Updated check-back-scheduler.ts to use configurable intervals instead of hardcoded values. UI component (CheckBackConfigTab) added to website detail page with Check-Backs tab. Features: configurable intervals (default [7,30,60,90]), enable/disable toggle, add/remove custom intervals, preview schedule, reset to defaults. All acceptance criteria met: check-back days fully configurable via UI, system uses configured intervals for scheduling, intervals stored per website with RLS policies."
     },
     {
       "id": "feat-058",
