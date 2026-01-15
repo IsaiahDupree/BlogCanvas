@@ -1,18 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+import {
+    parsePaginationParams,
+    applyPagination,
+    applySorting,
+    createPaginatedResponse,
+} from '@/lib/pagination';
+import { queryCache, CacheKeys } from '@/lib/cache';
 
-// GET /api/blog-posts - Get all blog posts
+// GET /api/blog-posts - Get all blog posts with pagination
 export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url);
         const batchId = searchParams.get('batchId');
         const status = searchParams.get('status');
+        const { page, limit, sortBy, sortOrder } = parsePaginationParams(searchParams);
 
+        // Build cache key
+        const cacheKey = CacheKeys.blogPosts({ batchId, status, page, limit, sortBy, sortOrder });
+
+        // Try to get from cache
+        const cached = queryCache.get(cacheKey);
+        if (cached) {
+            return NextResponse.json(cached);
+        }
+
+        // Build base query
         let query = supabaseAdmin
             .from('blog_posts')
-            .select('id, topic, status, seo_quality_score, target_keyword, content_batch_id, created_at')
-            .order('created_at', { ascending: false });
+            .select('id, topic, status, seo_quality_score, target_keyword, content_batch_id, created_at', { count: 'exact' });
 
+        // Apply filters
         if (batchId) {
             query = query.eq('content_batch_id', batchId);
         }
@@ -21,7 +39,14 @@ export async function GET(request: NextRequest) {
             query = query.eq('status', status);
         }
 
-        const { data: posts, error } = await query;
+        // Apply sorting
+        const sortColumn = sortBy || 'created_at';
+        query = applySorting(query, sortColumn, sortOrder);
+
+        // Apply pagination
+        query = applyPagination(query, page, limit);
+
+        const { data: posts, count, error } = await query;
 
         if (error) {
             console.error('Error fetching posts:', error);
@@ -31,10 +56,15 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        return NextResponse.json({
+        const response = {
             success: true,
-            posts: posts || []
-        });
+            ...createPaginatedResponse(posts || [], count || 0, page, limit),
+        };
+
+        // Cache the response
+        queryCache.set(cacheKey, response);
+
+        return NextResponse.json(response);
 
     } catch (error) {
         console.error('Error in blog posts API:', error);

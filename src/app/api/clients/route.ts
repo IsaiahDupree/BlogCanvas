@@ -3,30 +3,59 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { queueTransactionalEmail } from '@/lib/emails/transactional-email-service';
 import { createClient, requireStaff } from '@/lib/supabase/server';
 
-// GET /api/clients - List all clients with stats
+// GET /api/clients - List all clients with stats (paginated)
 export async function GET(request: Request) {
     try {
         await requireStaff();
 
         const supabase = createClient();
+        const { searchParams } = new URL(request.url);
 
-        // Fetch all clients with relationship data
-        const { data: clients, error } = await supabase
+        // Import pagination utilities dynamically to avoid circular dependencies
+        const { parsePaginationParams, applyPagination, applySorting, createPaginatedResponse } = await import('@/lib/pagination');
+        const { queryCache, CacheKeys } = await import('@/lib/cache');
+
+        const { page, limit, sortBy, sortOrder } = parsePaginationParams(searchParams);
+
+        // Build cache key
+        const cacheKey = CacheKeys.clients({ page, limit, sortBy, sortOrder });
+
+        // Try to get from cache
+        const cached = queryCache.get(cacheKey);
+        if (cached) {
+            return NextResponse.json(cached);
+        }
+
+        // Build base query with count
+        let query = supabase
             .from('clients')
             .select(`
                 *,
                 websites (count),
                 blog_posts (count),
                 content_batches (count)
-            `)
-            .order('created_at', { ascending: false });
+            `, { count: 'exact' });
+
+        // Apply sorting
+        const sortColumn = sortBy || 'created_at';
+        query = applySorting(query, sortColumn, sortOrder);
+
+        // Apply pagination
+        query = applyPagination(query, page, limit);
+
+        const { data: clients, count, error } = await query;
 
         if (error) throw error;
 
-        return NextResponse.json({
+        const response = {
             success: true,
-            clients
-        });
+            ...createPaginatedResponse(clients || [], count || 0, page, limit),
+        };
+
+        // Cache the response
+        queryCache.set(cacheKey, response);
+
+        return NextResponse.json(response);
     } catch (error: any) {
         console.error('Error fetching clients:', error);
         return NextResponse.json(

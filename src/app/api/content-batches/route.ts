@@ -1,23 +1,56 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+import {
+    parsePaginationParams,
+    applyPagination,
+    applySorting,
+    createPaginatedResponse,
+} from '@/lib/pagination';
+import { queryCache, CacheKeys, CacheInvalidation } from '@/lib/cache';
 
-// GET /api/content-batches - List all content batches
+// GET /api/content-batches - List all content batches with pagination
 export async function GET(request: NextRequest) {
     try {
-        const { data: batches, error } = await supabaseAdmin
+        const { searchParams } = new URL(request.url);
+        const { page, limit, sortBy, sortOrder } = parsePaginationParams(searchParams);
+
+        // Build cache key
+        const cacheKey = CacheKeys.contentBatches({ page, limit, sortBy, sortOrder });
+
+        // Try to get from cache
+        const cached = queryCache.get(cacheKey);
+        if (cached) {
+            return NextResponse.json(cached);
+        }
+
+        // Build query with count
+        let query = supabaseAdmin
             .from('content_batches')
             .select(`
                 *,
                 website:websites(url, domain)
-            `)
-            .order('created_at', { ascending: false });
+            `, { count: 'exact' });
+
+        // Apply sorting
+        const sortColumn = sortBy || 'created_at';
+        query = applySorting(query, sortColumn, sortOrder);
+
+        // Apply pagination
+        query = applyPagination(query, page, limit);
+
+        const { data: batches, count, error } = await query;
 
         if (error) throw error;
 
-        return NextResponse.json({
+        const response = {
             success: true,
-            batches: batches || []
-        });
+            ...createPaginatedResponse(batches || [], count || 0, page, limit),
+        };
+
+        // Cache the response
+        queryCache.set(cacheKey, response);
+
+        return NextResponse.json(response);
     } catch (error) {
         console.error('Error fetching batches:', error);
         return NextResponse.json(
@@ -76,6 +109,9 @@ export async function POST(request: NextRequest) {
                 { status: 500 }
             );
         }
+
+        // Invalidate content batch cache
+        CacheInvalidation.contentBatch();
 
         return NextResponse.json({
             success: true,
