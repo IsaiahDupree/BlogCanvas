@@ -2695,7 +2695,9 @@
         "Time estimate shown",
         "Pause works"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T20:00:00Z",
+      "notes": "Complete pipeline status tracking system. Database migration (20260115130000_pipeline_status_tracking.sql) adds pipeline tracking columns to blog_posts: pipeline_stage, pipeline_progress, pipeline_status, pipeline_eta_seconds, pipeline_error, pipeline_started_at, pipeline_completed_at, pipeline_paused. API endpoints created: GET/PATCH /api/blog-posts/[id]/pipeline-status for status retrieval and updates, POST /api/blog-posts/[id]/pipeline-status/pause for pause/resume control. UI component PipelineProgress.tsx displays current stage, progress bar (0-100%), ETA, pause/resume buttons, all 6 pipeline stages (research, outline, draft, seo, fact_check, enhancement) with visual indicators. Component supports auto-refresh, shows overall progress, timing info, and error messages. All acceptance criteria met: stage tracked in database with constraints, progress visible via Progress component with percentage, ETA shown in seconds/minutes format, pause/resume functionality working via API endpoint."
     },
     {
       "id": "feat-121",
