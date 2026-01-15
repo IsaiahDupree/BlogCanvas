@@ -101,6 +101,16 @@ export interface QualityGate {
     score?: number;
 }
 
+export interface Citation {
+    title: string;
+    url: string;
+    author?: string;
+    publicationDate?: string;
+    publisher?: string;
+    format: 'APA' | 'MLA' | 'Chicago' | 'IEEE';
+    formattedText: string;
+}
+
 export interface FactCheckClaim {
     claim: string;
     sectionKey?: string;
@@ -108,6 +118,7 @@ export interface FactCheckClaim {
     status: 'verified' | 'unverified' | 'questionable' | 'needs_source';
     reasoning: string;
     suggestedSource?: string;
+    citations?: Citation[];
     severity: 'low' | 'medium' | 'high';
 }
 

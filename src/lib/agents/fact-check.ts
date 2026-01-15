@@ -5,6 +5,16 @@
 
 import { LLMProvider, AgentResult } from './types';
 
+export interface Citation {
+    title: string;
+    url: string;
+    author?: string;
+    publicationDate?: string;
+    publisher?: string;
+    format: 'APA' | 'MLA' | 'Chicago' | 'IEEE';
+    formattedText: string; // Pre-formatted citation text
+}
+
 export interface FactCheckClaim {
     claim: string;
     sectionKey?: string;
@@ -12,6 +22,7 @@ export interface FactCheckClaim {
     status: 'verified' | 'unverified' | 'questionable' | 'needs_source';
     reasoning: string;
     suggestedSource?: string;
+    citations?: Citation[]; // Formatted citations for this claim
     severity: 'low' | 'medium' | 'high';
 }
 
@@ -63,6 +74,14 @@ INSTRUCTIONS:
    - Status: verified (common knowledge/obviously true), unverified (needs checking), questionable (might be wrong), needs_source (requires citation)
    - Reasoning: why you assigned this status
    - Suggested source: if a source would help (e.g., "Cite peer-reviewed study on X")
+   - Citations: For claims needing sources, suggest 1-3 authoritative citations with:
+     * title: Article or source title
+     * url: Full URL to the source (real, authoritative sources like .gov, .edu, major publications)
+     * author: Author name (if known)
+     * publicationDate: Publication date (if known)
+     * publisher: Publisher name (e.g., "Harvard Business Review", "Nature", "CDC")
+     * format: Citation format ("APA", "MLA", "Chicago", or "IEEE")
+     * formattedText: Complete formatted citation in the specified format
    - Severity: high (factual error risk), medium (needs citation), low (minor issue)
 3. Calculate a fact-check score (0-100) where:
    - 100 = all claims verified or low-risk
@@ -81,6 +100,17 @@ Return a JSON object with this exact structure:
       "status": "verified" | "unverified" | "questionable" | "needs_source",
       "reasoning": "explanation of why this status",
       "suggestedSource": "optional: what kind of source would help",
+      "citations": [
+        {
+          "title": "Source article title",
+          "url": "https://authoritative-source.com/article",
+          "author": "Author Name (optional)",
+          "publicationDate": "2024-01-15 (optional)",
+          "publisher": "Publisher Name",
+          "format": "APA",
+          "formattedText": "Author, A. (2024). Title of article. Publisher. https://..."
+        }
+      ],
       "severity": "low" | "medium" | "high"
     }
   ],
@@ -92,7 +122,11 @@ Return a JSON object with this exact structure:
   "unverifiedClaims": number
 }
 
-IMPORTANT: Return ONLY valid JSON, no other text.`;
+IMPORTANT:
+- For claims with status "needs_source" or "questionable", ALWAYS provide at least 1 citation
+- Use real, authoritative sources (.gov, .edu, peer-reviewed journals, major publications)
+- Format citations correctly according to the specified format
+- Return ONLY valid JSON, no other text.`;
 
         const response = await provider.call({
             systemPrompt,
@@ -165,13 +199,79 @@ export function getFactCheckSummary(result: FactCheckResult): {
     questionableClaims: number;
     needsSourceClaims: number;
     highSeverityCount: number;
+    totalCitations: number;
 } {
+    const totalCitations = result.claims.reduce((count, claim) => {
+        return count + (claim.citations?.length || 0);
+    }, 0);
+
     return {
         totalClaims: result.totalClaims,
         verifiedClaims: result.verifiedClaims,
         unverifiedClaims: result.unverifiedClaims,
         questionableClaims: result.claims.filter(c => c.status === 'questionable').length,
         needsSourceClaims: result.claims.filter(c => c.status === 'needs_source').length,
-        highSeverityCount: result.claims.filter(c => c.severity === 'high').length
+        highSeverityCount: result.claims.filter(c => c.severity === 'high').length,
+        totalCitations
     };
+}
+
+/**
+ * Get all citations from a fact-check result
+ */
+export function getAllCitations(result: FactCheckResult): Citation[] {
+    const allCitations: Citation[] = [];
+    result.claims.forEach(claim => {
+        if (claim.citations && claim.citations.length > 0) {
+            allCitations.push(...claim.citations);
+        }
+    });
+    return allCitations;
+}
+
+/**
+ * Generate a bibliography section from citations
+ */
+export function generateBibliography(
+    result: FactCheckResult,
+    format: 'APA' | 'MLA' | 'Chicago' | 'IEEE' = 'APA'
+): string {
+    const citations = getAllCitations(result);
+    if (citations.length === 0) {
+        return '';
+    }
+
+    // Filter citations by format and remove duplicates by URL
+    const uniqueCitations = citations
+        .filter(c => c.format === format)
+        .filter((citation, index, self) =>
+            index === self.findIndex(c => c.url === citation.url)
+        );
+
+    if (uniqueCitations.length === 0) {
+        // If no citations match the format, use all citations
+        const allUnique = citations.filter((citation, index, self) =>
+            index === self.findIndex(c => c.url === citation.url)
+        );
+        return `## References\n\n${allUnique.map(c => c.formattedText).join('\n\n')}`;
+    }
+
+    return `## References\n\n${uniqueCitations.map(c => c.formattedText).join('\n\n')}`;
+}
+
+/**
+ * Get claims with citations ready to be inserted into content
+ */
+export function getClaimsWithCitations(result: FactCheckResult): Array<{
+    claim: string;
+    citations: Citation[];
+    inlineReference: string; // e.g., "[1]" or "(Author, 2024)"
+}> {
+    return result.claims
+        .filter(c => c.citations && c.citations.length > 0)
+        .map((claim, index) => ({
+            claim: claim.claim,
+            citations: claim.citations!,
+            inlineReference: `[${index + 1}]` // Simple numbered reference
+        }));
 }

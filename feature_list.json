@@ -2123,7 +2123,9 @@
         "Sources linked",
         "Citations formatted"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T20:00:00Z",
+      "notes": "Enhanced fact-check agent with Citation interface and helper functions. AI generates 1-3 citations per claim needing sources, with proper formatting (APA/MLA/Chicago/IEEE). Added getAllCitations(), generateBibliography(), getClaimsWithCitations() helper functions. 8/8 tests passing. Citations stored in blog_post_revisions as part of fact-check JSON. Fully backward compatible."
     },
     {
       "id": "feat-095",
