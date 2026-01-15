@@ -55,6 +55,94 @@ export async function GET(
     }
 }
 
+// PATCH /api/websites/[id] - Update website details
+export async function PATCH(
+    request: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const { id } = await params;
+        const body = await request.json();
+        const { url, targetMarket, platform, isPrimary, clientId } = body;
+
+        // Build update object with only provided fields
+        const updateData: any = {};
+
+        if (url) {
+            try {
+                const websiteUrl = new URL(url);
+                updateData.url = websiteUrl.origin;
+                updateData.domain = websiteUrl.hostname;
+            } catch (e) {
+                return NextResponse.json(
+                    { success: false, error: 'Invalid URL format' },
+                    { status: 400 }
+                );
+            }
+        }
+
+        if (targetMarket !== undefined) {
+            updateData.target_market = targetMarket;
+        }
+
+        if (platform !== undefined) {
+            updateData.platform = platform;
+        }
+
+        if (isPrimary !== undefined) {
+            updateData.is_primary = isPrimary;
+
+            // If setting this as primary, unset other primary websites for this client
+            if (isPrimary) {
+                // First get the website to find its client_id
+                const { data: existingWebsite } = await supabaseAdmin
+                    .from('websites')
+                    .select('client_id')
+                    .eq('id', id)
+                    .single();
+
+                const targetClientId = clientId || existingWebsite?.client_id;
+
+                if (targetClientId) {
+                    await supabaseAdmin
+                        .from('websites')
+                        .update({ is_primary: false })
+                        .eq('client_id', targetClientId)
+                        .eq('is_primary', true)
+                        .neq('id', id);
+                }
+            }
+        }
+
+        // Update website
+        const { data: website, error } = await supabaseAdmin
+            .from('websites')
+            .update(updateData)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) {
+            console.error('Database error updating website:', error);
+            return NextResponse.json(
+                { success: false, error: error.message || 'Failed to update website' },
+                { status: 500 }
+            );
+        }
+
+        return NextResponse.json({
+            success: true,
+            website
+        });
+    } catch (error) {
+        console.error('Error updating website:', error);
+        return NextResponse.json(
+            { success: false, error: 'Internal server error' },
+            { status: 500 }
+        );
+    }
+}
+
 // DELETE /api/websites/[id] - Delete website and all related data
 export async function DELETE(
     request: NextRequest,

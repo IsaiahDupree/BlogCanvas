@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { url, clientId } = body;
+        const { url, clientId, targetMarket, platform, isPrimary } = body;
 
         if (!url) {
             return NextResponse.json(
@@ -87,6 +87,30 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Auto-detect platform if not provided
+        let detectedPlatform = platform || 'unknown';
+        if (!platform || platform === 'unknown') {
+            // Call the database function to detect platform
+            const { data: platformData } = await supabaseAdmin
+                .rpc('detect_website_platform', {
+                    website_url: websiteUrl.href,
+                    html_content: null
+                });
+
+            if (platformData) {
+                detectedPlatform = platformData;
+            }
+        }
+
+        // If isPrimary is true, unset any existing primary website for this client
+        if (isPrimary && clientId) {
+            await supabaseAdmin
+                .from('websites')
+                .update({ is_primary: false })
+                .eq('client_id', clientId)
+                .eq('is_primary', true);
+        }
+
         // Create website record
         const { data: website, error } = await supabaseAdmin
             .from('websites')
@@ -94,14 +118,18 @@ export async function POST(request: NextRequest) {
                 url: websiteUrl.origin,
                 domain: websiteUrl.hostname,
                 scrape_status: 'pending',
-                client_id: clientId || null
+                client_id: clientId || null,
+                target_market: targetMarket || null,
+                platform: detectedPlatform,
+                is_primary: isPrimary || false
             })
             .select()
             .single();
 
         if (error) {
+            console.error('Database error creating website:', error);
             return NextResponse.json(
-                { success: false, error: 'Failed to create website' },
+                { success: false, error: error.message || 'Failed to create website' },
                 { status: 500 }
             );
         }

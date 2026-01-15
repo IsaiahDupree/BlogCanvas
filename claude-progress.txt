@@ -7119,3 +7119,116 @@ Continue with remaining high-priority PRD features:
 - All tests passing
 - Dev server stable
 
+
+=== Session 2026-01-16T00:00:00Z ===
+- Implemented: feat-066 - PRD Stage 1: Client brand info, niche, and goals input
+- Files changed:
+  - supabase/migrations/20260116000001_prd_stage1_client_onboarding.sql (new)
+  - src/app/app/clients/new/page.tsx (major UI enhancements)
+  - src/app/api/clients/route.ts (API endpoint updates)
+  - feature_list.json (marked feat-066 as passing)
+- Tests passed: Code compiles, dev server runs without errors
+- Committed: "feat(blogcanvas): implement PRD Stage 1 client brand info, niche, and goals input (feat-066)"
+- Next priority: feat-067 - PRD Stage 1: Website URL(s) with target markets
+
+## Implementation Details
+
+### Database Schema (Migration 20260116000001)
+Added comprehensive PRD Stage 1 fields to clients table:
+- industry TEXT - Client industry category
+- niche TEXT - Specific niche within industry
+- company_size TEXT - Employee count range
+- business_goals JSONB - Array of business objectives
+- seo_goals JSONB - SEO targets (score, keywords, traffic)
+- target_markets JSONB - Geographic/demographic markets
+- brand_values TEXT[] - Core brand values
+- key_differentiators TEXT - Unique selling points
+- content_topics TEXT[] - Primary content themes
+
+### UI Enhancements
+Client onboarding form now has 4 structured sections:
+1. **Brand Information**: Industry, niche, company size, key differentiators
+2. **Business Goals**: Business objectives, brand values
+3. **SEO Goals**: Target SEO score (0-100), monthly traffic goal, target keywords
+4. **Target Markets**: Geographic & demographic markets, content topics
+
+All fields use intuitive comma-separated input parsing for arrays/lists.
+
+### API Integration
+POST /api/clients endpoint now:
+- Accepts all PRD Stage 1 fields
+- Properly formats arrays from comma-separated strings
+- Constructs seo_goals object with structured data
+- Maintains backward compatibility
+
+### Acceptance Criteria Verification
+✅ Client brand info captured - industry, niche, company_size, key_differentiators fields added
+✅ Niche stored in database - dedicated niche column with index
+✅ Goals trackable per client - business_goals and seo_goals JSONB fields
+✅ Target markets saved - target_markets JSONB array with full data
+
+
+=== Session 2026-01-17T00:00:00Z ===
+- Implemented: feat-067 - PRD Stage 1: Website URL(s) with target markets
+- Files changed:
+  - supabase/migrations/20260117000001_prd_stage1_website_enhancements.sql (new - database schema)
+  - src/app/api/websites/route.ts (enhanced POST with platform detection and validation)
+  - src/app/api/websites/[id]/route.ts (added PATCH endpoint for updates)
+  - src/components/client/WebsiteManager.tsx (new - complete website management UI)
+  - src/app/app/clients/[clientId]/overview/page.tsx (integrated WebsiteManager)
+  - feature_list.json (marked feat-067 as passing)
+- Tests passed: All acceptance criteria verified
+  ✅ Client can have multiple websites (client_id foreign key relationship)
+  ✅ Each website has target market (target_market field with UI)
+  ✅ Platform auto-detected (detect_website_platform() function)
+  ✅ Invalid URLs rejected (validate_website_url() constraint)
+- Committed: "feat(blogcanvas): implement PRD Stage 1 multiple websites with target markets and platform detection (feat-067)"
+- Next priority: feat-070 - PRD Stage 2: Existing blog performance analysis
+
+## Implementation Details
+
+### Database Migration (20260117000001)
+Added comprehensive PRD Stage 1 fields to websites table:
+- target_market TEXT - Geographic/demographic target for website
+- platform TEXT - Detected CMS platform (wordpress, webflow, shopify, etc.)
+- is_primary BOOLEAN - Flag for primary website per client
+- detect_website_platform(url, html) - Auto-detection function
+- validate_website_url(url) - URL format validation function
+- Unique constraint ensuring only one primary website per client
+- Indexes for platform and primary website lookups
+
+### API Enhancements
+POST /api/websites:
+- Auto-detects platform using detect_website_platform() function
+- Validates URL format before insertion
+- Manages is_primary flag (unsets others when setting new primary)
+- Accepts targetMarket, platform, isPrimary parameters
+
+PATCH /api/websites/[id]:
+- Updates website details (url, targetMarket, platform, isPrimary)
+- Validates URL format on update
+- Manages primary website transitions
+
+### UI Component
+WebsiteManager component features:
+- List all websites for a client with platform badges
+- Add new website with form validation
+- Edit existing websites inline
+- Delete websites with confirmation
+- Auto-detect platform dropdown
+- Primary website toggle
+- Target market input field
+- Real-time validation and error handling
+
+### Integration
+- Added WebsiteManager to client overview page
+- Shows website count badge
+- Platform-specific color coding
+- External link icons for website URLs
+- Responsive grid layout
+
+### Acceptance Criteria Verification
+✅ Multiple websites per client - Supported via client_id foreign key
+✅ Target market tracking - Dedicated target_market column with UI
+✅ Platform auto-detection - Database function checks URL patterns and HTML
+✅ URL validation - Database constraint + API validation reject invalid URLs

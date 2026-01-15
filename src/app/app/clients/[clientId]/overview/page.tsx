@@ -6,6 +6,7 @@ import { ArrowLeft, FileText, TrendingUp, Clock, CheckCircle, Settings, Plus, Gl
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import WebsiteManager from '@/components/client/WebsiteManager'
 
 interface Client {
     id: string
@@ -229,6 +230,11 @@ export default function ClientOverviewPage({ params }: { params: Promise<{ clien
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Brand Snapshot */}
                     <div className="lg:col-span-2">
+                        {/* Website Manager */}
+                        <div className="mb-8">
+                            <WebsiteManager clientId={client.id} />
+                        </div>
+
                         <Card className="p-6 bg-white shadow-xl mb-8">
                             <div className="flex items-center justify-between mb-6">
                                 <h2 className="text-2xl font-bold">Brand Snapshot</h2>

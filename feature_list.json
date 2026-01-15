@@ -1528,7 +1528,9 @@
         "Platform auto-detected",
         "Invalid URLs rejected"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-17T00:00:00Z",
+      "notes": "Complete multiple websites implementation with target markets and platform detection. Database migration adds target_market, platform, and is_primary fields. API endpoints support full CRUD with auto-detection. WebsiteManager component provides UI for adding/editing/deleting websites. All acceptance criteria verified: client_id relationship supports multiple websites, target_market field stores market info, detect_website_platform() function auto-detects from URL patterns, validate_website_url() constraint enforces valid URLs."
     },
     {
       "id": "feat-068",
