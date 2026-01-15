@@ -40,10 +40,10 @@ export async function POST(
             );
         }
 
-        // Update batch status
+        // Update batch status to in_progress (will auto-transition via trigger)
         await supabaseAdmin
             .from('content_batches')
-            .update({ status: 'generating' })
+            .update({ status: 'in_progress' })
             .eq('id', batchId);
 
         // Process posts in batches with concurrency limit
@@ -61,10 +61,10 @@ export async function POST(
             const chunkResults = await Promise.allSettled(
                 chunk.map(async (post) => {
                     try {
-                        // Update post status
+                        // Update post status to ai_drafting (will trigger batch status update)
                         await supabaseAdmin
                             .from('blog_posts')
-                            .update({ status: 'generating' })
+                            .update({ status: 'ai_drafting' })
                             .eq('id', post.id);
 
                         // Generate content
@@ -102,17 +102,20 @@ export async function POST(
             }
         }
 
-        // Update batch status
-        const finalStatus = results.failed === 0 ? 'completed' :
-            results.succeeded === 0 ? 'failed' : 'partial';
-
+        // Update batch posts_completed counter (status will auto-update via trigger)
         await supabaseAdmin
             .from('content_batches')
             .update({
-                status: finalStatus,
                 posts_completed: results.succeeded
             })
             .eq('id', batchId);
+
+        // Get updated batch status
+        const { data: updatedBatch } = await supabaseAdmin
+            .from('content_batches')
+            .select('status')
+            .eq('id', batchId)
+            .single();
 
         return NextResponse.json({
             success: true,
@@ -122,7 +125,7 @@ export async function POST(
                 failed: results.failed,
                 errors: results.errors
             },
-            batchStatus: finalStatus
+            batchStatus: updatedBatch?.status || 'in_progress'
         });
 
     } catch (error: any) {
@@ -164,7 +167,7 @@ export async function GET(
 
         const statusCounts = {
             planned: 0,
-            generating: 0,
+            ai_drafting: 0,
             draft: 0,
             failed: 0
         };
@@ -195,7 +198,7 @@ export async function GET(
             progress: {
                 total: totalPosts,
                 completed: completedPosts,
-                generating: statusCounts.generating,
+                ai_drafting: statusCounts.ai_drafting,
                 failed: statusCounts.failed,
                 pending: statusCounts.planned,
                 percent: progressPercent,

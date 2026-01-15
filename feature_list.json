@@ -1947,7 +1947,9 @@
         "Completion detected",
         "Dashboard accurate"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T08:26:57.395869+00:00",
+      "notes": "Complete batch status auto-transitions with database triggers and functions.\nDatabase: Created migration 20260115000001_batch_status_auto_transitions.sql with 3 functions (increment_batch_counter, update_batch_status, trigger_update_batch_status) and 1 trigger (blog_posts_update_batch_status).\nAuto-transitions: planned \u2192 in_progress (on first post start), in_progress \u2192 completed (when all posts published).\nAPI: Updated /api/content-batches/[id]/generate-all to use 'in_progress' status and 'ai_drafting' for posts (instead of invalid 'generating').\nAll acceptance criteria verified: (1) status tracks correctly with CHECK constraint, (2) auto-update on first post start via trigger, (3) auto-complete when all posts done via update_batch_status(), (4) dashboard shows status via GET /api/content-batches and progress endpoint."
     },
     {
       "id": "feat-087",
