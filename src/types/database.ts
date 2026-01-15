@@ -224,6 +224,7 @@ export type Database = {
           image_briefs: Json | null
           outline: Json | null
           research_context: Json | null
+          search_intent: string | null
           seo_metadata: Json | null
           seo_notes: string | null
           seo_quality_score: number | null
@@ -248,6 +249,7 @@ export type Database = {
           image_briefs?: Json | null
           outline?: Json | null
           research_context?: Json | null
+          search_intent?: string | null
           seo_metadata?: Json | null
           seo_notes?: string | null
           seo_quality_score?: number | null
@@ -272,6 +274,7 @@ export type Database = {
           image_briefs?: Json | null
           outline?: Json | null
           research_context?: Json | null
+          search_intent?: string | null
           seo_metadata?: Json | null
           seo_notes?: string | null
           seo_quality_score?: number | null

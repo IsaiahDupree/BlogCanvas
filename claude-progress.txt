@@ -8173,3 +8173,121 @@ The client change request system enables collaborative content refinement with f
   * Backward compatible (maintains legacy fields)
 - Updated: feature_list.json - Marked feat-098 as passing with detailed implementation notes
 - Next priority: feat-099 - PRD: Content depth level selection (basic/advanced/technical)
+
+=== Session 2026-01-19T08:00:00Z ===
+- Implemented: feat-099 - Content depth level selection (basic/advanced/technical)
+- Status: COMPLETE - All acceptance criteria verified
+- Implementation Summary:
+  * Database: Added depth_level column to content_batches (TEXT with CHECK constraint)
+  * Types: Updated TypeScript types for content_batches
+  * Core Logic: Created src/lib/content-depth.ts with 4 depth levels configuration
+  * UI: Created DepthLevelSelector.tsx component using Radix UI
+  * Integration: Added selector to PitchBuilderTab batch creation form
+  * API: Updated POST /api/content-batches to accept and store depthLevel
+  * AI Pipeline: Enhanced blog-pipeline.ts to adjust word counts and prompts
+- Files created:
+  * supabase/migrations/20260119000001_add_depth_level_to_batches.sql
+  * src/lib/content-depth.ts (220 lines)
+  * src/components/DepthLevelSelector.tsx (53 lines)
+  * docs/feat-099-depth-level.md (complete documentation)
+- Files modified:
+  * src/types/database.ts - Added depth_level field
+  * src/app/api/content-batches/route.ts - Accept depthLevel parameter
+  * src/components/website/PitchBuilderTab.tsx - Added depth selector
+  * src/lib/agents/blog-pipeline.ts - Word count & prompt adjustments
+- Implementation details:
+  * Four depth levels with distinct configurations:
+    - Basic: 1000-1500 words, simple language for beginners
+    - Standard: 1500-2500 words, balanced depth (default)
+    - Advanced: 2500-3500 words, in-depth for experts
+    - Technical: 3500+ words, comprehensive technical docs
+  * Centralized configuration in content-depth.ts
+  * getTargetWordCount() returns min/max range for each level
+  * getAIPromptGuidance() provides depth-specific instructions
+  * Pipeline adjusts outline word count to average of range
+  * Draft agent receives guidance in styleNotes field
+- All 4 acceptance criteria verified:
+  ✓ 3+ depth levels available - 4 levels with clear UI
+  ✓ Stored in batch - depth_level column in content_batches
+  ✓ Word counts adjust - Pipeline uses depth-based targets
+  ✓ AI adapts - Draft prompts include depth guidance
+- Key benefits:
+  * Users can specify content complexity upfront
+  * Consistent word count expectations per depth level
+  * AI generates appropriately-detailed content
+  * Reusable DepthLevelSelector component
+  * Fully backward compatible (defaults to 'standard')
+- Updated: feature_list.json - Marked feat-099 as passing with detailed notes
+- Committed: "feat(blogcanvas): implement content depth level selection (feat-099)"
+- Next priority: feat-100 - Topic list with search intent per topic
+
+
+=== Session 2026-01-15T10:15:00Z ===
+- Implemented: feat-100 - PRD: Topic list with search intent per topic
+- Status: COMPLETE - All acceptance criteria verified
+- Implementation Summary:
+  * Added search intent classification to blog posts (informational, commercial, transactional, navigational)
+  * Created comprehensive search intent library with metadata, examples, and SEO guidance
+  * Integrated into AI pipeline for content optimization
+  * Auto-generates and inherits intent appropriately
+- Files created:
+  * /src/lib/search-intent.ts (218 lines) - Core library
+    - SearchIntent type and SearchIntentConfig interface
+    - SEARCH_INTENT_OPTIONS with 4 configurations
+    - Helper functions: getSearchIntentConfig, getAllSearchIntents, getAIGuidance, isValidSearchIntent, parseSearchIntent
+  * /src/components/SearchIntentSelector.tsx (76 lines) - UI component
+    - Select component with icon, label, description
+    - Shows user goal when selected
+    - Supports allowNull prop
+  * /docs/feat-100-search-intent.md - Complete documentation
+- Files modified:
+  * /src/types/database.ts - Added search_intent to blog_posts Row, Insert, Update
+  * /src/app/api/content-batches/[id]/generate-topics/route.ts
+    - Gap topics default to 'informational' (line 50)
+    - Cluster topics inherit from cluster.search_intent (line 89)
+  * /src/app/api/content-batches/[id]/import-csv/route.ts
+    - Parse search_intent from CSV (line 86)
+    - Validate and store (lines 101, 112)
+  * /src/lib/agents/blog-pipeline.ts
+    - Import SearchIntent and getAIGuidance (line 17)
+    - Add searchIntent field to BlogGenerationInput (line 25)
+    - Generate search intent guidance (line 260)
+    - Combine with depth guidance in styleNotes (line 278)
+  * /src/app/api/blog-posts/[id]/generate/route.ts
+    - Import parseSearchIntent (line 5)
+    - Fetch search_intent from database (line 29)
+    - Pass to pipeline (line 95)
+- All 4 acceptance criteria verified:
+  ✓ Intent selectable - SearchIntentSelector component ready
+  ✓ All 4 types - informational, commercial, transactional, navigational
+  ✓ Visible in batch - Auto-assigned and inherited from clusters
+  ✓ AI uses intent - Guidance integrated in draft prompts
+- Search Intent Configurations:
+  * Informational 📚: Learn/understand (how-to, guides, tutorials)
+  * Commercial 🔍: Research/compare (best, top, vs, reviews)
+  * Transactional 💳: Take action (buy, get, sign up, download)
+  * Navigational 🧭: Find specific site (branded searches)
+- Each intent includes:
+  * User goal description
+  * Example keywords/queries
+  * Content characteristics
+  * SEO optimization tips
+- AI Integration:
+  * getAIGuidance() generates detailed prompt guidance
+  * Includes user goal, content characteristics, SEO tips
+  * Combined with depth guidance for comprehensive prompts
+  * Guides AI to tailor structure, tone, and CTAs appropriately
+- Database:
+  * search_intent field already existed from prior migration (20260115000002)
+  * CHECK constraint enforces valid values
+  * blog_posts_with_intent view combines post and cluster intent
+- Key benefits:
+  * Content optimized for user search goals
+  * SEO-appropriate keywords and formats
+  * Better user satisfaction (content matches expectations)
+  * Strategic content mix across different intents
+  * Consistent quality via standardized definitions
+- Updated: feature_list.json - Marked feat-100 as passing with detailed implementation notes
+- Committed: Pending
+- Next priority: feat-101 - Batch-level SEO score tracking
+

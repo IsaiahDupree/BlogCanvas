@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { BlogGenerationInput } from '@/lib/agents/blog-pipeline';
 import { runPipelineWithQualityGates, PipelineOrchestratorOptions } from '@/lib/agents/pipeline-orchestrator';
+import { parseSearchIntent } from '@/lib/search-intent';
 
 // POST /api/blog-posts/[id]/generate - Generate content for a single blog post using full AI pipeline
 export async function POST(
@@ -26,6 +27,7 @@ export async function POST(
                 topic,
                 target_keyword,
                 word_count_goal,
+                search_intent,
                 client_id,
                 clients (
                     brand_name,
@@ -90,6 +92,7 @@ export async function POST(
                 topic: post.topic || 'Article Topic',
                 targetKeyword: post.target_keyword || '',
                 wordCountGoal: post.word_count_goal || 1500,
+                searchIntent: parseSearchIntent(post.search_intent) || undefined,
                 clientProfile,
                 options: {
                     usePremiumModel,

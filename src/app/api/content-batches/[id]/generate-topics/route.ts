@@ -47,6 +47,7 @@ export async function POST(
                     word_count_goal: gap.severity === 'high' ? 1500 : 1000,
                     tone_of_voice: 'professional',
                     goal: gap.suggested_action,
+                    search_intent: 'informational', // Gap-filling content is typically informational
                     status: 'planned'
                 });
             }
@@ -85,6 +86,7 @@ export async function POST(
                     word_count_goal: 1200,
                     tone_of_voice: 'professional',
                     goal: `Cover ${cluster.name} cluster keywords`,
+                    search_intent: cluster.search_intent, // Inherit from cluster
                     status: 'planned'
                 });
             }

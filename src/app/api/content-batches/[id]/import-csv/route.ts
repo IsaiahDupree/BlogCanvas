@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { parse } from 'csv-parse/sync';
+import { isValidSearchIntent } from '@/lib/search-intent';
 
 /**
  * Import blog posts from CSV file
@@ -82,6 +83,7 @@ export async function POST(
             const clusterName = row.topic_cluster || row.cluster || row['Topic Cluster'] || row['Cluster'] || '';
             const priority = parseInt(row.priority || row['Priority'] || '0') || 0;
             const notes = row.notes || row.description || row['Notes'] || row['Description'] || '';
+            const searchIntent = row.search_intent || row.intent || row['Search Intent'] || row['Intent'] || '';
 
             if (!topic) {
                 errors.push(`Row ${i + 2}: Missing topic/title`);
@@ -95,6 +97,9 @@ export async function POST(
                 topicClusterId = clusterMap.get(clusterKey) || null;
             }
 
+            // Validate and set search intent
+            const validIntent = isValidSearchIntent(searchIntent.toLowerCase()) ? searchIntent.toLowerCase() : null;
+
             // Create blog post
             const { data: post, error: postError } = await supabaseAdmin
                 .from('blog_posts')
@@ -104,6 +109,7 @@ export async function POST(
                     topic_cluster_id: topicClusterId,
                     target_keyword: targetKeyword || null,
                     target_wordcount: targetWordcount,
+                    search_intent: validIntent,
                     status: 'idea',
                     draft: {
                         topic: topic,

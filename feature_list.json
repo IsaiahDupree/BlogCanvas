@@ -2255,7 +2255,9 @@
         "Visible in batch",
         "AI uses intent"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T10:15:00Z",
+      "notes": "Complete search intent classification system. Created /src/lib/search-intent.ts (218 lines) with 4 intent types (informational, commercial, transactional, navigational), each with comprehensive metadata, examples, content characteristics, and SEO tips. Created SearchIntentSelector.tsx component. Updated database types to include search_intent field. Modified generate-topics API to assign intents (informational for gaps, inherited for clusters). Updated import-csv to parse and validate intent from CSV. Integrated into AI pipeline: added searchIntent field to BlogGenerationInput, generates AI guidance, combines with depth guidance in draft prompts. Updated generate endpoint to fetch and pass search_intent to pipeline. All acceptance criteria verified: intent selectable via component, all 4 types configured, visible/inherited in batches, AI adapts content based on intent guidance. Database field already existed from prior migration. See docs/feat-100-search-intent.md for full documentation."
     },
     {
       "id": "feat-101",

@@ -14,6 +14,7 @@ import { runFactCheckAgent, FactCheckAgentInput, FactCheckResult as FCResult } f
 import { runEnhancementAgent, EnhancementAgentInput, EnhancementResult } from './enhancement';
 import { runVoiceToneAgent, VoiceToneAgentInput } from './voice-tone';
 import { getTargetWordCount, getAIPromptGuidance, DepthLevel } from '../content-depth';
+import { SearchIntent, getAIGuidance as getSearchIntentGuidance } from '../search-intent';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export interface BlogGenerationInput {
@@ -21,6 +22,7 @@ export interface BlogGenerationInput {
   targetKeyword: string;
   wordCountGoal: number;
   depthLevel?: DepthLevel; // feat-099: Content depth level
+  searchIntent?: SearchIntent; // feat-100: Search intent for content optimization
   // Optional: For tracking revisions at each pipeline stage
   blogPostId?: string;
   supabaseClient?: SupabaseClient;
@@ -254,6 +256,9 @@ export async function runBlogGenerationPipeline(
     // feat-099: Get depth-specific guidance for prompts
     const depthGuidance = input.depthLevel ? getAIPromptGuidance(input.depthLevel) : '';
 
+    // feat-100: Get search intent-specific guidance for prompts
+    const searchIntentGuidance = input.searchIntent ? getSearchIntentGuidance(input.searchIntent) : '';
+
     for (const section of outline.sections) {
       const draftInput: DraftAgentInput = {
         section,
@@ -270,7 +275,7 @@ export async function runBlogGenerationPipeline(
           keyMessages: [],
           competitorDifferentiators: [],
           contentDonts: [],
-          styleNotes: depthGuidance ? `Content Depth Guidance: ${depthGuidance}` : undefined
+          styleNotes: [depthGuidance, searchIntentGuidance].filter(Boolean).join('\n\n') || undefined
         }
       };
 
