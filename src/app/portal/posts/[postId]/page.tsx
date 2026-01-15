@@ -87,15 +87,32 @@ export default function PortalPostReviewPage({ params }: { params: Promise<{ pos
         }
     }
 
-    const handleRequestChanges = () => {
+    const handleRequestChanges = async () => {
         if (!changeRequest.trim()) {
             alert('Please describe the changes you need')
             return
         }
 
-        alert('Changes requested! Your agency will be notified.')
-        setShowChangeModal(false)
-        window.location.href = '/portal/dashboard'
+        try {
+            const response = await fetch(`/api/blog-posts/${postId}/change-requests`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ feedback: changeRequest })
+            })
+
+            const data = await response.json()
+
+            if (data.success) {
+                alert('Changes requested! Your agency will be notified.')
+                setShowChangeModal(false)
+                window.location.href = '/portal/dashboard'
+            } else {
+                alert(`Error: ${data.error}`)
+            }
+        } catch (error) {
+            console.error('Error requesting changes:', error)
+            alert('Failed to submit change request. Please try again.')
+        }
     }
 
     return (

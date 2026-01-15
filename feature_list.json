@@ -1969,7 +1969,9 @@
         "Editor sees request",
         "History tracked"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T08:30:45.520231+00:00",
+      "notes": "Complete client change request system with database, API, and UI integration.\nDatabase: Created blog_post_change_requests table with full audit trail (requested_by, requested_at, feedback, status, resolved_by, resolved_at, resolution_notes). Added RLS policies for client/vendor access. Created trigger_post_changes_requested to auto-return posts to editor_review.\nAPI: POST /api/blog-posts/[id]/change-requests (create request with validation), GET /api/blog-posts/[id]/change-requests (list history). Sends notifications to vendor, creates comment for visibility.\nUI: Updated /app/portal/posts/[postId]/page.tsx with async handleRequestChanges() calling API (lines 90-116). Request Changes button already present (lines 174-180), modal with textarea (lines 217-250).\nAll acceptance criteria verified: (1) button visible to client with prominent yellow styling, (2) feedback captured in database with full validation, (3) editor sees request via notification + auto status change to editor_review, (4) history tracked with all requests preserved and viewable."
     },
     {
       "id": "feat-088",
