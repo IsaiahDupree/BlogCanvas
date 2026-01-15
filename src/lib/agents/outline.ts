@@ -54,15 +54,23 @@ Return a JSON object with:
 - sections: array of {key, title, type, keyPoints, estimatedWords}
   - key: unique identifier (e.g., 'intro', 'body1', 'conclusion')
   - title: section heading
-  - type: one of 'intro', 'body', 'conclusion', 'cta'
+  - type: one of 'intro', 'body', 'conclusion', 'cta', 'faq'
   - keyPoints: array of key points to cover
   - estimatedWords: word count for this section
 - totalEstimatedWords: sum of all section word counts
+- faqs: array of 3-5 frequently asked questions with {question, suggestedAnswer}
+  - Questions should be relevant to the topic and address common concerns
+  - Answers should be concise (50-100 words each)
+- tableSuggestions: array of 1-3 table ideas with {title, description, suggestedColumns, suggestedRows, placement}
+  - Tables should help visualize comparisons, features, or data
+  - placement: which section key to place the table after
 
 Requirements:
 - Must have at least 4 sections minimum
 - Must include intro, at least 2 body sections, conclusion, and CTA
-- Total words should be close to word count goal`;
+- Total words should be close to word count goal
+- Include 3-5 relevant FAQs
+- Suggest 1-3 helpful tables if applicable to the topic`;
 
         const response = await provider.call({
             systemPrompt,
@@ -122,17 +130,25 @@ Return a JSON object with:
   - sections: array of {key, title, type, keyPoints, estimatedWords}
     - key: unique identifier (e.g., 'intro', 'body1', 'conclusion')
     - title: section heading
-    - type: one of 'intro', 'body', 'conclusion', 'cta'
+    - type: one of 'intro', 'body', 'conclusion', 'cta', 'faq'
     - keyPoints: array of key points to cover
     - estimatedWords: word count for this section
   - totalEstimatedWords: sum of all section word counts
+  - faqs: array of 3-5 frequently asked questions with {question, suggestedAnswer}
+    - Questions should be relevant to the topic and address common concerns
+    - Answers should be concise (50-100 words each)
+  - tableSuggestions: array of 1-3 table ideas with {title, description, suggestedColumns, suggestedRows, placement}
+    - Tables should help visualize comparisons, features, or data
+    - placement: which section key to place the table after
 - totalGenerated: 3
 
 Requirements for EACH outline:
 - Must have at least 4 sections minimum
 - Must include intro, at least 2 body sections, conclusion, and CTA
 - Total words should be close to word count goal
-- Each outline must be structurally different from the others`;
+- Each outline must be structurally different from the others
+- Include 3-5 relevant FAQs per outline
+- Suggest 1-3 helpful tables if applicable to the topic`;
 
         const response = await provider.call({
             systemPrompt,

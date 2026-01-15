@@ -39,14 +39,29 @@ export interface VoiceToneResult {
 export interface OutlineSection {
     key: string;
     title: string;
-    type: 'intro' | 'body' | 'conclusion' | 'cta';
+    type: 'intro' | 'body' | 'conclusion' | 'cta' | 'faq';
     keyPoints: string[];
     estimatedWords: number;
+}
+
+export interface FAQItem {
+    question: string;
+    suggestedAnswer: string;
+}
+
+export interface TableSuggestion {
+    title: string;
+    description: string;
+    suggestedColumns: string[];
+    suggestedRows: string[];
+    placement: string; // Which section key to place after
 }
 
 export interface OutlineResult {
     sections: OutlineSection[];
     totalEstimatedWords: number;
+    faqs?: FAQItem[];
+    tableSuggestions?: TableSuggestion[];
 }
 
 export interface ResearchResult {

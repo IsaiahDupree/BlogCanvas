@@ -8,14 +8,29 @@ import { OutlineCustomizer } from '@/components/outline/OutlineCustomizer';
 interface OutlineSection {
   key: string;
   title: string;
-  type: 'intro' | 'body' | 'conclusion' | 'cta';
+  type: 'intro' | 'body' | 'conclusion' | 'cta' | 'faq';
   keyPoints: string[];
   estimatedWords: number;
+}
+
+interface FAQItem {
+  question: string;
+  suggestedAnswer: string;
+}
+
+interface TableSuggestion {
+  title: string;
+  description: string;
+  suggestedColumns: string[];
+  suggestedRows: string[];
+  placement: string;
 }
 
 interface OutlineResult {
   sections: OutlineSection[];
   totalEstimatedWords: number;
+  faqs?: FAQItem[];
+  tableSuggestions?: TableSuggestion[];
 }
 
 interface OutlineOption {

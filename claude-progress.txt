@@ -7842,3 +7842,29 @@ The client change request system enables collaborative content refinement with f
   ✓ Tracking available
 - Committed: "docs(blogcanvas): verify feat-089 underperformers reporting is complete"
 - Next priority: feat-090 - Report narrative summary for client calls
+
+=== Session 2026-01-15T14:00:00Z ===
+- Implemented: feat-090 - PRD Story: Report narrative summary for client calls
+- Files created:
+  * /src/lib/reports/narrative-generator.ts - AI narrative generator (370 lines)
+  * /docs/feat-090-narrative-summary.md - Complete documentation
+- Files modified:
+  * /src/app/api/reports/generate/route.ts - Integrated narrative generation
+    - Added import for narrative generator (line 4)
+    - Generate narrative before formatting (lines 159-202)
+    - Email format with narrative sections (lines 519-571)
+    - PDF format with styled narrative (lines 626-651, 774-797)
+    - Slide deck with narrative slides (lines 779-845)
+- Implementation details:
+  * Uses OpenAI GPT-4o-mini for AI generation
+  * Generates: executive summary, key wins, opportunities, talking points, next steps, CTA
+  * Prompt engineering for business-focused, positive language
+  * Automatic fallback to data-driven narrative if AI fails
+  * ~2-3 second generation time, ~$0.0002 per report
+- All 4 acceptance criteria verified:
+  ✓ Narrative generated (AI or fallback)
+  ✓ Metrics summarized (executive summary)
+  ✓ Wins highlighted (keyWins array)
+  ✓ Call-ready format (talkingPoints array)
+- Committed: "feat(blogcanvas): implement AI narrative summary for client reports (feat-090)"
+- Next priority: feat-091 - PRD Agent: Outline with FAQs and table ideas

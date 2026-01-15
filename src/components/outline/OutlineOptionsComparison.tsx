@@ -17,14 +17,29 @@ import {
 interface OutlineSection {
   key: string;
   title: string;
-  type: 'intro' | 'body' | 'conclusion' | 'cta';
+  type: 'intro' | 'body' | 'conclusion' | 'cta' | 'faq';
   keyPoints: string[];
   estimatedWords: number;
+}
+
+interface FAQItem {
+  question: string;
+  suggestedAnswer: string;
+}
+
+interface TableSuggestion {
+  title: string;
+  description: string;
+  suggestedColumns: string[];
+  suggestedRows: string[];
+  placement: string;
 }
 
 interface OutlineResult {
   sections: OutlineSection[];
   totalEstimatedWords: number;
+  faqs?: FAQItem[];
+  tableSuggestions?: TableSuggestion[];
 }
 
 interface OutlineOption {
@@ -158,7 +173,8 @@ export function OutlineOptionsComparison({
       intro: 'bg-blue-100 text-blue-800 border-blue-200',
       body: 'bg-purple-100 text-purple-800 border-purple-200',
       conclusion: 'bg-green-100 text-green-800 border-green-200',
-      cta: 'bg-orange-100 text-orange-800 border-orange-200'
+      cta: 'bg-orange-100 text-orange-800 border-orange-200',
+      faq: 'bg-cyan-100 text-cyan-800 border-cyan-200'
     };
     return colors[type as keyof typeof colors] || 'bg-gray-100 text-gray-800 border-gray-200';
   };
@@ -336,6 +352,49 @@ export function OutlineOptionsComparison({
                         </p>
                       </div>
                     ))}
+
+                    {/* FAQs */}
+                    {option.outline_data.faqs && option.outline_data.faqs.length > 0 && (
+                      <div className="p-3 border rounded-lg bg-cyan-50 border-cyan-200">
+                        <h4 className="font-medium text-sm mb-2 text-cyan-900">
+                          💡 FAQs ({option.outline_data.faqs.length})
+                        </h4>
+                        <ul className="space-y-2">
+                          {option.outline_data.faqs.slice(0, 2).map((faq, i) => (
+                            <li key={i} className="text-xs">
+                              <p className="font-medium text-cyan-800">Q: {faq.question}</p>
+                              <p className="text-cyan-700 mt-1 line-clamp-2">A: {faq.suggestedAnswer}</p>
+                            </li>
+                          ))}
+                          {option.outline_data.faqs.length > 2 && (
+                            <li className="text-xs text-cyan-600 italic">
+                              +{option.outline_data.faqs.length - 2} more FAQs...
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Table Suggestions */}
+                    {option.outline_data.tableSuggestions && option.outline_data.tableSuggestions.length > 0 && (
+                      <div className="p-3 border rounded-lg bg-purple-50 border-purple-200">
+                        <h4 className="font-medium text-sm mb-2 text-purple-900">
+                          📊 Table Ideas ({option.outline_data.tableSuggestions.length})
+                        </h4>
+                        <ul className="space-y-2">
+                          {option.outline_data.tableSuggestions.map((table, i) => (
+                            <li key={i} className="text-xs">
+                              <p className="font-medium text-purple-800">{table.title}</p>
+                              <p className="text-purple-700 mt-1">{table.description}</p>
+                              <p className="text-purple-600 mt-1 text-[10px]">
+                                Columns: {table.suggestedColumns.slice(0, 3).join(', ')}
+                                {table.suggestedColumns.length > 3 && '...'}
+                              </p>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
