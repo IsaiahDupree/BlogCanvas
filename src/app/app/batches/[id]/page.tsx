@@ -3,11 +3,12 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Play, Pause, CheckCircle2, AlertCircle, Loader2, TrendingUp, FileText, Upload, Download, Send, Image as ImageIcon, ExternalLink, Calendar, Clock, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, Play, Pause, CheckCircle2, AlertCircle, Loader2, TrendingUp, FileText, Upload, Download, Send, Image as ImageIcon, ExternalLink, Calendar, Clock, AlertTriangle, CalendarClock } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import ImageGenerationDialog from '@/components/images/ImageGenerationDialog'
+import SchedulePublishDialog from '@/components/publishing/SchedulePublishDialog'
 
 export default function BatchDetailPage() {
     const params = useParams()
@@ -22,10 +23,15 @@ export default function BatchDetailPage() {
     const [imageDialogOpen, setImageDialogOpen] = useState(false)
     const [selectedPostForImages, setSelectedPostForImages] = useState<{ id: string; topic: string } | null>(null)
     const [overdueStats, setOverdueStats] = useState<any>(null)
+    const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false)
+    const [selectedPostForSchedule, setSelectedPostForSchedule] = useState<{ id: string; topic: string } | null>(null)
+    const [scheduledPosts, setScheduledPosts] = useState<any[]>([])
+    const [showScheduledSection, setShowScheduledSection] = useState(false)
 
     useEffect(() => {
         fetchBatchDetails()
         fetchOverdueStats()
+        fetchScheduledPosts()
         const interval = setInterval(fetchProgress, 3000) // Poll every 3 seconds
         return () => clearInterval(interval)
     }, [params.id])
@@ -66,6 +72,41 @@ export default function BatchDetailPage() {
             }
         } catch (error) {
             console.error('Failed to fetch overdue stats:', error)
+        }
+    }
+
+    const fetchScheduledPosts = async () => {
+        try {
+            const response = await fetch(`/api/publish-queue/schedule?batchId=${params.id}`)
+            const data = await response.json()
+            if (data.success) {
+                setScheduledPosts(data.schedules || [])
+            }
+        } catch (error) {
+            console.error('Failed to fetch scheduled posts:', error)
+        }
+    }
+
+    const handleCancelScheduled = async (jobId: string) => {
+        if (!confirm('Are you sure you want to cancel this scheduled publish?')) {
+            return
+        }
+
+        try {
+            const response = await fetch(`/api/publish-queue/${jobId}`, {
+                method: 'DELETE'
+            })
+            const data = await response.json()
+
+            if (data.success) {
+                alert('Scheduled publish cancelled')
+                await fetchScheduledPosts()
+            } else {
+                alert(`Failed to cancel: ${data.error}`)
+            }
+        } catch (error: any) {
+            console.error('Cancel error:', error)
+            alert(`Failed to cancel: ${error.message}`)
         }
     }
 
@@ -331,6 +372,25 @@ export default function BatchDetailPage() {
                                     </>
                                 )}
                             </Button>
+                            <Button
+                                onClick={() => {
+                                    const approvedPosts = posts.filter(p => p.status === 'approved')
+                                    if (approvedPosts.length === 0) {
+                                        alert('No approved posts to schedule')
+                                        return
+                                    }
+                                    setSelectedPostForSchedule({
+                                        id: 'batch',
+                                        topic: `${approvedPosts.length} approved posts`
+                                    })
+                                    setScheduleDialogOpen(true)
+                                }}
+                                variant="outline"
+                                className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"
+                            >
+                                <CalendarClock className="w-4 h-4 mr-2" />
+                                Schedule Batch
+                            </Button>
                         </div>
                     </div>
                 </div>
@@ -422,6 +482,88 @@ export default function BatchDetailPage() {
                     </Card>
                 )}
 
+                {/* Scheduled Posts Section - PRD feat-105 */}
+                {scheduledPosts.length > 0 && (
+                    <Card className="mb-8 border-blue-200 bg-blue-50">
+                        <CardHeader className="cursor-pointer" onClick={() => setShowScheduledSection(!showScheduledSection)}>
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="flex items-center gap-2 text-blue-900">
+                                    <CalendarClock className="w-5 h-5" />
+                                    Scheduled Posts ({scheduledPosts.length})
+                                </CardTitle>
+                                <Button variant="ghost" size="sm">
+                                    {showScheduledSection ? 'Hide' : 'Show'}
+                                </Button>
+                            </div>
+                        </CardHeader>
+                        {showScheduledSection && (
+                            <CardContent className="space-y-3">
+                                {scheduledPosts.map((job: any) => (
+                                    <div
+                                        key={job.id}
+                                        className="flex items-center justify-between p-4 bg-white border border-blue-200 rounded-lg"
+                                    >
+                                        <div className="flex-1">
+                                            <div className="font-medium">{job.topic || 'Untitled Post'}</div>
+                                            <div className="text-sm text-muted-foreground mt-1">
+                                                <div className="flex items-center gap-1">
+                                                    <Calendar className="w-3 h-3" />
+                                                    Scheduled for: {new Date(job.scheduled_for).toLocaleString()}
+                                                </div>
+                                                <div className="mt-1">
+                                                    Status: <Badge variant="outline" className="text-xs">{job.status}</Badge>
+                                                    {job.priority && <span className="ml-2">Priority: {job.priority}</span>}
+                                                    {job.attempts > 0 && <span className="ml-2 text-yellow-600">Attempts: {job.attempts}</span>}
+                                                </div>
+                                                {job.error_message && (
+                                                    <div className="mt-1 text-red-600 text-xs">{job.error_message}</div>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            {job.status === 'pending' && (
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    onClick={() => handleCancelScheduled(job.id)}
+                                                    className="text-red-600 border-red-200 hover:bg-red-50"
+                                                >
+                                                    Cancel
+                                                </Button>
+                                            )}
+                                            {job.status === 'failed' && (
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    onClick={async () => {
+                                                        try {
+                                                            const res = await fetch(`/api/publish-queue/${job.id}`, {
+                                                                method: 'PATCH',
+                                                                headers: { 'Content-Type': 'application/json' },
+                                                                body: JSON.stringify({ action: 'retry' })
+                                                            })
+                                                            const data = await res.json()
+                                                            if (data.success) {
+                                                                alert('Job queued for retry')
+                                                                await fetchScheduledPosts()
+                                                            }
+                                                        } catch (error: any) {
+                                                            alert(`Failed to retry: ${error.message}`)
+                                                        }
+                                                    }}
+                                                    className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                                                >
+                                                    Retry
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </CardContent>
+                        )}
+                    </Card>
+                )}
+
                 {/* Posts List */}
                 <Card>
                     <CardHeader>
@@ -503,6 +645,20 @@ export default function BatchDetailPage() {
                                         >
                                             {post.status}
                                         </Badge>
+                                        {post.status === 'approved' && (
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => {
+                                                    setSelectedPostForSchedule({ id: post.id, topic: post.topic })
+                                                    setScheduleDialogOpen(true)
+                                                }}
+                                                className="flex items-center gap-1 bg-blue-50 text-blue-700 border-blue-200"
+                                            >
+                                                <CalendarClock className="w-4 h-4" />
+                                                Schedule
+                                            </Button>
+                                        )}
                                         <Button
                                             size="sm"
                                             variant="outline"
@@ -535,6 +691,24 @@ export default function BatchDetailPage() {
                     }}
                     onImagesGenerated={() => {
                         // Optionally refresh post list
+                        fetchBatchDetails()
+                    }}
+                />
+            )}
+
+            {/* Schedule Publish Dialog - PRD feat-105 */}
+            {selectedPostForSchedule && (
+                <SchedulePublishDialog
+                    isOpen={scheduleDialogOpen}
+                    onClose={() => {
+                        setScheduleDialogOpen(false)
+                        setSelectedPostForSchedule(null)
+                    }}
+                    postId={selectedPostForSchedule.id === 'batch' ? undefined : selectedPostForSchedule.id}
+                    postIds={selectedPostForSchedule.id === 'batch' ? posts.filter(p => p.status === 'approved').map(p => p.id) : undefined}
+                    postTitle={selectedPostForSchedule.topic}
+                    onSuccess={() => {
+                        fetchScheduledPosts()
                         fetchBatchDetails()
                     }}
                 />
