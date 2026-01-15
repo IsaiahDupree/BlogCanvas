@@ -30,7 +30,11 @@ import {
   FolderPlus,
   Package,
   Send,
-  Presentation
+  Presentation,
+  BookOpen,
+  MessageSquare,
+  Ban,
+  Check
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -94,6 +98,29 @@ interface AnalysisResult {
   topPerformers: string[]
   underperformers: string[]
   topics: TopicCluster[]
+}
+
+interface BrandContext {
+  clientId: string
+  clientName: string
+  brandGuide: {
+    id: string | null
+    brandName: string | null
+    tagline: string | null
+  }
+  voiceAndTone: {
+    voiceTraits: string[]
+  }
+  stylesToAvoid: {
+    wordPatterns: string[]
+  }
+  stylesToKeep: {
+    preferredPatterns: string[]
+  }
+  titleGuidelines: {
+    preferredFormats: string[]
+    powerWords: string[]
+  }
 }
 
 // Helper function to format ETA
@@ -185,9 +212,22 @@ export default function PipelinePage() {
   const [generatingPitch, setGeneratingPitch] = useState(false)
   const [pitchContent, setPitchContent] = useState<{ format: string; content?: string; html?: string; subject?: string } | null>(null)
 
+  // Brand context
+  const [brandContext, setBrandContext] = useState<BrandContext | null>(null)
+  const [loadingContext, setLoadingContext] = useState(false)
+
   useEffect(() => {
     fetchInitialData()
   }, [])
+
+  // Load brand context when client is selected
+  useEffect(() => {
+    if (selectedClient) {
+      fetchBrandContext(selectedClient)
+    } else {
+      setBrandContext(null)
+    }
+  }, [selectedClient])
 
   // Real-time polling for running jobs
   useEffect(() => {
@@ -216,16 +256,40 @@ export default function PipelinePage() {
         fetch('/api/clients'),
         fetch('/api/pipeline-jobs?limit=10')
       ])
-      
+
       const clientsData = await clientsRes.json()
       const jobsData = await jobsRes.json()
-      
+
       setClients(clientsData.clients || [])
       setRecentJobs(jobsData.jobs || [])
     } catch (error) {
       console.error('Failed to fetch data:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchBrandContext = async (clientId: string) => {
+    if (!clientId) {
+      setBrandContext(null)
+      return
+    }
+
+    setLoadingContext(true)
+    try {
+      const res = await fetch(`/api/clients/${clientId}/context`)
+      const data = await res.json()
+
+      if (data.success && data.context) {
+        setBrandContext(data.context)
+      } else {
+        setBrandContext(null)
+      }
+    } catch (error) {
+      console.error('Failed to fetch brand context:', error)
+      setBrandContext(null)
+    } finally {
+      setLoadingContext(false)
     }
   }
 
@@ -1385,6 +1449,149 @@ Your CSM Team`
                     ))}
                   </CardContent>
                 </Card>
+
+                {/* Brand Context Preview */}
+                {selectedClient && (
+                  <Card className="border-0 shadow-xl bg-white/80 backdrop-blur">
+                    <CardHeader className="pb-4">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-lg text-slate-800 flex items-center gap-2">
+                          <BookOpen className="w-5 h-5 text-purple-600" />
+                          Brand Context
+                        </CardTitle>
+                        {loadingContext && <Loader2 className="w-4 h-4 animate-spin text-purple-600" />}
+                      </div>
+                      <CardDescription>Client brand guidelines for AI generation</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {loadingContext ? (
+                        <div className="flex items-center justify-center py-8">
+                          <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+                        </div>
+                      ) : brandContext ? (
+                        <>
+                          {/* Tagline */}
+                          {brandContext.brandGuide.tagline && (
+                            <div className="bg-purple-50 rounded-lg p-3">
+                              <p className="text-sm font-medium text-purple-900 flex items-center gap-2">
+                                <MessageSquare className="w-4 h-4" />
+                                "{brandContext.brandGuide.tagline}"
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Voice Traits */}
+                          {brandContext.voiceAndTone.voiceTraits.length > 0 && (
+                            <div>
+                              <p className="text-xs font-semibold text-slate-600 mb-2">Voice Traits</p>
+                              <div className="flex flex-wrap gap-1.5">
+                                {brandContext.voiceAndTone.voiceTraits.slice(0, 3).map((trait, idx) => (
+                                  <Badge key={idx} className="bg-blue-100 text-blue-700 border-blue-200 text-xs">
+                                    {trait}
+                                  </Badge>
+                                ))}
+                                {brandContext.voiceAndTone.voiceTraits.length > 3 && (
+                                  <Badge className="bg-slate-100 text-slate-600 border-slate-200 text-xs">
+                                    +{brandContext.voiceAndTone.voiceTraits.length - 3} more
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Styles to Keep */}
+                          {brandContext.stylesToKeep.preferredPatterns.length > 0 && (
+                            <div>
+                              <p className="text-xs font-semibold text-slate-600 mb-2 flex items-center gap-1">
+                                <Check className="w-3 h-3 text-green-600" />
+                                Preferred Styles
+                              </p>
+                              <div className="space-y-1">
+                                {brandContext.stylesToKeep.preferredPatterns.slice(0, 2).map((pattern, idx) => (
+                                  <p key={idx} className="text-xs text-slate-600 bg-green-50 rounded px-2 py-1">
+                                    {pattern.length > 40 ? pattern.substring(0, 40) + '...' : pattern}
+                                  </p>
+                                ))}
+                                {brandContext.stylesToKeep.preferredPatterns.length > 2 && (
+                                  <p className="text-xs text-slate-500 italic">
+                                    +{brandContext.stylesToKeep.preferredPatterns.length - 2} more rules
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Styles to Avoid */}
+                          {brandContext.stylesToAvoid.wordPatterns.length > 0 && (
+                            <div>
+                              <p className="text-xs font-semibold text-slate-600 mb-2 flex items-center gap-1">
+                                <Ban className="w-3 h-3 text-red-600" />
+                                Words to Avoid
+                              </p>
+                              <div className="flex flex-wrap gap-1.5">
+                                {brandContext.stylesToAvoid.wordPatterns.slice(0, 3).map((word, idx) => (
+                                  <Badge key={idx} className="bg-red-100 text-red-700 border-red-200 text-xs">
+                                    {word}
+                                  </Badge>
+                                ))}
+                                {brandContext.stylesToAvoid.wordPatterns.length > 3 && (
+                                  <Badge className="bg-slate-100 text-slate-600 border-slate-200 text-xs">
+                                    +{brandContext.stylesToAvoid.wordPatterns.length - 3} more
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Title Guidelines */}
+                          {brandContext.titleGuidelines.powerWords.length > 0 && (
+                            <div>
+                              <p className="text-xs font-semibold text-slate-600 mb-2">Title Power Words</p>
+                              <div className="flex flex-wrap gap-1.5">
+                                {brandContext.titleGuidelines.powerWords.slice(0, 3).map((word, idx) => (
+                                  <Badge key={idx} className="bg-amber-100 text-amber-700 border-amber-200 text-xs">
+                                    {word}
+                                  </Badge>
+                                ))}
+                                {brandContext.titleGuidelines.powerWords.length > 3 && (
+                                  <Badge className="bg-slate-100 text-slate-600 border-slate-200 text-xs">
+                                    +{brandContext.titleGuidelines.powerWords.length - 3} more
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Link to full brand guide */}
+                          <Link href={`/app/clients/${selectedClient}/brand-guide`}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full text-purple-600 border-purple-200 hover:bg-purple-50"
+                            >
+                              <BookOpen className="w-4 h-4 mr-2" />
+                              View Full Brand Guide
+                            </Button>
+                          </Link>
+                        </>
+                      ) : (
+                        <div className="text-center py-4">
+                          <BookOpen className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                          <p className="text-sm text-slate-500">No brand guidelines set</p>
+                          <Link href={`/app/clients/${selectedClient}/brand-guide`}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="mt-3 text-purple-600 border-purple-200 hover:bg-purple-50"
+                            >
+                              Create Brand Guide
+                            </Button>
+                          </Link>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
 
                 {/* Quick Stats */}
                 <Card className="border-0 shadow-xl bg-gradient-to-br from-indigo-600 to-purple-700 text-white">
