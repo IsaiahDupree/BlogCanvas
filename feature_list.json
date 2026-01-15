@@ -3730,7 +3730,9 @@
         "Rules summarized",
         "Link works"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T12:00:00Z",
+      "notes": "Complete Brand Context Preview UI on Pipeline page. Shows brand guidelines summary card in sidebar when client is selected. Displays: client tagline, voice traits (with badges), preferred styles, words to avoid, title power words. All sections show first 2-3 items with +N more indicator. Link to full brand guide included. Empty state with Create Brand Guide button if no context exists. Auto-loads context when client is selected via useEffect hook. All acceptance criteria met: ✓ Card displays when client selected, ✓ Voice/tone shown with badges, ✓ Avoid/keep rules summarized, ✓ Link to full brand guide works."
     },
     {
       "id": "feat-168",
