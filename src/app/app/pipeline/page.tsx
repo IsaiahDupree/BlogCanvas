@@ -38,7 +38,12 @@ import {
   ArrowLeftRight,
   TrendingUp as TrendingUpIcon,
   TrendingDown,
-  Minus
+  Minus,
+  Calendar,
+  CalendarClock,
+  Plus,
+  Pause,
+  Power
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -127,6 +132,29 @@ interface BrandContext {
   }
 }
 
+interface ScheduledPipeline {
+  id: string
+  name: string
+  website_url: string
+  client_id?: string
+  target_market?: string
+  client_goals?: string
+  ideal_customer_profile?: string
+  frequency: 'daily' | 'weekly' | 'biweekly' | 'monthly'
+  day_of_week?: number
+  day_of_month?: number
+  time_of_day: string
+  is_active: boolean
+  last_run_at?: string
+  next_run_at?: string
+  last_job_id?: string
+  total_runs: number
+  successful_runs: number
+  failed_runs: number
+  created_at: string
+  clients?: { id: string; name: string }
+}
+
 // Helper function to format ETA
 const formatETA = (seconds: number | null | undefined): string => {
   if (!seconds || seconds <= 0) return 'Calculating...'
@@ -180,7 +208,7 @@ export default function PipelinePage() {
   const [clients, setClients] = useState<Client[]>([])
   const [recentJobs, setRecentJobs] = useState<PipelineJob[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'new' | 'history'>('new')
+  const [activeTab, setActiveTab] = useState<'new' | 'history' | 'scheduled'>('new')
   const [currentJobId, setCurrentJobId] = useState<string | null>(null)
   
   // Form state
@@ -224,6 +252,23 @@ export default function PipelinePage() {
   const [selectedJobsForComparison, setSelectedJobsForComparison] = useState<Set<string>>(new Set())
   const [showComparisonModal, setShowComparisonModal] = useState(false)
 
+  // Scheduled pipelines
+  const [scheduledPipelines, setScheduledPipelines] = useState<ScheduledPipeline[]>([])
+  const [showScheduleModal, setShowScheduleModal] = useState(false)
+  const [editingSchedule, setEditingSchedule] = useState<ScheduledPipeline | null>(null)
+  const [scheduleFormData, setScheduleFormData] = useState({
+    name: '',
+    website_url: '',
+    client_id: '',
+    target_market: '',
+    client_goals: '',
+    ideal_customer_profile: '',
+    frequency: 'weekly' as 'daily' | 'weekly' | 'biweekly' | 'monthly',
+    day_of_week: 1, // Monday by default
+    day_of_month: 1,
+    time_of_day: '09:00'
+  })
+
   useEffect(() => {
     fetchInitialData()
   }, [])
@@ -260,16 +305,19 @@ export default function PipelinePage() {
 
   const fetchInitialData = async () => {
     try {
-      const [clientsRes, jobsRes] = await Promise.all([
+      const [clientsRes, jobsRes, schedulesRes] = await Promise.all([
         fetch('/api/clients'),
-        fetch('/api/pipeline-jobs?limit=10')
+        fetch('/api/pipeline-jobs?limit=10'),
+        fetch('/api/scheduled-pipelines')
       ])
 
       const clientsData = await clientsRes.json()
       const jobsData = await jobsRes.json()
+      const schedulesData = await schedulesRes.json()
 
       setClients(clientsData.clients || [])
       setRecentJobs(jobsData.jobs || [])
+      setScheduledPipelines(schedulesData.schedules || [])
     } catch (error) {
       console.error('Failed to fetch data:', error)
     } finally {
@@ -1088,6 +1136,142 @@ Your CSM Team`
     }
   }
 
+  // Scheduled Pipeline Handlers
+  const openScheduleModal = (schedule?: ScheduledPipeline) => {
+    if (schedule) {
+      setEditingSchedule(schedule)
+      setScheduleFormData({
+        name: schedule.name,
+        website_url: schedule.website_url,
+        client_id: schedule.client_id || '',
+        target_market: schedule.target_market || '',
+        client_goals: schedule.client_goals || '',
+        ideal_customer_profile: schedule.ideal_customer_profile || '',
+        frequency: schedule.frequency,
+        day_of_week: schedule.day_of_week || 1,
+        day_of_month: schedule.day_of_month || 1,
+        time_of_day: schedule.time_of_day.slice(0, 5) // HH:MM format
+      })
+    } else {
+      setEditingSchedule(null)
+      setScheduleFormData({
+        name: '',
+        website_url: '',
+        client_id: '',
+        target_market: '',
+        client_goals: '',
+        ideal_customer_profile: '',
+        frequency: 'weekly',
+        day_of_week: 1,
+        day_of_month: 1,
+        time_of_day: '09:00'
+      })
+    }
+    setShowScheduleModal(true)
+  }
+
+  const closeScheduleModal = () => {
+    setShowScheduleModal(false)
+    setEditingSchedule(null)
+  }
+
+  const saveSchedule = async () => {
+    try {
+      const url = editingSchedule
+        ? `/api/scheduled-pipelines/${editingSchedule.id}`
+        : '/api/scheduled-pipelines'
+
+      const method = editingSchedule ? 'PATCH' : 'POST'
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(scheduleFormData)
+      })
+
+      const data = await res.json()
+
+      if (data.success) {
+        // Refresh schedules list
+        const refreshRes = await fetch('/api/scheduled-pipelines')
+        const refreshData = await refreshRes.json()
+        setScheduledPipelines(refreshData.schedules || [])
+
+        closeScheduleModal()
+        alert(editingSchedule ? 'Schedule updated successfully!' : 'Schedule created successfully!')
+      } else {
+        alert('Failed to save schedule: ' + (data.error || 'Unknown error'))
+      }
+    } catch (error) {
+      console.error('Failed to save schedule:', error)
+      alert('Failed to save schedule')
+    }
+  }
+
+  const toggleScheduleActive = async (scheduleId: string, currentlyActive: boolean) => {
+    try {
+      const res = await fetch(`/api/scheduled-pipelines/${scheduleId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_active: !currentlyActive })
+      })
+
+      const data = await res.json()
+
+      if (data.success) {
+        setScheduledPipelines(prev =>
+          prev.map(s => s.id === scheduleId ? { ...s, is_active: !currentlyActive } : s)
+        )
+      } else {
+        alert('Failed to toggle schedule: ' + (data.error || 'Unknown error'))
+      }
+    } catch (error) {
+      console.error('Failed to toggle schedule:', error)
+      alert('Failed to toggle schedule')
+    }
+  }
+
+  const deleteSchedule = async (scheduleId: string, scheduleName: string) => {
+    if (!confirm(`Delete schedule "${scheduleName}"?\n\nThis action cannot be undone.`)) {
+      return
+    }
+
+    try {
+      const res = await fetch(`/api/scheduled-pipelines/${scheduleId}`, {
+        method: 'DELETE'
+      })
+
+      const data = await res.json()
+
+      if (data.success) {
+        setScheduledPipelines(prev => prev.filter(s => s.id !== scheduleId))
+        alert('Schedule deleted successfully!')
+      } else {
+        alert('Failed to delete schedule: ' + (data.error || 'Unknown error'))
+      }
+    } catch (error) {
+      console.error('Failed to delete schedule:', error)
+      alert('Failed to delete schedule')
+    }
+  }
+
+  const getFrequencyLabel = (schedule: ScheduledPipeline): string => {
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+
+    switch (schedule.frequency) {
+      case 'daily':
+        return `Daily at ${schedule.time_of_day.slice(0, 5)}`
+      case 'weekly':
+        return `Every ${dayNames[schedule.day_of_week || 1]} at ${schedule.time_of_day.slice(0, 5)}`
+      case 'biweekly':
+        return `Every 2 weeks on ${dayNames[schedule.day_of_week || 1]} at ${schedule.time_of_day.slice(0, 5)}`
+      case 'monthly':
+        return `Monthly on day ${schedule.day_of_month} at ${schedule.time_of_day.slice(0, 5)}`
+      default:
+        return schedule.frequency
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6 flex items-center justify-center">
@@ -1124,8 +1308,8 @@ Your CSM Team`
               <button
                 onClick={() => setActiveTab('new')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  activeTab === 'new' 
-                    ? 'bg-indigo-600 text-white shadow-sm' 
+                  activeTab === 'new'
+                    ? 'bg-indigo-600 text-white shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -1135,19 +1319,380 @@ Your CSM Team`
               <button
                 onClick={() => setActiveTab('history')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  activeTab === 'history' 
-                    ? 'bg-indigo-600 text-white shadow-sm' 
+                  activeTab === 'history'
+                    ? 'bg-indigo-600 text-white shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 <History className="w-4 h-4 inline mr-2" />
                 History ({recentJobs.length})
               </button>
+              <button
+                onClick={() => setActiveTab('scheduled')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  activeTab === 'scheduled'
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <CalendarClock className="w-4 h-4 inline mr-2" />
+                Scheduled ({scheduledPipelines.length})
+              </button>
             </div>
           </div>
         </div>
 
-        {activeTab === 'history' ? (
+        {activeTab === 'scheduled' ? (
+          /* Scheduled Pipelines Tab */
+          <>
+            <Card className="border-0 shadow-xl bg-white/80 backdrop-blur">
+              <CardHeader className="border-b border-slate-100">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2 text-slate-800">
+                      <CalendarClock className="w-5 h-5 text-indigo-600" />
+                      Scheduled Pipeline Runs
+                    </CardTitle>
+                    <CardDescription>Automate website analysis on a recurring schedule</CardDescription>
+                  </div>
+                  <Button
+                    onClick={() => openScheduleModal()}
+                    className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    New Schedule
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                {scheduledPipelines.length > 0 ? (
+                  <div className="divide-y divide-slate-100">
+                    {scheduledPipelines.map((schedule) => (
+                      <div
+                        key={schedule.id}
+                        className="p-5 hover:bg-slate-50/50 transition-colors"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4 flex-1">
+                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                              schedule.is_active
+                                ? 'bg-indigo-100 text-indigo-600'
+                                : 'bg-slate-100 text-slate-400'
+                            }`}>
+                              <Calendar className="w-6 h-6" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                <h3 className="font-semibold text-slate-900">{schedule.name}</h3>
+                                {schedule.is_active ? (
+                                  <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">Active</Badge>
+                                ) : (
+                                  <Badge className="bg-slate-100 text-slate-600 border-slate-200">Paused</Badge>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-4 text-sm text-slate-600">
+                                <span className="flex items-center gap-1">
+                                  <Globe className="w-3.5 h-3.5" />
+                                  {schedule.website_url}
+                                </span>
+                                {schedule.clients?.name && (
+                                  <>
+                                    <span>•</span>
+                                    <span className="flex items-center gap-1">
+                                      <Users className="w-3.5 h-3.5" />
+                                      {schedule.clients.name}
+                                    </span>
+                                  </>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-4 text-sm text-slate-500 mt-1">
+                                <span className="flex items-center gap-1">
+                                  <Clock className="w-3.5 h-3.5" />
+                                  {getFrequencyLabel(schedule)}
+                                </span>
+                                {schedule.next_run_at && (
+                                  <>
+                                    <span>•</span>
+                                    <span>Next run: {formatDate(schedule.next_run_at)}</span>
+                                  </>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-4 text-xs text-slate-400 mt-1">
+                                <span>{schedule.total_runs} total runs</span>
+                                <span>•</span>
+                                <span className="text-emerald-600">{schedule.successful_runs} successful</span>
+                                {schedule.failed_runs > 0 && (
+                                  <>
+                                    <span>•</span>
+                                    <span className="text-red-600">{schedule.failed_runs} failed</span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => toggleScheduleActive(schedule.id, schedule.is_active)}
+                              className="border-slate-200"
+                            >
+                              {schedule.is_active ? (
+                                <>
+                                  <Pause className="w-4 h-4 mr-1" />
+                                  Pause
+                                </>
+                              ) : (
+                                <>
+                                  <Power className="w-4 h-4 mr-1" />
+                                  Activate
+                                </>
+                              )}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openScheduleModal(schedule)}
+                              className="border-slate-200"
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => deleteSchedule(schedule.id, schedule.name)}
+                              className="border-red-200 text-red-600 hover:bg-red-50"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-12 text-center">
+                    <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <CalendarClock className="w-8 h-8 text-slate-400" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-slate-900 mb-2">No Scheduled Runs</h3>
+                    <p className="text-slate-500 mb-4 max-w-md mx-auto">
+                      Set up automated pipeline runs to analyze websites on a recurring schedule.
+                    </p>
+                    <Button
+                      onClick={() => openScheduleModal()}
+                      className="bg-gradient-to-r from-indigo-600 to-purple-600"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Your First Schedule
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Schedule Modal */}
+            {showScheduleModal && (
+              <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                  <div className="sticky top-0 bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6 rounded-t-2xl">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h2 className="text-2xl font-bold">
+                          {editingSchedule ? 'Edit Schedule' : 'New Scheduled Run'}
+                        </h2>
+                        <p className="text-indigo-100 text-sm mt-1">
+                          Configure automated pipeline execution
+                        </p>
+                      </div>
+                      <button
+                        onClick={closeScheduleModal}
+                        className="text-white hover:bg-white/20 rounded-lg p-2 transition-colors"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="p-6 space-y-6">
+                    {/* Schedule Name */}
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Schedule Name *
+                      </label>
+                      <input
+                        type="text"
+                        value={scheduleFormData.name}
+                        onChange={(e) => setScheduleFormData({ ...scheduleFormData, name: e.target.value })}
+                        placeholder="e.g., Weekly SEO Check - Acme Corp"
+                        className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+
+                    {/* Website URL */}
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Website URL *
+                      </label>
+                      <input
+                        type="url"
+                        value={scheduleFormData.website_url}
+                        onChange={(e) => setScheduleFormData({ ...scheduleFormData, website_url: e.target.value })}
+                        placeholder="https://example.com"
+                        className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+
+                    {/* Client */}
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Client (Optional)
+                      </label>
+                      <select
+                        value={scheduleFormData.client_id}
+                        onChange={(e) => setScheduleFormData({ ...scheduleFormData, client_id: e.target.value })}
+                        className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      >
+                        <option value="">None</option>
+                        {clients.map(client => (
+                          <option key={client.id} value={client.id}>{client.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Frequency */}
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Frequency *
+                      </label>
+                      <select
+                        value={scheduleFormData.frequency}
+                        onChange={(e) => setScheduleFormData({ ...scheduleFormData, frequency: e.target.value as any })}
+                        className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      >
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="biweekly">Every 2 Weeks</option>
+                        <option value="monthly">Monthly</option>
+                      </select>
+                    </div>
+
+                    {/* Day of Week (for weekly/biweekly) */}
+                    {(scheduleFormData.frequency === 'weekly' || scheduleFormData.frequency === 'biweekly') && (
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                          Day of Week
+                        </label>
+                        <select
+                          value={scheduleFormData.day_of_week}
+                          onChange={(e) => setScheduleFormData({ ...scheduleFormData, day_of_week: parseInt(e.target.value) })}
+                          className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        >
+                          <option value={0}>Sunday</option>
+                          <option value={1}>Monday</option>
+                          <option value={2}>Tuesday</option>
+                          <option value={3}>Wednesday</option>
+                          <option value={4}>Thursday</option>
+                          <option value={5}>Friday</option>
+                          <option value={6}>Saturday</option>
+                        </select>
+                      </div>
+                    )}
+
+                    {/* Day of Month (for monthly) */}
+                    {scheduleFormData.frequency === 'monthly' && (
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                          Day of Month
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="31"
+                          value={scheduleFormData.day_of_month}
+                          onChange={(e) => setScheduleFormData({ ...scheduleFormData, day_of_month: parseInt(e.target.value) })}
+                          className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                      </div>
+                    )}
+
+                    {/* Time */}
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Time (UTC)
+                      </label>
+                      <input
+                        type="time"
+                        value={scheduleFormData.time_of_day}
+                        onChange={(e) => setScheduleFormData({ ...scheduleFormData, time_of_day: e.target.value })}
+                        className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+
+                    {/* Additional Fields (collapsible) */}
+                    <details className="border border-slate-200 rounded-lg p-4">
+                      <summary className="font-medium text-slate-700 cursor-pointer">
+                        Additional Context (Optional)
+                      </summary>
+                      <div className="mt-4 space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-2">
+                            Target Market
+                          </label>
+                          <input
+                            type="text"
+                            value={scheduleFormData.target_market}
+                            onChange={(e) => setScheduleFormData({ ...scheduleFormData, target_market: e.target.value })}
+                            className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-2">
+                            Client Goals
+                          </label>
+                          <textarea
+                            value={scheduleFormData.client_goals}
+                            onChange={(e) => setScheduleFormData({ ...scheduleFormData, client_goals: e.target.value })}
+                            rows={2}
+                            className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-2">
+                            Ideal Customer Profile
+                          </label>
+                          <textarea
+                            value={scheduleFormData.ideal_customer_profile}
+                            onChange={(e) => setScheduleFormData({ ...scheduleFormData, ideal_customer_profile: e.target.value })}
+                            rows={2}
+                            className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          />
+                        </div>
+                      </div>
+                    </details>
+                  </div>
+
+                  <div className="sticky bottom-0 bg-slate-50 p-6 rounded-b-2xl border-t border-slate-200 flex justify-end gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={closeScheduleModal}
+                      className="border-slate-300"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={saveSchedule}
+                      disabled={!scheduleFormData.name || !scheduleFormData.website_url}
+                      className="bg-gradient-to-r from-indigo-600 to-purple-600"
+                    >
+                      {editingSchedule ? 'Update Schedule' : 'Create Schedule'}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        ) : activeTab === 'history' ? (
           /* Job History Tab */
           <Card className="border-0 shadow-xl bg-white/80 backdrop-blur">
             <CardHeader className="border-b border-slate-100">

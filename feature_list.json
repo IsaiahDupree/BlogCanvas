@@ -3450,7 +3450,9 @@
         "Auto-runs execute",
         "Comparison available"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T20:30:00Z",
+      "notes": "Complete scheduled pipeline runs system. Database: Migration 20260115200000 creates scheduled_pipeline_runs table with support for daily/weekly/biweekly/monthly frequencies, automatic next_run_at calculation via database function, active/paused status, and execution stats tracking. Backend: API endpoints for CRUD operations (/api/scheduled-pipelines), execution endpoint (/api/scheduled-pipelines/execute) that finds due schedules and creates pipeline jobs. Frontend: New 'Scheduled' tab on Pipeline page with comprehensive UI - schedule list showing active status, frequency, next run time, and run statistics; create/edit modal with conditional form fields based on frequency; quick actions for pause/activate, edit, delete. Cron: Configured in vercel.json to run every 5 minutes, calls execution endpoint with CRON_SECRET authentication. Documentation: Complete setup guide in docs/SCHEDULED_PIPELINES.md. Features: Flexible scheduling (daily/weekly/biweekly/monthly), full pipeline context support, active/pause toggle, execution tracking (total/successful/failed runs), smart next run calculation. All acceptance criteria met: Scheduling UI works (full CRUD interface), Frequency configurable (4 frequency types with appropriate day/time selectors), Auto-runs execute (cron job + execution endpoint), Comparison available (scheduled jobs appear in History tab for comparison using existing feat-153)."
     },
     {
       "id": "feat-155",

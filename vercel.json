@@ -18,6 +18,10 @@
     {
       "path": "/api/scheduled-reports/process",
       "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/scheduled-pipelines/execute",
+      "schedule": "*/5 * * * *"
     }
   ]
 }
