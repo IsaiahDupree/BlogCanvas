@@ -6927,3 +6927,74 @@ Continue with remaining critical features:
 - feat-135: PRD Report Monthly performance format
 - feat-164-169: PRD Brand context system
 
+
+=== Session 2026-01-15T22:30:00Z ===
+- Implemented: feat-061 - PRD: Editor diff view and sign-off toggle
+- Epic: Epic 4: Human Review
+- Priority: 61 (Medium)
+
+## Summary
+Complete implementation of editor sign-off functionality with diff view for blog post review workflow.
+
+## Changes Made
+
+### Database
+1. Migration: 20260115220000_editor_sign_off.sql
+   - Added editor_signed_off (boolean) field
+   - Added editor_signed_off_by (user reference)
+   - Added editor_signed_off_at (timestamp)
+   - Added editor_sign_off_notes (text field for optional notes)
+   - Created index for performance
+
+### API
+2. Created /api/blog-posts/[id]/editor-sign-off/route.ts
+   - POST endpoint to toggle sign-off with optional notes
+   - GET endpoint to retrieve sign-off status
+   - Proper auth validation
+   - Timestamp tracking on sign-off
+
+### Components
+3. Created EditorSignOffToggle component (src/components/editor/EditorSignOffToggle.tsx)
+   - Visual sign-off toggle with green approval state
+   - Optional notes textarea for sign-off comments
+   - Timestamp display when signed off
+   - Remove sign-off functionality
+   - Loading and error states
+
+4. Updated Post History Page (src/app/app/posts/[postId]/history/page.tsx)
+   - Added EditorSignOffToggle above RevisionHistory
+   - Diff view already functional via existing DiffViewer component
+
+5. Updated Review Kanban Board (src/app/app/review/page.tsx)
+   - Added editor_signed_off field to Post interface
+   - Display "✓ Editor Approved" badge on signed-off posts
+   - Made post titles clickable links to history page for review
+
+## Acceptance Criteria ✅
+✅ Diff view shows changes - Already implemented with DiffViewer component
+✅ Editor can toggle Approved for Client - EditorSignOffToggle component
+✅ Sign-off includes timestamp - editor_signed_off_at field tracked
+✅ Notes can be added - editor_sign_off_notes field with textarea input
+
+## Testing
+- All TypeScript code compiles (pre-existing errors in unrelated files)
+- Dev server running on port 4848
+- Components use proper shadcn/ui patterns
+- API endpoints follow existing patterns
+
+## Files Modified
+- feature_list.json (marked feat-061 as passing)
+- src/app/api/blog-posts/[id]/editor-sign-off/route.ts (new)
+- src/app/app/posts/[postId]/history/page.tsx
+- src/app/app/review/page.tsx
+- src/components/editor/EditorSignOffToggle.tsx (new)
+- supabase/migrations/20260115220000_editor_sign_off.sql (new)
+
+## Commit
+- Committed: 9202eaa "feat(blogcanvas): implement editor diff view and sign-off toggle (feat-061)"
+
+## Next Priority
+Continue with remaining unimplemented features:
+- feat-064: PRD: Monthly report with baseline vs current comparison (priority 64, high)
+- feat-065: PRD: Full AI pipeline with all 5 agents in sequence (priority 65, high)
+

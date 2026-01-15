@@ -131,8 +131,31 @@ export async function POST(request: NextRequest) {
             .lte('snapshot_date', periodEnd)
             .order('snapshot_date', { ascending: false });
 
+        // Fetch baseline SEO audit (first audit for this website)
+        const { data: audits } = await supabaseAdmin
+            .from('seo_audits')
+            .select('*')
+            .eq('website_id', websiteId || (website as any).id)
+            .order('audit_date', { ascending: true })
+            .limit(2);
+
+        const baselineAudit = audits && audits.length > 0 ? audits[0] : null;
+        const latestAudit = audits && audits.length > 1 ? audits[audits.length - 1] : audits?.[0];
+
+        // Fetch topic clusters to show coverage delta
+        const { data: topicClusters } = await supabaseAdmin
+            .from('topic_clusters')
+            .select('*')
+            .eq('website_id', websiteId || (website as any).id);
+
         // Aggregate metrics
         const aggregated = aggregateMetrics(posts, metrics || []);
+
+        // Calculate topic coverage delta
+        const topicCoverageDelta = calculateTopicCoverageDelta(topicClusters || [], posts);
+
+        // Identify underperformers with recommendations
+        const underperformers = identifyUnderperformers(posts, metrics || []);
 
         // Generate report content
         const reportData = {
@@ -154,7 +177,26 @@ export async function POST(request: NextRequest) {
                 end: periodEnd
             },
             summary: aggregated,
+            baseline: baselineAudit ? {
+                score: baselineAudit.baseline_score,
+                date: baselineAudit.audit_date,
+                pagesIndexed: baselineAudit.pages_indexed
+            } : null,
+            current: latestAudit ? {
+                score: latestAudit.baseline_score,
+                date: latestAudit.audit_date,
+                pagesIndexed: latestAudit.pages_indexed
+            } : null,
+            comparison: (baselineAudit && latestAudit) ? {
+                scoreChange: latestAudit.baseline_score - baselineAudit.baseline_score,
+                scorePercentChange: baselineAudit.baseline_score > 0
+                    ? (((latestAudit.baseline_score - baselineAudit.baseline_score) / baselineAudit.baseline_score) * 100).toFixed(1)
+                    : '0',
+                pagesChange: latestAudit.pages_indexed - baselineAudit.pages_indexed
+            } : null,
+            topicCoverageDelta,
             topPosts: getTopPosts(posts, metrics || []),
+            underperformers,
             trends: calculateTrends(metrics || [])
         };
 
@@ -262,7 +304,7 @@ function getTopPosts(posts: any[], metrics: any[]): any[] {
 function calculateTrends(metrics: any[]): any {
     if (metrics.length < 2) return null;
 
-    const sorted = [...metrics].sort((a, b) => 
+    const sorted = [...metrics].sort((a, b) =>
         new Date(a.snapshot_date).getTime() - new Date(b.snapshot_date).getTime()
     );
 
@@ -272,8 +314,8 @@ function calculateTrends(metrics: any[]): any {
     return {
         impressions: {
             change: (last.impressions || 0) - (first.impressions || 0),
-            percentChange: first.impressions > 0 
-                ? (((last.impressions || 0) - (first.impressions || 0)) / first.impressions) * 100 
+            percentChange: first.impressions > 0
+                ? (((last.impressions || 0) - (first.impressions || 0)) / first.impressions) * 100
                 : 0
         },
         clicks: {
@@ -286,10 +328,143 @@ function calculateTrends(metrics: any[]): any {
 }
 
 /**
+ * Calculate topic coverage delta
+ */
+function calculateTopicCoverageDelta(topicClusters: any[], posts: any[]): any {
+    if (!topicClusters || topicClusters.length === 0) return null;
+
+    const totalTopics = topicClusters.length;
+    const coveredTopics = topicClusters.filter(tc => tc.currently_covered).length;
+    const coveragePercentage = totalTopics > 0 ? (coveredTopics / totalTopics) * 100 : 0;
+
+    // Count posts per topic cluster
+    const topicPostCounts = new Map<string, number>();
+    posts.forEach(post => {
+        if (post.topic_cluster_id) {
+            const count = topicPostCounts.get(post.topic_cluster_id) || 0;
+            topicPostCounts.set(post.topic_cluster_id, count + 1);
+        }
+    });
+
+    // Find gaps (uncovered high-value topics)
+    const gaps = topicClusters
+        .filter(tc => !tc.currently_covered && tc.estimated_traffic > 0)
+        .sort((a, b) => b.estimated_traffic - a.estimated_traffic)
+        .slice(0, 5)
+        .map(tc => ({
+            name: tc.name,
+            keyword: tc.primary_keyword,
+            estimatedTraffic: tc.estimated_traffic,
+            difficulty: tc.difficulty
+        }));
+
+    return {
+        totalTopics,
+        coveredTopics,
+        uncoveredTopics: totalTopics - coveredTopics,
+        coveragePercentage: Math.round(coveragePercentage * 10) / 10,
+        newPostsThisPeriod: posts.length,
+        topGaps: gaps
+    };
+}
+
+/**
+ * Identify underperforming posts with recommendations
+ */
+function identifyUnderperformers(posts: any[], metrics: any[]): any[] {
+    const postMetrics = new Map<string, any>();
+
+    // Aggregate metrics per post
+    metrics.forEach(m => {
+        const existing = postMetrics.get(m.blog_post_id) || {
+            impressions: 0,
+            clicks: 0,
+            sessions: 0,
+            avgPosition: [],
+            seoScores: []
+        };
+        postMetrics.set(m.blog_post_id, {
+            impressions: existing.impressions + (m.impressions || 0),
+            clicks: existing.clicks + (m.clicks || 0),
+            sessions: existing.sessions + (m.sessions || 0),
+            avgPosition: [...existing.avgPosition, m.avg_position || 0],
+            seoScores: m.seo_score ? [...existing.seoScores, m.seo_score] : existing.seoScores
+        });
+    });
+
+    // Calculate average metrics and identify underperformers
+    const postsWithMetrics = posts
+        .map(post => {
+            const m = postMetrics.get(post.id) || { impressions: 0, clicks: 0, sessions: 0, avgPosition: [], seoScores: [] };
+            const avgPos = m.avgPosition.length > 0
+                ? m.avgPosition.reduce((sum: number, p: number) => sum + p, 0) / m.avgPosition.length
+                : 100;
+            const avgSEO = m.seoScores.length > 0
+                ? m.seoScores.reduce((sum: number, s: number) => sum + s, 0) / m.seoScores.length
+                : 0;
+            const ctr = m.impressions > 0 ? (m.clicks / m.impressions) * 100 : 0;
+
+            return {
+                ...post,
+                metrics: {
+                    impressions: m.impressions,
+                    clicks: m.clicks,
+                    sessions: m.sessions,
+                    avgPosition: Math.round(avgPos * 10) / 10,
+                    avgSEO: Math.round(avgSEO),
+                    ctr: Math.round(ctr * 100) / 100
+                }
+            };
+        })
+        .filter(post => post.metrics.impressions > 0); // Only posts with some traffic
+
+    // Calculate median CTR for comparison
+    const ctrs = postsWithMetrics.map(p => p.metrics.ctr).sort((a, b) => a - b);
+    const medianCTR = ctrs.length > 0 ? ctrs[Math.floor(ctrs.length / 2)] : 0;
+
+    // Identify underperformers: low CTR or high position (>20) with decent impressions
+    const underperformers = postsWithMetrics
+        .filter(post =>
+            (post.metrics.ctr < medianCTR * 0.5 && post.metrics.impressions > 100) ||
+            (post.metrics.avgPosition > 20 && post.metrics.impressions > 50)
+        )
+        .sort((a, b) => a.metrics.ctr - b.metrics.ctr)
+        .slice(0, 5)
+        .map(post => {
+            const recommendations = [];
+
+            if (post.metrics.avgPosition > 20) {
+                recommendations.push('Improve content quality and depth');
+                recommendations.push('Add more internal links to this post');
+            }
+            if (post.metrics.ctr < medianCTR * 0.5) {
+                recommendations.push('Rewrite title and meta description for better CTR');
+                recommendations.push('Add FAQ schema or rich snippets');
+            }
+            if (post.metrics.avgSEO < 70) {
+                recommendations.push('Run SEO optimization pass to improve on-page SEO');
+            }
+            if (post.metrics.sessions < post.metrics.clicks * 0.8) {
+                recommendations.push('Check for technical issues (slow load, mobile issues)');
+            }
+
+            return {
+                id: post.id,
+                title: post.target_keyword || 'Untitled',
+                url: post.cms_url,
+                metrics: post.metrics,
+                recommendations
+            };
+        });
+
+    return underperformers;
+}
+
+/**
  * Generate email report
  */
 function generateEmailReport(data: any): any {
-    const { client, period, summary, topPosts, trends } = data;
+    const { client, period, summary, baseline, current, comparison, topicCoverageDelta, topPosts, underperformers, trends } = data;
     const periodStart = new Date(period.start).toLocaleDateString();
     const periodEnd = new Date(period.end).toLocaleDateString();
 
@@ -297,6 +472,14 @@ function generateEmailReport(data: any): any {
 Hi ${client.name},
 
 Here's your monthly SEO content performance report for ${periodStart} - ${periodEnd}.
+
+${comparison ? `
+📈 Baseline vs Current Comparison
+- Baseline SEO Score: ${baseline.score}/100 (${new Date(baseline.date).toLocaleDateString()})
+- Current SEO Score: ${current.score}/100 (${new Date(current.date).toLocaleDateString()})
+- Change: ${comparison.scoreChange >= 0 ? '+' : ''}${comparison.scoreChange} points (${comparison.scorePercentChange >= 0 ? '+' : ''}${comparison.scorePercentChange}%)
+- Pages Indexed: ${baseline.pagesIndexed} → ${current.pagesIndexed} (${comparison.pagesChange >= 0 ? '+' : ''}${comparison.pagesChange})
+` : ''}
 
 📊 Performance Summary
 - Total Posts Published: ${summary.totalPosts}
@@ -306,17 +489,41 @@ Here's your monthly SEO content performance report for ${periodStart} - ${period
 - Average Position: ${summary.avgPosition}
 - Average SEO Score: ${summary.avgSEO}/100
 
+${topicCoverageDelta ? `
+🎯 Topic Coverage Delta
+- Total Topics Identified: ${topicCoverageDelta.totalTopics}
+- Topics Covered: ${topicCoverageDelta.coveredTopics} (${topicCoverageDelta.coveragePercentage}%)
+- Uncovered Topics: ${topicCoverageDelta.uncoveredTopics}
+- New Posts This Period: ${topicCoverageDelta.newPostsThisPeriod}
+${topicCoverageDelta.topGaps.length > 0 ? `
+Top Content Gaps:
+${topicCoverageDelta.topGaps.map((gap: any, i: number) =>
+    `${i + 1}. ${gap.name} (${gap.keyword}) - Est. ${gap.estimatedTraffic} monthly traffic`
+).join('\n')}
+` : ''}
+` : ''}
+
 ${trends ? `
-📈 Trends
+📈 Period Trends
 - Impressions: ${trends.impressions.change >= 0 ? '+' : ''}${trends.impressions.change.toLocaleString()} (${trends.impressions.percentChange >= 0 ? '+' : ''}${trends.impressions.percentChange.toFixed(1)}%)
 - Clicks: ${trends.clicks.change >= 0 ? '+' : ''}${trends.clicks.change.toLocaleString()} (${trends.clicks.percentChange >= 0 ? '+' : ''}${trends.clicks.percentChange.toFixed(1)}%)
 ` : ''}
 
 🏆 Top Performing Posts
-${topPosts.map((post: any, i: number) => 
+${topPosts.map((post: any, i: number) =>
     `${i + 1}. ${post.target_keyword || 'Untitled'}
    - ${post.metrics.clicks.toLocaleString()} clicks, ${post.metrics.impressions.toLocaleString()} impressions`
 ).join('\n')}
+
+${underperformers.length > 0 ? `
+⚠️ Underperformers & Recommendations
+${underperformers.map((post: any, i: number) =>
+    `${i + 1}. ${post.title}
+   - CTR: ${post.metrics.ctr}%, Position: ${post.metrics.avgPosition}, SEO: ${post.metrics.avgSEO}/100
+   Recommendations:
+   ${post.recommendations.map((rec: string) => `   • ${rec}`).join('\n')}
+`).join('\n')}
+` : ''}
 
 Best regards,
 Your SEO Team
@@ -332,7 +539,7 @@ Your SEO Team
  * Generate PDF report HTML
  */
 function generatePDFReport(data: any): string {
-    const { website, client, period, summary, topPosts, trends } = data;
+    const { website, client, period, summary, baseline, current, comparison, topicCoverageDelta, topPosts, underperformers, trends } = data;
     const periodStart = new Date(period.start).toLocaleDateString();
     const periodEnd = new Date(period.end).toLocaleDateString();
 
@@ -346,15 +553,23 @@ function generatePDFReport(data: any): string {
         body { font-family: Arial, sans-serif; padding: 40px; color: #333; }
         .header { border-bottom: 3px solid #6366f1; padding-bottom: 20px; margin-bottom: 30px; }
         .header h1 { color: #6366f1; margin: 0; }
-        .section { margin-bottom: 30px; }
+        .section { margin-bottom: 30px; page-break-inside: avoid; }
         .section h2 { color: #6366f1; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }
         .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin: 20px 0; }
         .metric-card { background: #f9fafb; padding: 20px; border-radius: 8px; text-align: center; }
+        .metric-card.positive { background: #ecfdf5; }
+        .metric-card.negative { background: #fef2f2; }
         .metric-value { font-size: 32px; font-weight: bold; color: #6366f1; }
+        .metric-value.positive { color: #10b981; }
+        .metric-value.negative { color: #ef4444; }
         .metric-label { color: #6b7280; margin-top: 10px; }
+        .comparison-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin: 20px 0; }
         .top-posts { margin-top: 20px; }
         .post-item { padding: 15px; border-bottom: 1px solid #e5e7eb; }
         .post-item:last-child { border-bottom: none; }
+        .recommendation { background: #fef3c7; padding: 10px; margin: 5px 0; border-radius: 4px; font-size: 14px; }
+        .recommendation ul { margin: 5px 0; padding-left: 20px; }
+        .gap-item { background: #f3f4f6; padding: 10px; margin: 5px 0; border-radius: 4px; }
         .footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 12px; }
     </style>
 </head>
@@ -364,6 +579,40 @@ function generatePDFReport(data: any): string {
         <p>${client.name} - ${website.url}</p>
         <p>Period: ${periodStart} to ${periodEnd}</p>
     </div>
+
+    ${comparison ? `
+    <div class="section">
+        <h2>Baseline vs Current Comparison</h2>
+        <div class="comparison-grid">
+            <div class="metric-card">
+                <div class="metric-value">${baseline.score}/100</div>
+                <div class="metric-label">Baseline SEO Score<br/>(${new Date(baseline.date).toLocaleDateString()})</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">${current.score}/100</div>
+                <div class="metric-label">Current SEO Score<br/>(${new Date(current.date).toLocaleDateString()})</div>
+            </div>
+        </div>
+        <div class="metrics">
+            <div class="metric-card ${Number(comparison.scoreChange) >= 0 ? 'positive' : 'negative'}">
+                <div class="metric-value ${Number(comparison.scoreChange) >= 0 ? 'positive' : 'negative'}">
+                    ${Number(comparison.scoreChange) >= 0 ? '+' : ''}${comparison.scoreChange}
+                </div>
+                <div class="metric-label">Score Change (${Number(comparison.scorePercentChange) >= 0 ? '+' : ''}${comparison.scorePercentChange}%)</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">${baseline.pagesIndexed}</div>
+                <div class="metric-label">Baseline Pages Indexed</div>
+            </div>
+            <div class="metric-card ${Number(comparison.pagesChange) >= 0 ? 'positive' : 'negative'}">
+                <div class="metric-value ${Number(comparison.pagesChange) >= 0 ? 'positive' : 'negative'}">
+                    ${current.pagesIndexed} (${Number(comparison.pagesChange) >= 0 ? '+' : ''}${comparison.pagesChange})
+                </div>
+                <div class="metric-label">Current Pages Indexed</div>
+            </div>
+        </div>
+    </div>
+    ` : ''}
 
     <div class="section">
         <h2>Performance Summary</h2>
@@ -395,6 +644,35 @@ function generatePDFReport(data: any): string {
         </div>
     </div>
 
+    ${topicCoverageDelta ? `
+    <div class="section">
+        <h2>Topic Coverage Delta</h2>
+        <div class="metrics">
+            <div class="metric-card">
+                <div class="metric-value">${topicCoverageDelta.totalTopics}</div>
+                <div class="metric-label">Total Topics</div>
+            </div>
+            <div class="metric-card positive">
+                <div class="metric-value positive">${topicCoverageDelta.coveredTopics}</div>
+                <div class="metric-label">Covered (${topicCoverageDelta.coveragePercentage}%)</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">${topicCoverageDelta.uncoveredTopics}</div>
+                <div class="metric-label">Uncovered</div>
+            </div>
+        </div>
+        ${topicCoverageDelta.topGaps.length > 0 ? `
+        <h3 style="margin-top: 20px;">Top Content Gaps</h3>
+        ${topicCoverageDelta.topGaps.map((gap: any, i: number) => `
+            <div class="gap-item">
+                <strong>${i + 1}. ${gap.name}</strong> (${gap.keyword})<br/>
+                Est. Traffic: ${gap.estimatedTraffic}/month | Difficulty: ${gap.difficulty}
+            </div>
+        `).join('')}
+        ` : ''}
+    </div>
+    ` : ''}
+
     <div class="section">
         <h2>Top Performing Posts</h2>
         <div class="top-posts">
@@ -406,6 +684,24 @@ function generatePDFReport(data: any): string {
             `).join('')}
         </div>
     </div>
+
+    ${underperformers.length > 0 ? `
+    <div class="section">
+        <h2>Underperformers & Recommendations</h2>
+        ${underperformers.map((post: any, i: number) => `
+            <div class="post-item">
+                <h3>${i + 1}. ${post.title}</h3>
+                <p>CTR: ${post.metrics.ctr}% | Position: ${post.metrics.avgPosition} | SEO Score: ${post.metrics.avgSEO}/100</p>
+                <div class="recommendation">
+                    <strong>Recommendations:</strong>
+                    <ul>
+                        ${post.recommendations.map((rec: string) => `<li>${rec}</li>`).join('')}
+                    </ul>
+                </div>
+            </div>
+        `).join('')}
+    </div>
+    ` : ''}
 
     <div class="footer">
         <p>Generated by BlogCanvas SEO Content Platform</p>
@@ -420,26 +716,62 @@ function generatePDFReport(data: any): string {
  * Generate slide deck report
  */
 function generateSlideReport(data: any): any[] {
-    const { client, period, summary, topPosts } = data;
+    const { client, period, summary, baseline, current, comparison, topicCoverageDelta, topPosts, underperformers } = data;
     const periodStart = new Date(period.start).toLocaleDateString();
     const periodEnd = new Date(period.end).toLocaleDateString();
 
-    return [
+    const slides: any[] = [
         {
             title: 'SEO Performance Report',
             subtitle: `${client.name}`,
             content: `Period: ${periodStart} - ${periodEnd}`
-        },
-        {
-            title: 'Performance Summary',
-            content: `Posts: ${summary.totalPosts}\nImpressions: ${summary.totalImpressions.toLocaleString()}\nClicks: ${summary.totalClicks.toLocaleString()}\nCTR: ${summary.avgCTR}%`
-        },
-        {
-            title: 'Top Performing Posts',
-            content: topPosts.map((post: any, i: number) => 
-                `${i + 1}. ${post.target_keyword || 'Untitled'} - ${post.metrics.clicks.toLocaleString()} clicks`
-            ).join('\n')
         }
     ];
+
+    if (comparison) {
+        slides.push({
+            title: 'Baseline vs Current',
+            content: `Baseline: ${baseline.score}/100 (${new Date(baseline.date).toLocaleDateString()})\nCurrent: ${current.score}/100 (${new Date(current.date).toLocaleDateString()})\nChange: ${Number(comparison.scoreChange) >= 0 ? '+' : ''}${comparison.scoreChange} points (${Number(comparison.scorePercentChange) >= 0 ? '+' : ''}${comparison.scorePercentChange}%)\nPages: ${baseline.pagesIndexed} → ${current.pagesIndexed} (${Number(comparison.pagesChange) >= 0 ? '+' : ''}${comparison.pagesChange})`
+        });
+    }
+
+    slides.push({
+        title: 'Performance Summary',
+        content: `Posts: ${summary.totalPosts}\nImpressions: ${summary.totalImpressions.toLocaleString()}\nClicks: ${summary.totalClicks.toLocaleString()}\nCTR: ${summary.avgCTR}%\nAvg Position: ${summary.avgPosition}\nAvg SEO Score: ${summary.avgSEO}/100`
+    });
+
+    if (topicCoverageDelta) {
+        slides.push({
+            title: 'Topic Coverage',
+            content: `Total Topics: ${topicCoverageDelta.totalTopics}\nCovered: ${topicCoverageDelta.coveredTopics} (${topicCoverageDelta.coveragePercentage}%)\nUncovered: ${topicCoverageDelta.uncoveredTopics}\nNew Posts: ${topicCoverageDelta.newPostsThisPeriod}`
+        });
+
+        if (topicCoverageDelta.topGaps.length > 0) {
+            slides.push({
+                title: 'Top Content Gaps',
+                content: topicCoverageDelta.topGaps.map((gap: any, i: number) =>
+                    `${i + 1}. ${gap.name} (${gap.keyword})\n   Est. ${gap.estimatedTraffic}/mo traffic`
+                ).join('\n\n')
+            });
+        }
+    }
+
+    slides.push({
+        title: 'Top Performing Posts',
+        content: topPosts.map((post: any, i: number) =>
+            `${i + 1}. ${post.target_keyword || 'Untitled'}\n   ${post.metrics.clicks.toLocaleString()} clicks, ${post.metrics.impressions.toLocaleString()} impressions`
+        ).join('\n\n')
+    });
+
+    if (underperformers.length > 0) {
+        slides.push({
+            title: 'Underperformers',
+            content: underperformers.map((post: any, i: number) =>
+                `${i + 1}. ${post.title}\n   CTR: ${post.metrics.ctr}%, Pos: ${post.metrics.avgPosition}\n   Fix: ${post.recommendations[0]}`
+            ).join('\n\n')
+        });
+    }
+
+    return slides;
 }
 
