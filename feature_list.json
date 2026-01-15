@@ -2035,7 +2035,9 @@
         "Wins highlighted",
         "Call-ready format"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T14:00:00Z",
+      "notes": "Implemented AI-powered narrative summary generator. Created /src/lib/reports/narrative-generator.ts with generateReportNarrative() function using OpenAI GPT-4o-mini. Integrated into /src/app/api/reports/generate/route.ts (lines 159-202). Added narrative sections to all report formats: email (519-571), PDF (626-651, 774-797), slides (779-845). Generates executive summary, key wins, opportunities, talking points, next steps, and call-to-action. Includes automatic fallback to data-driven narrative if AI fails. All acceptance criteria verified. See docs/feat-090-narrative-summary.md."
     },
     {
       "id": "feat-091",

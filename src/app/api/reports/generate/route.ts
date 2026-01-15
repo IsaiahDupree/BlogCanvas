@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { requireAuth } from '@/lib/supabase/server';
+import { generateReportNarrative, NarrativeSummary } from '@/lib/reports/narrative-generator';
 
 /**
  * Generate analytics report for a website or content batch
@@ -157,6 +158,46 @@ export async function POST(request: NextRequest) {
         // Identify underperformers with recommendations
         const underperformers = identifyUnderperformers(posts, metrics || []);
 
+        // Generate AI narrative summary
+        let narrative: NarrativeSummary | null = null;
+        try {
+            narrative = await generateReportNarrative({
+                clientName: client?.name || 'Client',
+                websiteUrl: website.url,
+                periodStart,
+                periodEnd,
+                summary: aggregated,
+                baseline: baselineAudit ? {
+                    score: baselineAudit.baseline_score,
+                    date: baselineAudit.audit_date,
+                    pagesIndexed: baselineAudit.pages_indexed
+                } : undefined,
+                current: latestAudit ? {
+                    score: latestAudit.baseline_score,
+                    date: latestAudit.audit_date,
+                    pagesIndexed: latestAudit.pages_indexed
+                } : undefined,
+                comparison: (baselineAudit && latestAudit) ? {
+                    scoreChange: latestAudit.baseline_score - baselineAudit.baseline_score,
+                    scorePercentChange: baselineAudit.baseline_score > 0
+                        ? (((latestAudit.baseline_score - baselineAudit.baseline_score) / baselineAudit.baseline_score) * 100).toFixed(1)
+                        : '0',
+                    pagesChange: latestAudit.pages_indexed - baselineAudit.pages_indexed
+                } : undefined,
+                topicCoverageDelta,
+                topPosts: getTopPosts(posts, metrics || []),
+                underperformers,
+                trends: calculateTrends(metrics || []),
+                batch: batch ? {
+                    name: batch.name,
+                    goalScoreFrom: batch.goal_score_from,
+                    goalScoreTo: batch.goal_score_to
+                } : undefined
+            });
+        } catch (error) {
+            console.error('Failed to generate narrative, continuing without it:', error);
+        }
+
         // Generate report content
         const reportData = {
             website: {
@@ -197,7 +238,8 @@ export async function POST(request: NextRequest) {
             topicCoverageDelta,
             topPosts: getTopPosts(posts, metrics || []),
             underperformers,
-            trends: calculateTrends(metrics || [])
+            trends: calculateTrends(metrics || []),
+            narrative
         };
 
         // Generate based on format
@@ -464,7 +506,7 @@ function identifyUnderperformers(posts: any[], metrics: any[]): any[] {
  * Generate email report
  */
 function generateEmailReport(data: any): any {
-    const { client, period, summary, baseline, current, comparison, topicCoverageDelta, topPosts, underperformers, trends } = data;
+    const { client, period, summary, baseline, current, comparison, topicCoverageDelta, topPosts, underperformers, trends, narrative } = data;
     const periodStart = new Date(period.start).toLocaleDateString();
     const periodEnd = new Date(period.end).toLocaleDateString();
 
@@ -472,6 +514,21 @@ function generateEmailReport(data: any): any {
 Hi ${client.name},
 
 Here's your monthly SEO content performance report for ${periodStart} - ${periodEnd}.
+
+${narrative ? `
+📋 EXECUTIVE SUMMARY
+${narrative.executiveSummary}
+
+${narrative.keyWins.length > 0 ? `
+🎉 KEY WINS
+${narrative.keyWins.map((win: string, i: number) => `${i + 1}. ${win}`).join('\n')}
+` : ''}
+
+${narrative.concernsAndOpportunities.length > 0 ? `
+💡 OPPORTUNITIES FOR IMPROVEMENT
+${narrative.concernsAndOpportunities.map((opp: string, i: number) => `${i + 1}. ${opp}`).join('\n')}
+` : ''}
+` : ''}
 
 ${comparison ? `
 📈 Baseline vs Current Comparison
@@ -525,6 +582,18 @@ ${underperformers.map((post: any, i: number) =>
 `).join('\n')}
 ` : ''}
 
+${narrative ? `
+📞 TALKING POINTS FOR OUR NEXT CALL
+${narrative.talkingPoints.map((point: string, i: number) => `${i + 1}. ${point}`).join('\n')}
+
+🎯 RECOMMENDED NEXT STEPS
+${narrative.nextSteps.map((step: string, i: number) => `${i + 1}. ${step}`).join('\n')}
+
+${narrative.callToAction ? `
+❓ ${narrative.callToAction}
+` : ''}
+` : ''}
+
 Best regards,
 Your SEO Team
     `.trim();
@@ -539,7 +608,7 @@ Your SEO Team
  * Generate PDF report HTML
  */
 function generatePDFReport(data: any): string {
-    const { website, client, period, summary, baseline, current, comparison, topicCoverageDelta, topPosts, underperformers, trends } = data;
+    const { website, client, period, summary, baseline, current, comparison, topicCoverageDelta, topPosts, underperformers, trends, narrative } = data;
     const periodStart = new Date(period.start).toLocaleDateString();
     const periodEnd = new Date(period.end).toLocaleDateString();
 
@@ -579,6 +648,27 @@ function generatePDFReport(data: any): string {
         <p>${client.name} - ${website.url}</p>
         <p>Period: ${periodStart} to ${periodEnd}</p>
     </div>
+
+    ${narrative ? `
+    <div class="section">
+        <h2>Executive Summary</h2>
+        <p style="font-size: 16px; line-height: 1.6; margin: 20px 0;">${narrative.executiveSummary}</p>
+
+        ${narrative.keyWins.length > 0 ? `
+        <h3 style="color: #10b981; margin-top: 20px;">Key Wins</h3>
+        <ul style="line-height: 1.8;">
+            ${narrative.keyWins.map((win: string) => `<li>${win}</li>`).join('')}
+        </ul>
+        ` : ''}
+
+        ${narrative.concernsAndOpportunities.length > 0 ? `
+        <h3 style="color: #f59e0b; margin-top: 20px;">Opportunities for Improvement</h3>
+        <ul style="line-height: 1.8;">
+            ${narrative.concernsAndOpportunities.map((opp: string) => `<li>${opp}</li>`).join('')}
+        </ul>
+        ` : ''}
+    </div>
+    ` : ''}
 
     ${comparison ? `
     <div class="section">
@@ -703,6 +793,26 @@ function generatePDFReport(data: any): string {
     </div>
     ` : ''}
 
+    ${narrative ? `
+    <div class="section">
+        <h2>Client Call Talking Points</h2>
+        <ul style="line-height: 1.8; font-size: 15px;">
+            ${narrative.talkingPoints.map((point: string) => `<li>${point}</li>`).join('')}
+        </ul>
+
+        <h3 style="margin-top: 20px;">Recommended Next Steps</h3>
+        <ul style="line-height: 1.8; font-size: 15px;">
+            ${narrative.nextSteps.map((step: string) => `<li>${step}</li>`).join('')}
+        </ul>
+
+        ${narrative.callToAction ? `
+        <div style="background: #dbeafe; padding: 20px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #3b82f6;">
+            <strong>Question for Discussion:</strong> ${narrative.callToAction}
+        </div>
+        ` : ''}
+    </div>
+    ` : ''}
+
     <div class="footer">
         <p>Generated by BlogCanvas SEO Content Platform</p>
         <p>Report Period: ${periodStart} to ${periodEnd}</p>
@@ -716,7 +826,7 @@ function generatePDFReport(data: any): string {
  * Generate slide deck report
  */
 function generateSlideReport(data: any): any[] {
-    const { client, period, summary, baseline, current, comparison, topicCoverageDelta, topPosts, underperformers } = data;
+    const { client, period, summary, baseline, current, comparison, topicCoverageDelta, topPosts, underperformers, narrative } = data;
     const periodStart = new Date(period.start).toLocaleDateString();
     const periodEnd = new Date(period.end).toLocaleDateString();
 
@@ -727,6 +837,20 @@ function generateSlideReport(data: any): any[] {
             content: `Period: ${periodStart} - ${periodEnd}`
         }
     ];
+
+    if (narrative) {
+        slides.push({
+            title: 'Executive Summary',
+            content: narrative.executiveSummary
+        });
+
+        if (narrative.keyWins.length > 0) {
+            slides.push({
+                title: 'Key Wins',
+                content: narrative.keyWins.map((win: string, i: number) => `${i + 1}. ${win}`).join('\n\n')
+            });
+        }
+    }
 
     if (comparison) {
         slides.push({
@@ -770,6 +894,20 @@ function generateSlideReport(data: any): any[] {
                 `${i + 1}. ${post.title}\n   CTR: ${post.metrics.ctr}%, Pos: ${post.metrics.avgPosition}\n   Fix: ${post.recommendations[0]}`
             ).join('\n\n')
         });
+
+        if (narrative && narrative.talkingPoints.length > 0) {
+            slides.push({
+                title: 'Client Call Talking Points',
+                content: narrative.talkingPoints.map((point: string, i: number) => `${i + 1}. ${point}`).join('\n\n')
+            });
+        }
+
+        if (narrative && narrative.nextSteps.length > 0) {
+            slides.push({
+                title: 'Recommended Next Steps',
+                content: narrative.nextSteps.map((step: string, i: number) => `${i + 1}. ${step}`).join('\n\n')
+            });
+        }
     }
 
     return slides;
