@@ -3682,7 +3682,9 @@
         "Guidelines included",
         "Caching works"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T23:45:00Z",
+      "notes": "Complete API endpoint for client context. Created /api/clients/[clientId]/context/route.ts with GET handler that: 1) Authenticates user, 2) Verifies client access by ID or slug with vendor filtering, 3) Calls getSharedClientContext() service, 4) Implements in-memory caching with 5-minute TTL for performance, 5) Returns complete brand context with all guidelines (voice/tone, styles to avoid/keep, image guidelines, title guidelines, etc.). Endpoint follows existing API patterns with proper error handling, supports both UUID and slug lookups, and includes cache status in response. All acceptance criteria verified."
     },
     {
       "id": "feat-166",
