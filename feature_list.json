@@ -3510,7 +3510,9 @@
         "Metrics displayed",
         "Preview works"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T23:30:00Z",
+      "notes": "Complete Styles to Avoid UI implementation. Created brand guide API endpoint (/api/clients/[clientId]/brand-guide) for GET/PATCH operations. Built comprehensive editor UI at /app/clients/[clientId]/brand-guide with: (1) Word patterns input with add/remove functionality, (2) Structural rules config for passive voice %, sentence length, and ALL CAPS, (3) Data backing section with evidence and metrics, (4) Real-time preview showing active rules and impact examples. All acceptance criteria verified: patterns editable, rules configurable, metrics displayed, preview works."
     },
     {
       "id": "feat-158",
