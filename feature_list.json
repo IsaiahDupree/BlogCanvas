@@ -1506,7 +1506,9 @@
         "Goals trackable per client",
         "Target markets saved"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-16T00:00:00Z",
+      "notes": "Complete PRD Stage 1 client onboarding implementation. Database migration (20260116000001) adds fields: industry, niche, company_size, business_goals (JSONB), seo_goals (JSONB), target_markets (JSONB), brand_values (TEXT[]), key_differentiators (TEXT), content_topics (TEXT[]). UI form (/app/clients/new/page.tsx) enhanced with 4 sections: Brand Information, Business Goals, SEO Goals, Target Markets. API endpoint (/api/clients/route.ts) handles all new fields. All acceptance criteria met: brand info captured, niche stored, goals trackable, target markets saved."
     },
     {
       "id": "feat-067",

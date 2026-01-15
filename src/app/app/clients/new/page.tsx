@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Globe, Mail, User, Building, Check } from 'lucide-react'
+import { ArrowLeft, Globe, Mail, User, Building, Check, Target, TrendingUp, MapPin, Tag } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 
 export default function NewClientPage() {
@@ -19,8 +19,18 @@ export default function NewClientPage() {
         contact_email: '',
         contact_name: '',
         industry: '',
+        niche: '',
+        company_size: '',
         target_audience: '',
-        product_summary: ''
+        product_summary: '',
+        business_goals: '',
+        seo_target_score: '',
+        target_keywords: '',
+        monthly_traffic_goal: '',
+        target_markets: '',
+        brand_values: '',
+        key_differentiators: '',
+        content_topics: ''
     })
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -28,6 +38,27 @@ export default function NewClientPage() {
         setLoading(true)
 
         try {
+            // Parse array/object fields from comma-separated strings
+            const businessGoals = formData.business_goals
+                ? formData.business_goals.split(',').map(g => g.trim()).filter(Boolean)
+                : [];
+
+            const targetKeywords = formData.target_keywords
+                ? formData.target_keywords.split(',').map(k => k.trim()).filter(Boolean)
+                : [];
+
+            const targetMarkets = formData.target_markets
+                ? formData.target_markets.split(',').map(m => ({ market: m.trim() })).filter(m => m.market)
+                : [];
+
+            const brandValues = formData.brand_values
+                ? formData.brand_values.split(',').map(v => v.trim()).filter(Boolean)
+                : [];
+
+            const contentTopics = formData.content_topics
+                ? formData.content_topics.split(',').map(t => t.trim()).filter(Boolean)
+                : [];
+
             const response = await fetch('/api/clients', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -38,7 +69,21 @@ export default function NewClientPage() {
                     contact_name: formData.contact_name,
                     onboarding_method: onboardingMethod,
                     send_invitation: true,
-                    client_role: 'client_admin'
+                    client_role: 'client_admin',
+                    // PRD Stage 1 fields
+                    industry: formData.industry,
+                    niche: formData.niche,
+                    company_size: formData.company_size,
+                    business_goals: businessGoals,
+                    seo_goals: {
+                        target_score: formData.seo_target_score ? parseInt(formData.seo_target_score) : null,
+                        target_keywords: targetKeywords,
+                        monthly_traffic_goal: formData.monthly_traffic_goal ? parseInt(formData.monthly_traffic_goal) : null
+                    },
+                    target_markets: targetMarkets,
+                    brand_values: brandValues,
+                    key_differentiators: formData.key_differentiators,
+                    content_topics: contentTopics
                 })
             })
 
@@ -242,6 +287,195 @@ export default function NewClientPage() {
                                     className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
                                     placeholder="John Smith"
                                 />
+                            </div>
+                        </div>
+
+                        {/* PRD Stage 1: Brand Info & Niche */}
+                        <div className="pt-6 border-t">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                <Building className="w-5 h-5 text-blue-600" />
+                                Brand Information
+                            </h3>
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Industry
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.industry}
+                                            onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
+                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                                            placeholder="e.g., SaaS, E-commerce, Healthcare"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Niche
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.niche}
+                                            onChange={(e) => setFormData({ ...formData, niche: e.target.value })}
+                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                                            placeholder="e.g., Email Marketing Software, Athletic Wear"
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Company Size
+                                    </label>
+                                    <select
+                                        value={formData.company_size}
+                                        onChange={(e) => setFormData({ ...formData, company_size: e.target.value })}
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                                    >
+                                        <option value="">Select company size</option>
+                                        <option value="1-10">1-10 employees</option>
+                                        <option value="11-50">11-50 employees</option>
+                                        <option value="51-200">51-200 employees</option>
+                                        <option value="201-1000">201-1000 employees</option>
+                                        <option value="1000+">1000+ employees</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Key Differentiators
+                                    </label>
+                                    <textarea
+                                        value={formData.key_differentiators}
+                                        onChange={(e) => setFormData({ ...formData, key_differentiators: e.target.value })}
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                                        placeholder="What makes this brand unique in their market?"
+                                        rows={3}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* PRD Stage 1: Business Goals */}
+                        <div className="pt-6 border-t">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                <Target className="w-5 h-5 text-blue-600" />
+                                Business Goals
+                            </h3>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Business Objectives
+                                    </label>
+                                    <textarea
+                                        value={formData.business_goals}
+                                        onChange={(e) => setFormData({ ...formData, business_goals: e.target.value })}
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                                        placeholder="Enter goals separated by commas (e.g., Increase organic traffic by 50%, Generate 100 leads per month)"
+                                        rows={3}
+                                    />
+                                    <p className="text-xs text-muted-foreground mt-1">Separate multiple goals with commas</p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Brand Values
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.brand_values}
+                                        onChange={(e) => setFormData({ ...formData, brand_values: e.target.value })}
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                                        placeholder="e.g., Innovation, Customer-First, Transparency"
+                                    />
+                                    <p className="text-xs text-muted-foreground mt-1">Separate multiple values with commas</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* PRD Stage 1: SEO Goals */}
+                        <div className="pt-6 border-t">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                <TrendingUp className="w-5 h-5 text-blue-600" />
+                                SEO Goals
+                            </h3>
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Target SEO Score (0-100)
+                                        </label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            max="100"
+                                            value={formData.seo_target_score}
+                                            onChange={(e) => setFormData({ ...formData, seo_target_score: e.target.value })}
+                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                                            placeholder="e.g., 75"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Monthly Traffic Goal
+                                        </label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            value={formData.monthly_traffic_goal}
+                                            onChange={(e) => setFormData({ ...formData, monthly_traffic_goal: e.target.value })}
+                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                                            placeholder="e.g., 10000"
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Target Keywords
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.target_keywords}
+                                        onChange={(e) => setFormData({ ...formData, target_keywords: e.target.value })}
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                                        placeholder="e.g., seo content, blog writing, content marketing"
+                                    />
+                                    <p className="text-xs text-muted-foreground mt-1">Separate keywords with commas</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* PRD Stage 1: Target Markets */}
+                        <div className="pt-6 border-t">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                <MapPin className="w-5 h-5 text-blue-600" />
+                                Target Markets
+                            </h3>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Geographic & Demographic Markets
+                                    </label>
+                                    <textarea
+                                        value={formData.target_markets}
+                                        onChange={(e) => setFormData({ ...formData, target_markets: e.target.value })}
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                                        placeholder="e.g., United States - B2B SaaS, United Kingdom - Enterprise, Canada - SMB"
+                                        rows={3}
+                                    />
+                                    <p className="text-xs text-muted-foreground mt-1">Separate markets with commas</p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Content Topics
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.content_topics}
+                                        onChange={(e) => setFormData({ ...formData, content_topics: e.target.value })}
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                                        placeholder="e.g., SEO Best Practices, Content Strategy, Marketing Automation"
+                                    />
+                                    <p className="text-xs text-muted-foreground mt-1">Primary themes to cover in content - separate with commas</p>
+                                </div>
                             </div>
                         </div>
 

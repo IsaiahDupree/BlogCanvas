@@ -88,7 +88,17 @@ export async function POST(request: Request) {
             contact_name,
             onboarding_method,
             send_invitation = true,
-            client_role = 'client_admin'
+            client_role = 'client_admin',
+            // PRD Stage 1 fields
+            industry,
+            niche,
+            company_size,
+            business_goals,
+            seo_goals,
+            target_markets,
+            brand_values,
+            key_differentiators,
+            content_topics
         } = body;
 
         if (!name || !contact_email) {
@@ -135,7 +145,17 @@ export async function POST(request: Request) {
                 contact_name: contact_name || '',
                 status: 'onboarding',
                 onboarded_via: onboarding_method || 'manual_intake',
-                vendor_id: profile?.vendor_id
+                vendor_id: profile?.vendor_id,
+                // PRD Stage 1 fields
+                industry: industry || null,
+                niche: niche || null,
+                company_size: company_size || null,
+                business_goals: business_goals || [],
+                seo_goals: seo_goals || {},
+                target_markets: target_markets || [],
+                brand_values: brand_values || [],
+                key_differentiators: key_differentiators || null,
+                content_topics: content_topics || []
             })
             .select()
             .single();
