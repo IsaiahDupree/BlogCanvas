@@ -2079,7 +2079,9 @@
         "Body comprehensive",
         "Conclusion actionable"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T18:00:00Z",
+      "notes": "Enhanced draft agent with explicit structural requirements. Added section-specific prompts: intro (hook/teaser + context + value prop), body (comprehensive with examples), conclusion (summary + actionable takeaways + CTA). Changes in /src/lib/agents/draft.ts lines 44-72. All acceptance criteria met through AI prompt engineering. Documentation: docs/feat-092-draft-structure.md"
     },
     {
       "id": "feat-093",
