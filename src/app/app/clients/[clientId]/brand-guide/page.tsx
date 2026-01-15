@@ -28,6 +28,7 @@ import {
     Trophy
 } from 'lucide-react'
 import Link from 'next/link'
+import { StylePerformanceDashboard } from '@/components/brand/StylePerformanceDashboard'
 
 interface StylesToAvoid {
     word_patterns: string[]
@@ -107,7 +108,7 @@ export default function BrandGuideEditorPage() {
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [brandGuide, setBrandGuide] = useState<BrandGuide | null>(null)
-    const [activeTab, setActiveTab] = useState<'avoid' | 'keep' | 'images' | 'titles'>('avoid')
+    const [activeTab, setActiveTab] = useState<'avoid' | 'keep' | 'images' | 'titles' | 'performance'>('avoid')
 
     // Styles to Avoid State
     const [wordPatterns, setWordPatterns] = useState<string[]>([])
@@ -614,6 +615,17 @@ export default function BrandGuideEditorPage() {
                             }`}
                         >
                             Title Guidelines
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('performance')}
+                            className={`pb-4 px-1 border-b-2 font-medium transition-colors ${
+                                activeTab === 'performance'
+                                    ? 'border-indigo-600 text-indigo-600'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                            }`}
+                        >
+                            <BarChart3 className="w-4 h-4 inline mr-2" />
+                            Style Performance
                         </button>
                     </div>
                 </div>
@@ -1925,6 +1937,13 @@ export default function BrandGuideEditorPage() {
                                 </p>
                             </div>
                         </Card>
+                    </div>
+                )}
+
+                {/* Style Performance Tab */}
+                {activeTab === 'performance' && (
+                    <div className="space-y-6">
+                        <StylePerformanceDashboard clientId={clientId} />
                     </div>
                 )}
             </div>
