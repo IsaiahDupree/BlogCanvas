@@ -266,6 +266,108 @@ export async function testGA4Connection(config: GA4Config): Promise<{
 }
 
 /**
+ * Query GA4 for conversion goal metrics
+ */
+async function queryGA4ConversionGoals(
+  pagePath: string,
+  startDate: Date,
+  endDate: Date,
+  config: GA4Config,
+  goalEventNames: string[]
+): Promise<Record<string, number>> {
+  if (goalEventNames.length === 0) {
+    return {};
+  }
+
+  const accessToken = await getServiceAccountToken(config.serviceAccountCredentials);
+  if (!accessToken) {
+    return {};
+  }
+
+  const startDateStr = startDate.toISOString().split('T')[0];
+  const endDateStr = endDate.toISOString().split('T')[0];
+
+  try {
+    const apiUrl = `https://analyticsdata.googleapis.com/v1beta/properties/${config.propertyId}:runReport`;
+
+    const requestBody = {
+      dateRanges: [{
+        startDate: startDateStr,
+        endDate: endDateStr,
+      }],
+      dimensions: [
+        { name: 'eventName' },
+        { name: 'pagePath' }
+      ],
+      metrics: [
+        { name: 'eventCount' }
+      ],
+      dimensionFilter: {
+        andGroup: {
+          expressions: [
+            {
+              filter: {
+                fieldName: 'pagePath',
+                stringFilter: {
+                  matchType: 'EXACT',
+                  value: pagePath
+                }
+              }
+            },
+            {
+              orGroup: {
+                expressions: goalEventNames.map(eventName => ({
+                  filter: {
+                    fieldName: 'eventName',
+                    stringFilter: {
+                      matchType: 'EXACT',
+                      value: eventName
+                    }
+                  }
+                }))
+              }
+            }
+          ]
+        }
+      },
+    };
+
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) {
+      console.error('GA4 conversion goals API error:', await response.text());
+      return {};
+    }
+
+    const data = await response.json();
+
+    // Parse results into { eventName: count } map
+    const goalConversions: Record<string, number> = {};
+    if (data.rows) {
+      for (const row of data.rows) {
+        const eventName = row.dimensionValues[0]?.value;
+        const count = parseInt(row.metricValues[0]?.value || '0');
+        if (eventName) {
+          goalConversions[eventName] = count;
+        }
+      }
+    }
+
+    return goalConversions;
+  } catch (error) {
+    console.error('Error querying GA4 conversion goals:', error);
+    return {};
+  }
+}
+
+/**
  * Sync GA4 metrics for a blog post
  */
 export async function syncGA4MetricsForPost(
@@ -294,6 +396,39 @@ export async function syncGA4MetricsForPost(
       };
     }
 
+    // Get conversion goals for this website
+    const { data: goals } = await supabaseAdmin
+      .from('conversion_goals')
+      .select('id, ga4_event_name')
+      .eq('website_id', websiteId)
+      .eq('is_active', true)
+      .eq('goal_type', 'event')
+      .not('ga4_event_name', 'is', null);
+
+    // Query goal-specific conversions
+    let goalConversions: Record<string, number> = {};
+    if (goals && goals.length > 0) {
+      const eventNames = goals
+        .map(g => g.ga4_event_name)
+        .filter((name): name is string => name !== null);
+
+      const eventCounts = await queryGA4ConversionGoals(
+        pagePath,
+        startDate,
+        endDate,
+        config,
+        eventNames
+      );
+
+      // Map event names back to goal IDs
+      goalConversions = {};
+      for (const goal of goals) {
+        if (goal.ga4_event_name && eventCounts[goal.ga4_event_name]) {
+          goalConversions[goal.id] = eventCounts[goal.ga4_event_name];
+        }
+      }
+    }
+
     // Save to database (merge with existing metrics)
     const snapshotDate = endDate;
     const { error } = await supabaseAdmin
@@ -307,6 +442,7 @@ export async function syncGA4MetricsForPost(
         avg_engagement_time: metrics.averageEngagementTime,
         bounce_rate: metrics.bounceRate,
         conversions: metrics.conversions,
+        goal_conversions: goalConversions,
         ga4_data: metrics.rawData,
         // Preserve existing GSC data if it exists
       }, {

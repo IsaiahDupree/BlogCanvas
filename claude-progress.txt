@@ -8911,3 +8911,30 @@ Implementation Details:
 - Both components display metrics in visual cards with color-coded indicators
 - Sorted by total impressions (descending) to show top performers first
 - Uses latest metric snapshot per post for accurate current state
+
+=== Session 2026-01-15T11:15:00Z ===
+- Implemented: feat-109 - Compute projected SEO score after plan execution
+- Files changed:
+  - Created: src/lib/analysis/projected-seo.ts
+  - Created: src/app/api/analytics/projected-seo/route.ts
+  - Created: src/components/analytics/ProjectedSEOScore.tsx
+  - Created: __tests__/unit/projected-seo.test.ts
+  - Modified: src/app/app/batches/[id]/page.tsx (integrated ProjectedSEOScore)
+  - Modified: feature_list.json
+- Tests passed:
+  ✅ Per-post impact calculation works correctly
+  ✅ Status-based weighting (published > approved > in-progress)
+  ✅ Projected score computed from baseline + weighted impacts
+  ✅ Component displays baseline → projected → target visually
+  ✅ Auto-refresh every 30 seconds for live updates
+  ✅ Manual test: calculateProjectedSEO(60, 75, posts) = 60.8 (verified)
+- Committed: "feat(blogcanvas): implement projected SEO score calculation (feat-109)"
+- Next priority: feat-110 - seo_quality_score per blog post
+
+Implementation Details:
+- Algorithm uses status weights: published (1.0), approved (0.9), editor_review (0.75), ai_drafting (0.4)
+- Each post contributes up to 0.5 points to overall score (prevents single-post dominance)
+- Score breakdown shows contributions from: published, approved, completed, in-progress
+- Component shows progress bar from baseline to target
+- Integrated into batch detail page for real-time monitoring
+- API endpoint supports both website_id and batch_id parameters
