@@ -1536,7 +1536,9 @@
         "Stored in database",
         "Visible in audit results"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T18:30:00Z",
+      "notes": "Feature already fully implemented. Crawler implementation: src/lib/agents/website-crawler.ts (crawlWebsite function). Database storage: src/app/api/ai/website-audit/route.ts (lines 118, 189 - saves pages_indexed to seo_audits table). UI display: src/app/app/websites/[id]/page.tsx (line 246 - displays audit.pages_indexed in 'Pages Analyzed' card). Database schema: supabase/migrations/20241204000006_seo_retainer_system.sql (line 9 - pages_indexed column). All acceptance criteria verified via code analysis."
     },
     {
       "id": "feat-069",
