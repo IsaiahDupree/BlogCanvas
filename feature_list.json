@@ -3758,7 +3758,9 @@
         "Preview displays",
         "Override available"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T22:00:00Z",
+      "notes": "Complete brand context loading flow already implemented in Pipeline page. Code analysis verified all acceptance criteria: (1) useEffect on lines 277-283 loads context when client selected via fetchBrandContext(), (2) loading state shown with spinner on lines 2073 and 2078-2081, (3) comprehensive preview displays brand guide info on lines 2082-2187 including tagline, voice traits, styles to keep, styles to avoid, and title guidelines, (4) override available via 'View Full Brand Guide' button (lines 2177-2186) linking to /app/clients/[id]/brand-guide and 'Create Brand Guide' button for new guides (lines 2192-2200). API endpoint /api/clients/[clientId]/context exists with 5-minute caching. Uses getSharedClientContext() service from src/lib/brand/shared-context.ts to aggregate all brand data."
     },
     {
       "id": "feat-169",
