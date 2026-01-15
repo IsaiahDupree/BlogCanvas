@@ -5,6 +5,8 @@ import { BarChart3, TrendingUp, Eye, MousePointerClick, Target, Calendar } from 
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import TopPerformingPosts from '@/components/analytics/TopPerformingPosts'
+import ClientMetrics from '@/components/analytics/ClientMetrics'
+import BatchMetrics from '@/components/analytics/BatchMetrics'
 
 export default function AnalyticsDashboardPage() {
     const [stats, setStats] = useState({
@@ -164,6 +166,16 @@ export default function AnalyticsDashboardPage() {
             {/* Top Performing Posts */}
             <div className="mb-8">
                 <TopPerformingPosts limit={10} />
+            </div>
+
+            {/* Client Performance Metrics */}
+            <div className="mb-8">
+                <ClientMetrics limit={10} />
+            </div>
+
+            {/* Batch Performance Metrics */}
+            <div className="mb-8">
+                <BatchMetrics limit={10} />
             </div>
 
             {/* Info Box */}

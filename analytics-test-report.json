@@ -1,0 +1,49 @@
+{
+  "timestamp": "2026-01-15T11:03:27.960Z",
+  "url": "http://localhost:4848/app/analytics",
+  "criteria": [
+    {
+      "name": "1. Client totals work - ClientMetrics component rendering",
+      "passed": true,
+      "status": "PASS ✓"
+    },
+    {
+      "name": "2. Batch totals work - BatchMetrics component rendering",
+      "passed": false,
+      "status": "FAIL ✗"
+    },
+    {
+      "name": "3. Averages calculated - CTR, position, SEO score displayed",
+      "passed": false,
+      "status": "FAIL ✗"
+    },
+    {
+      "name": "4. Dashboard shows - All sections visible",
+      "passed": false,
+      "status": "FAIL ✗"
+    }
+  ],
+  "pageStructure": {
+    "title": "BlogCanvas - AI-Powered Content at Scale",
+    "headings": [
+      {
+        "tag": "H1",
+        "text": "BlogCanvas"
+      },
+      {
+        "tag": "H2",
+        "text": "Vendor Login"
+      }
+    ],
+    "sectionCount": 0,
+    "sections": []
+  },
+  "errors": [],
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+  ],
+  "screenshots": [
+    "screenshot-01-homepage.png",
+    "screenshot-02-analytics.png"
+  ]
+}
