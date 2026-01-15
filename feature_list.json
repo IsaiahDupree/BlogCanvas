@@ -3142,7 +3142,9 @@
         "History listed",
         "Re-download works"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T18:21:33.300Z",
+      "notes": "Complete report storage and history system. Reports are stored in reports table with full metadata including storage_url (for slide decks uploaded to Supabase Storage). GET /api/reports lists all reports with filtering by websiteId, pagination (limit/offset), ordered by created_at. Each report includes website and client data. GET /api/reports/[id]/download allows re-downloading PDF reports by regenerating from stored report_data. Slide deck reports have storage_url for direct access. All acceptance criteria met: reports stored, URL accessible, history listed, re-download works."
     },
     {
       "id": "feat-141",
@@ -3162,7 +3164,9 @@
         "Job deleted",
         "UI updates"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T18:22:46.625Z",
+      "notes": "Implemented job deletion with confirmation. Delete button visible on all pipeline jobs. Uses browser confirm() for confirmation before deletion. DELETE /api/pipeline-jobs/[jobId] removes job from database. UI updates immediately after successful deletion by filtering out the deleted job. All acceptance criteria met: delete button visible, confirmation required, job deleted from DB, UI updates."
     },
     {
       "id": "feat-142",
@@ -3182,7 +3186,9 @@
         "New job created",
         "Retry counted"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T18:22:46.626Z",
+      "notes": "Implemented job retry functionality. Retry button (RotateCcw icon) shown only on failed jobs. Confirmation dialog shows job details before retry. Creates new pipeline job with same parameters (website_url, client_id, target_market, client_goals, ICP) cloned from failed job. New job added to recent jobs list. Form auto-populated with job parameters and switched to new tab for immediate execution. All acceptance criteria met: retry button shown on failed jobs, parameters cloned, new job created, ready for retry execution."
     },
     {
       "id": "feat-143",

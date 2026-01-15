@@ -184,6 +184,68 @@ export default function PipelinePage() {
     }
   }
 
+  const deleteJob = async (jobId: string) => {
+    if (!confirm('Are you sure you want to delete this job? This action cannot be undone.')) {
+      return
+    }
+
+    try {
+      const res = await fetch(`/api/pipeline-jobs/${jobId}`, {
+        method: 'DELETE'
+      })
+      const data = await res.json()
+
+      if (data.success) {
+        setRecentJobs(prev => prev.filter(job => job.id !== jobId))
+      } else {
+        alert('Failed to delete job: ' + (data.error || 'Unknown error'))
+      }
+    } catch (error) {
+      console.error('Failed to delete job:', error)
+      alert('Failed to delete job')
+    }
+  }
+
+  const retryJob = async (job: PipelineJob) => {
+    if (!confirm(`Retry this job?\n\nWebsite: ${job.website_url}\nThis will create a new job with the same parameters.`)) {
+      return
+    }
+
+    try {
+      const res = await fetch('/api/pipeline-jobs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          website_url: job.website_url,
+          client_id: job.clients?.id || null,
+          target_market: job.target_market,
+          client_goals: job.client_goals,
+          ideal_customer_profile: job.ideal_customer_profile
+        })
+      })
+      const data = await res.json()
+
+      if (data.success && data.job) {
+        setRecentJobs(prev => [data.job, ...prev])
+        setCurrentJobId(data.job.id)
+        alert('New job created successfully! Starting analysis...')
+
+        setWebsiteUrl(job.website_url)
+        if (job.clients?.id) setSelectedClient(job.clients.id)
+        if (job.target_market) setTargetMarket(job.target_market)
+        if (job.client_goals) setClientGoals(job.client_goals)
+        if (job.ideal_customer_profile) setIcp(job.ideal_customer_profile)
+
+        setActiveTab('new')
+      } else {
+        alert('Failed to create retry job: ' + (data.error || 'Unknown error'))
+      }
+    } catch (error) {
+      console.error('Failed to retry job:', error)
+      alert('Failed to retry job')
+    }
+  }
+
   const runPipeline = async () => {
     if (!websiteUrl) return
     
@@ -541,10 +603,33 @@ export default function PipelinePage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Button variant="ghost" size="sm" className="text-slate-400 hover:text-indigo-600">
+                          {job.status === 'failed' && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-slate-400 hover:text-indigo-600"
+                              onClick={() => retryJob(job)}
+                              title="Retry this job"
+                            >
+                              <RotateCcw className="w-4 h-4" />
+                            </Button>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-slate-400 hover:text-indigo-600"
+                            onClick={() => window.open(job.website_url, '_blank')}
+                            title="Open website"
+                          >
                             <ExternalLink className="w-4 h-4" />
                           </Button>
-                          <Button variant="ghost" size="sm" className="text-slate-400 hover:text-red-600">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-slate-400 hover:text-red-600"
+                            onClick={() => deleteJob(job.id)}
+                            title="Delete job"
+                          >
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
