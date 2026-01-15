@@ -3660,7 +3660,9 @@
         "Context complete",
         "Object returned"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T23:30:00Z",
+      "notes": "Implemented getSharedClientContext() unified service function in src/lib/brand/shared-context.ts. The service aggregates all brand guidelines from brand_guides table into a unified SharedClientContext object. Includes: voice/tone traits, styles to avoid (word patterns, structural rules, data backing), styles to keep (preferred patterns, good/bad examples with engagement metrics), image guidelines (specs, AI settings, alt text rules), title guidelines (formats, power words), and additional context (value props, audiences, don'ts, products/services). Service handles missing brand guides gracefully with defaults. Also includes formatContextForAI() helper to convert context to human-readable format for AI prompts. Note: Currently uses brand_name to match clients.name - client_id foreign key should be added to brand_guides in future migration for direct relationship."
     },
     {
       "id": "feat-165",
