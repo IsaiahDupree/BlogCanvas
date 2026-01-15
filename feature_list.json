@@ -2299,7 +2299,9 @@
         "Visible in UI",
         "Alerts work"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T22:00:00Z",
+      "notes": "Complete publish window and due date tracking system. Database: Added publish_window_start, publish_window_end fields to blog_posts table (migration 20260120000001_blog_post_publish_window.sql), created overdue_blog_posts view with overdue status calculations (past_due, at_risk, missed_window), added get_overdue_count() function for stats aggregation, constraint to ensure window_end >= window_start. API endpoints: Updated /api/content-batches/[id]/posts to return due_date and publish_window fields, created /api/content-batches/[id]/overdue for overdue alerts, created /api/blog-posts/[id]/dates PATCH endpoint for updating dates with validation. CSV import/export: Enhanced to support due_date, publish_window_start, publish_window_end columns. UI: Updated batch detail page (/app/batches/[id]) to display due dates with Calendar icon, publish windows with Clock icon, overdue alerts card showing past_due/at_risk/missed_window counts with AlertTriangle icon, per-post overdue badges with color coding (red for overdue/missed, yellow for at-risk/closing soon), helper functions formatDate() and getOverdueStatus() for date formatting and status calculation. All acceptance criteria verified: dates settable via CSV import or API, window configurable with validation, visible in batch view UI with icons and formatting, alerts work with real-time status calculation and display."
     },
     {
       "id": "feat-103",

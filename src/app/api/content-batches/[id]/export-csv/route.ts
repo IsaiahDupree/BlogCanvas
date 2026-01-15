@@ -36,6 +36,9 @@ export async function GET(
                 target_wordcount,
                 status,
                 draft,
+                due_date,
+                publish_window_start,
+                publish_window_end,
                 topic_cluster:topic_clusters(name, primary_keyword)
             `)
             .eq('content_batch_id', id)
@@ -60,7 +63,10 @@ export async function GET(
                 topic_cluster: cluster?.name || '',
                 priority: draft.priority || 0,
                 notes: draft.notes || draft.description || '',
-                status: post.status || 'idea'
+                status: post.status || 'idea',
+                due_date: post.due_date || '',
+                publish_window_start: post.publish_window_start || '',
+                publish_window_end: post.publish_window_end || ''
             };
         });
 
@@ -74,7 +80,10 @@ export async function GET(
                 topic_cluster: 'Topic Cluster',
                 priority: 'Priority',
                 notes: 'Notes',
-                status: 'Status'
+                status: 'Status',
+                due_date: 'Due Date',
+                publish_window_start: 'Publish Window Start',
+                publish_window_end: 'Publish Window End'
             }
         });
 

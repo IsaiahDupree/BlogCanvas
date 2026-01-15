@@ -86,6 +86,9 @@ export async function POST(
             const notes = row.notes || row.description || row['Notes'] || row['Description'] || '';
             const searchIntent = row.search_intent || row.intent || row['Search Intent'] || row['Intent'] || '';
             const toneVoice = row.tone_voice || row.tone || row['Tone Voice'] || row['Tone'] || '';
+            const dueDate = row.due_date || row['due date'] || row['Due Date'] || null;
+            const publishWindowStart = row.publish_window_start || row['publish window start'] || row['Publish Window Start'] || null;
+            const publishWindowEnd = row.publish_window_end || row['publish window end'] || row['Publish Window End'] || null;
 
             if (!topic) {
                 errors.push(`Row ${i + 2}: Missing topic/title`);
@@ -116,6 +119,9 @@ export async function POST(
                     target_wordcount: targetWordcount,
                     search_intent: validIntent,
                     tone_of_voice: validTone,
+                    due_date: dueDate || null,
+                    publish_window_start: publishWindowStart || null,
+                    publish_window_end: publishWindowEnd || null,
                     status: 'idea',
                     draft: {
                         topic: topic,

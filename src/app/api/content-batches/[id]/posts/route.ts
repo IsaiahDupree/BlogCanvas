@@ -25,9 +25,10 @@ export async function GET(
 
         // Get all posts in batch
         // PRD feat-104: Include cms_url and cms_publish_info for displaying published URLs
+        // PRD feat-102: Include due_date, publish_window_start, publish_window_end for deadline tracking
         const { data: posts, error: postsError } = await supabaseAdmin
             .from('blog_posts')
-            .select('id, topic, target_keyword, status, seo_quality_score, created_at, cms_url, cms_publish_info')
+            .select('id, topic, target_keyword, status, seo_quality_score, created_at, cms_url, cms_publish_info, due_date, publish_window_start, publish_window_end')
             .eq('content_batch_id', id)
             .order('created_at', { ascending: true });
 

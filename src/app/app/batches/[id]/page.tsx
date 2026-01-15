@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Play, Pause, CheckCircle2, AlertCircle, Loader2, TrendingUp, FileText, Upload, Download, Send, Image as ImageIcon, ExternalLink } from 'lucide-react'
+import { ArrowLeft, Play, Pause, CheckCircle2, AlertCircle, Loader2, TrendingUp, FileText, Upload, Download, Send, Image as ImageIcon, ExternalLink, Calendar, Clock, AlertTriangle } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -21,9 +21,11 @@ export default function BatchDetailPage() {
     const [publishing, setPublishing] = useState(false)
     const [imageDialogOpen, setImageDialogOpen] = useState(false)
     const [selectedPostForImages, setSelectedPostForImages] = useState<{ id: string; topic: string } | null>(null)
+    const [overdueStats, setOverdueStats] = useState<any>(null)
 
     useEffect(() => {
         fetchBatchDetails()
+        fetchOverdueStats()
         const interval = setInterval(fetchProgress, 3000) // Poll every 3 seconds
         return () => clearInterval(interval)
     }, [params.id])
@@ -52,6 +54,18 @@ export default function BatchDetailPage() {
             }
         } catch (error) {
             // Silently fail for progress polling
+        }
+    }
+
+    const fetchOverdueStats = async () => {
+        try {
+            const response = await fetch(`/api/content-batches/${params.id}/overdue`)
+            const data = await response.json()
+            if (data.success) {
+                setOverdueStats(data.stats)
+            }
+        } catch (error) {
+            console.error('Failed to fetch overdue stats:', error)
         }
     }
 
@@ -89,6 +103,46 @@ export default function BatchDetailPage() {
         if (score >= 80) return 'text-green-600'
         if (score >= 60) return 'text-yellow-600'
         return 'text-red-600'
+    }
+
+    const formatDate = (dateString: string | null) => {
+        if (!dateString) return null
+        return new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    }
+
+    const getOverdueStatus = (post: any) => {
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+
+        if (post.status === 'published' || post.status === 'scheduled') {
+            return null
+        }
+
+        if (post.due_date) {
+            const dueDate = new Date(post.due_date)
+            dueDate.setHours(0, 0, 0, 0)
+            const daysUntil = Math.floor((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+
+            if (daysUntil < 0) {
+                return { type: 'past_due', message: `${Math.abs(daysUntil)} days overdue`, color: 'text-red-600 bg-red-50' }
+            } else if (daysUntil <= 3) {
+                return { type: 'at_risk', message: `Due in ${daysUntil} days`, color: 'text-yellow-600 bg-yellow-50' }
+            }
+        }
+
+        if (post.publish_window_end) {
+            const windowEnd = new Date(post.publish_window_end)
+            windowEnd.setHours(0, 0, 0, 0)
+            const daysUntil = Math.floor((windowEnd.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+
+            if (daysUntil < 0) {
+                return { type: 'missed_window', message: 'Missed publish window', color: 'text-red-600 bg-red-50' }
+            } else if (daysUntil <= 3) {
+                return { type: 'window_closing', message: `Window closes in ${daysUntil} days`, color: 'text-yellow-600 bg-yellow-50' }
+            }
+        }
+
+        return null
     }
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -337,6 +391,37 @@ export default function BatchDetailPage() {
                     </CardContent>
                 </Card>
 
+                {/* Overdue Alerts */}
+                {overdueStats && overdueStats.total_alerts > 0 && (
+                    <Card className="mb-8 border-yellow-200 bg-yellow-50">
+                        <CardContent className="p-6">
+                            <div className="flex items-start gap-3">
+                                <AlertTriangle className="w-6 h-6 text-yellow-600 mt-1" />
+                                <div className="flex-1">
+                                    <h3 className="font-semibold text-yellow-900 mb-2">Deadline Alerts</h3>
+                                    <div className="grid grid-cols-3 gap-4 text-sm">
+                                        {overdueStats.past_due_count > 0 && (
+                                            <div className="text-red-700">
+                                                <strong>{overdueStats.past_due_count}</strong> {overdueStats.past_due_count === 1 ? 'post' : 'posts'} past due
+                                            </div>
+                                        )}
+                                        {overdueStats.at_risk_count > 0 && (
+                                            <div className="text-yellow-700">
+                                                <strong>{overdueStats.at_risk_count}</strong> {overdueStats.at_risk_count === 1 ? 'post' : 'posts'} due soon (within 3 days)
+                                            </div>
+                                        )}
+                                        {overdueStats.missed_window_count > 0 && (
+                                            <div className="text-red-700">
+                                                <strong>{overdueStats.missed_window_count}</strong> missed publish window
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
+
                 {/* Posts List */}
                 <Card>
                     <CardHeader>
@@ -351,8 +436,35 @@ export default function BatchDetailPage() {
                                 >
                                     <div className="flex-1">
                                         <div className="font-medium mb-1">{post.topic}</div>
-                                        <div className="text-sm text-muted-foreground">
-                                            {post.target_keyword && `Keyword: ${post.target_keyword}`}
+                                        <div className="text-sm text-muted-foreground space-y-1">
+                                            {post.target_keyword && <div>Keyword: {post.target_keyword}</div>}
+
+                                            {/* PRD feat-102: Show due date and publish window */}
+                                            {(post.due_date || post.publish_window_start) && (
+                                                <div className="flex items-center gap-3 mt-1">
+                                                    {post.due_date && (
+                                                        <div className="inline-flex items-center gap-1">
+                                                            <Calendar className="w-3 h-3" />
+                                                            <span className="text-xs">Due: {formatDate(post.due_date)}</span>
+                                                        </div>
+                                                    )}
+                                                    {post.publish_window_start && post.publish_window_end && (
+                                                        <div className="inline-flex items-center gap-1">
+                                                            <Clock className="w-3 h-3" />
+                                                            <span className="text-xs">
+                                                                Window: {formatDate(post.publish_window_start)} - {formatDate(post.publish_window_end)}
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                    {getOverdueStatus(post) && (
+                                                        <Badge variant="outline" className={`text-xs ${getOverdueStatus(post)?.color}`}>
+                                                            <AlertTriangle className="w-3 h-3 mr-1" />
+                                                            {getOverdueStatus(post)?.message}
+                                                        </Badge>
+                                                    )}
+                                                </div>
+                                            )}
+
                                             {/* PRD feat-104: Show published URL */}
                                             {post.cms_url && (
                                                 <div className="mt-1">
