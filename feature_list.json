@@ -2761,7 +2761,9 @@
         "Diff accurate",
         "Navigation smooth"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T12:12:42.871Z",
+      "notes": "Complete revision comparison system. Frontend: RevisionComparer component with dual dropdown selectors for any two revisions, compare page at /app/posts/[postId]/compare with navigation button from history page. Features: Select any two revisions from dropdowns, automatic diff generation using existing API endpoint with compareWith parameter, split/unified view toggle (defaults to split for comparisons), swap button to quickly reverse comparison direction, revision info cards showing type/timestamp/creator, responsive layout with mobile-optimized swap button. Backend: Uses existing GET /api/posts/{postId}/revisions/{revisionId}/diff?compareWith={id} endpoint which already supported comparing any two revisions. UI/UX: Clear visual hierarchy, color-coded revision types, handles edge cases (same revision selected, no revisions available), loading states, error handling. Integration: Compare Revisions button added to history page header, seamless navigation between history and compare views."
     },
     {
       "id": "feat-124",

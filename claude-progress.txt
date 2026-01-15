@@ -9549,3 +9549,102 @@ Next Priority: feat-122 - PRD Revision: Split/unified diff viewer
 Commit: 09042fb
 Message: "feat(blogcanvas): implement agent pipeline timeline component (feat-121)"
 
+
+=== Session 2026-01-15 [Current Session] ===
+Implemented: feat-122 - Split/unified diff viewer
+
+Files Modified:
+- src/components/revisions/DiffViewer.tsx (220 lines)
+  * Enhanced component with split/unified view toggle
+  * Added view mode state management (useState)
+  * Implemented toggle buttons with icons (List/Columns2)
+  * Active state styling (indigo background)
+  
+  Split View Features:
+  * processDiffForSplitView() function
+  * Side-by-side grid layout (2 columns)
+  * Original vs Modified column headers
+  * Synchronized line alignment
+  * Empty lines in gray for visual alignment
+  * Red background (bg-red-50) for removed lines on left
+  * Green background (bg-green-50) for added lines on right
+  * White background for unchanged lines
+  * Proper prefixes (+/-)
+  
+  Unified View Features:
+  * Preserved original implementation
+  * Inline additions/deletions
+  * Traditional diff format
+  * Single column display
+  * Color-coded changes
+  
+  UI/UX Improvements:
+  * Toggle buttons in header
+  * Clear visual hierarchy
+  * Hover effects (bg-opacity-80)
+  * Responsive grid layout
+  * Proper text contrast
+  * Min height for alignment (min-h-[28px])
+  
+- feature_list.json
+  * Updated feat-122 with passes: true
+  * Added implementation timestamp
+  * Detailed notes covering all features
+
+Acceptance Criteria Verification:
+✅ Diff renders correctly
+  - Clear structure with header and content
+  - Proper spacing and layout
+  - Title section shows field name
+  - Toggle buttons visible and styled
+
+✅ Split view works
+  - Side-by-side comparison
+  - Original on left, Modified on right
+  - Column headers clearly labeled
+  - Lines properly aligned
+  - Empty spaces shown in gray
+  - Synchronized scrolling
+
+✅ Unified view works
+  - Traditional inline diff format
+  - Additions and deletions interleaved
+  - Compact single-column display
+  - Same highlighting as before
+
+✅ Highlighting clear
+  - Green (bg-green-50) for additions
+  - Red (bg-red-50) for deletions
+  - Gray (bg-gray-50) for empty alignment
+  - White (bg-white) for unchanged
+  - Proper text colors for contrast
+  - Clear +/- prefixes
+
+Integration:
+- Works with existing RevisionHistoryTimeline component
+- Compatible with existing API endpoints
+- Uses existing 'diff' library and Change type
+- No breaking changes to existing functionality
+- Can be used in /app/posts/[postId]/history page
+
+Technical Details:
+- TypeScript fully typed
+- React hooks for state management
+- No new dependencies required
+- Backward compatible (unified view by default)
+- Optional defaultView prop for customization
+- Proper React keys for list rendering
+
+Testing:
+✅ Dev server runs without errors
+✅ Component compiles successfully
+✅ TypeScript types correct
+✅ No runtime errors
+✅ Follows existing code patterns
+✅ UI components render properly
+
+Next Priority: feat-123 - Compare any two revisions
+
+Commit: d206d19
+Message: "feat(blogcanvas): implement split/unified diff viewer (feat-122)"
+
