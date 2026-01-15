@@ -11503,3 +11503,55 @@ feat-145 (high priority) - "PRD Pipeline Page: Save topics to content batch"
 - Link blog_posts to batch
 - Provide batch management functionality
 
+
+=== Session: 2026-01-15 19:00 ===
+Implemented: feat-143 - PRD Pipeline Page: Cancel running job
+Status: COMPLETE ✅
+
+Summary:
+Implemented comprehensive pipeline job cancellation feature with graceful execution stopping.
+The system now supports:
+- Cancel button (X icon) visible only on running jobs in the history list
+- Immediate cancellation via PATCH endpoint to update job status
+- Graceful pipeline execution stopping with checks between each step
+- UI updates to show cancelled status with orange badge
+- Proper cleanup with completed_at timestamp and state clearing
+
+Files Changed:
+- src/app/app/pipeline/page.tsx (MODIFIED) - Added cancel button, cancelJob() and checkIfCancelled() functions
+
+Features Implemented:
+✅ Cancel button on running jobs (X icon, hover shows orange)
+✅ cancelJob() function calls existing PATCH endpoint
+✅ checkIfCancelled() helper polls job status between pipeline steps
+✅ Graceful execution stopping - checks after each of 4 pipeline steps
+✅ Status updated to 'cancelled' in database with completed_at timestamp
+✅ UI shows cancelled jobs with orange badge and X icon
+✅ isRunning state cleared if cancelled job is current active job
+✅ Proper error handling and user confirmation dialog
+
+Acceptance Criteria Status:
+✅ Cancel button on running - X icon button shows only when job.status === 'running'
+✅ Execution stops - checkIfCancelled() checked between all 4 pipeline steps
+✅ Status updated - PATCH endpoint sets status to 'cancelled'
+✅ Cleanup done - completed_at timestamp set, isRunning cleared, state updated
+
+Technical Implementation:
+1. Added X icon import from lucide-react
+2. Created cancelJob(jobId) function:
+   - Shows confirmation dialog
+   - Calls PATCH /api/pipeline-jobs/[jobId] with status: 'cancelled'
+   - Updates recentJobs state to reflect cancellation
+   - Clears isRunning and currentJobId if cancelled job is active
+3. Created checkIfCancelled(jobId) helper:
+   - Fetches current job status from GET endpoint
+   - Returns boolean indicating if status === 'cancelled'
+4. Added cancellation checks in runPipeline():
+   - After each of 4 steps: crawl, analyze, gaps, topics
+   - Throws error if cancelled, caught by try/catch
+5. Updated getStatusBadge() to handle 'cancelled' status
+6. Updated job icon rendering to show X icon for cancelled jobs
+
+Commit: 6bca837 - feat(blogcanvas): implement pipeline job cancellation (feat-143)
+
+Next Priority: feat-144 or next highest priority feature with passes: false

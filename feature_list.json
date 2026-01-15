@@ -3208,7 +3208,9 @@
         "Status updated",
         "Cleanup done"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T19:00:00Z",
+      "notes": "Complete pipeline job cancellation feature. Added cancel button (X icon) that shows only for running jobs. Implemented cancelJob() function that updates job status to 'cancelled' via existing PATCH endpoint. Added checkIfCancelled() helper that polls job status between pipeline steps to gracefully stop execution. UI shows cancelled status with orange badge and X icon. Cleanup includes setting completed_at timestamp and clearing isRunning state. All acceptance criteria met: cancel button visible, execution stops between steps, status updated in database, proper cleanup performed."
     },
     {
       "id": "feat-144",
