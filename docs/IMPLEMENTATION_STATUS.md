@@ -31,6 +31,7 @@
 | `PRD_PITCH_REPORT_GENERATOR.md` | Pitch PDF, email templates, reports | ✅ **NEW** |
 | `PRD_PIPELINE_PAGE.md` | Pipeline page full spec & gaps | ✅ **NEW** |
 | `PRD_BRAND_CONTEXT_INTEGRATION.md` | Shared context, styles, images, titles | ✅ **ENHANCED** |
+| `PRD_CLIENT_MANAGEMENT_PURCHASING.md` | Credits, billing portal, buy more blogs | ✅ **NEW** |
 
 ---
 
