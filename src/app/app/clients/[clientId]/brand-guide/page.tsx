@@ -21,7 +21,11 @@ import {
     ThumbsDown,
     Check,
     Image as ImageIcon,
-    Palette
+    Palette,
+    Type,
+    Sparkles,
+    Ban,
+    Trophy
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -74,13 +78,25 @@ interface ImageGuidelines {
     }
 }
 
+interface TitleGuidelines {
+    preferred_formats: string[]
+    power_words: string[]
+    words_to_avoid: string[]
+    high_performing_patterns: Array<{
+        pattern: string
+        avg_ctr?: number
+        avg_engagement?: number
+        example_title: string
+    }>
+}
+
 interface BrandGuide {
     id: string
     client_id: string
     styles_to_avoid: StylesToAvoid
     styles_to_keep: StylesToKeep
     image_guidelines: ImageGuidelines
-    title_guidelines: any
+    title_guidelines: TitleGuidelines
 }
 
 export default function BrandGuideEditorPage() {
@@ -136,6 +152,26 @@ export default function BrandGuideEditorPage() {
     const [altTextIncludeKeywords, setAltTextIncludeKeywords] = useState(true)
     const [avoidPhrases, setAvoidPhrases] = useState<string[]>([])
     const [newAvoidPhrase, setNewAvoidPhrase] = useState('')
+
+    // Title Guidelines State
+    const [preferredFormats, setPreferredFormats] = useState<string[]>([])
+    const [newFormat, setNewFormat] = useState('')
+    const [powerWords, setPowerWords] = useState<string[]>([])
+    const [newPowerWord, setNewPowerWord] = useState('')
+    const [wordsToAvoid, setWordsToAvoid] = useState<string[]>([])
+    const [newWordToAvoid, setNewWordToAvoid] = useState('')
+    const [highPerformingPatterns, setHighPerformingPatterns] = useState<Array<{
+        pattern: string
+        avg_ctr?: number
+        avg_engagement?: number
+        example_title: string
+    }>>([])
+    const [newTitlePattern, setNewTitlePattern] = useState({
+        pattern: '',
+        avg_ctr: undefined as number | undefined,
+        avg_engagement: undefined as number | undefined,
+        example_title: ''
+    })
 
     // Load brand guide data
     useEffect(() => {
@@ -210,6 +246,23 @@ export default function BrandGuideEditorPage() {
                     setAltTextMaxLength(imageGuidelines.alt_text_rules?.max_length || 125)
                     setAltTextIncludeKeywords(imageGuidelines.alt_text_rules?.include_keywords ?? true)
                     setAvoidPhrases(imageGuidelines.alt_text_rules?.avoid_phrases || ['image of', 'picture of'])
+
+                    // Load title_guidelines data
+                    const titleGuidelines = data.brandGuide.title_guidelines || {
+                        preferred_formats: [
+                            'How to [X]',
+                            '[Number] Ways to [X]',
+                            '[X]: A Complete Guide'
+                        ],
+                        power_words: [],
+                        words_to_avoid: [],
+                        high_performing_patterns: []
+                    }
+
+                    setPreferredFormats(titleGuidelines.preferred_formats || [])
+                    setPowerWords(titleGuidelines.power_words || [])
+                    setWordsToAvoid(titleGuidelines.words_to_avoid || [])
+                    setHighPerformingPatterns(titleGuidelines.high_performing_patterns || [])
                 }
             } catch (error) {
                 console.error('Error loading brand guide:', error)
@@ -264,13 +317,21 @@ export default function BrandGuideEditorPage() {
                 }
             }
 
+            const titleGuidelines: TitleGuidelines = {
+                preferred_formats: preferredFormats,
+                power_words: powerWords,
+                words_to_avoid: wordsToAvoid,
+                high_performing_patterns: highPerformingPatterns
+            }
+
             const response = await fetch(`/api/clients/${clientId}/brand-guide`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     styles_to_avoid: stylesToAvoid,
                     styles_to_keep: stylesToKeep,
-                    image_guidelines: imageGuidelines
+                    image_guidelines: imageGuidelines,
+                    title_guidelines: titleGuidelines
                 })
             })
 
@@ -366,6 +427,61 @@ export default function BrandGuideEditorPage() {
 
     const removeAvoidPhrase = (index: number) => {
         setAvoidPhrases(avoidPhrases.filter((_, i) => i !== index))
+    }
+
+    // Title Guidelines Helper Functions
+    const addPreferredFormat = () => {
+        if (newFormat.trim()) {
+            setPreferredFormats([...preferredFormats, newFormat.trim()])
+            setNewFormat('')
+        }
+    }
+
+    const removePreferredFormat = (index: number) => {
+        setPreferredFormats(preferredFormats.filter((_, i) => i !== index))
+    }
+
+    const addPowerWord = () => {
+        if (newPowerWord.trim()) {
+            setPowerWords([...powerWords, newPowerWord.trim()])
+            setNewPowerWord('')
+        }
+    }
+
+    const removePowerWord = (index: number) => {
+        setPowerWords(powerWords.filter((_, i) => i !== index))
+    }
+
+    const addWordToAvoid = () => {
+        if (newWordToAvoid.trim()) {
+            setWordsToAvoid([...wordsToAvoid, newWordToAvoid.trim()])
+            setNewWordToAvoid('')
+        }
+    }
+
+    const removeWordToAvoid = (index: number) => {
+        setWordsToAvoid(wordsToAvoid.filter((_, i) => i !== index))
+    }
+
+    const addHighPerformingPattern = () => {
+        if (newTitlePattern.pattern.trim() && newTitlePattern.example_title.trim()) {
+            setHighPerformingPatterns([...highPerformingPatterns, {
+                pattern: newTitlePattern.pattern.trim(),
+                avg_ctr: newTitlePattern.avg_ctr,
+                avg_engagement: newTitlePattern.avg_engagement,
+                example_title: newTitlePattern.example_title.trim()
+            }])
+            setNewTitlePattern({
+                pattern: '',
+                avg_ctr: undefined,
+                avg_engagement: undefined,
+                example_title: ''
+            })
+        }
+    }
+
+    const removeHighPerformingPattern = (index: number) => {
+        setHighPerformingPatterns(highPerformingPatterns.filter((_, i) => i !== index))
     }
 
     if (loading) {
@@ -1388,9 +1504,356 @@ export default function BrandGuideEditorPage() {
                 )}
 
                 {activeTab === 'titles' && (
-                    <Card className="p-8 text-center text-gray-500">
-                        <p>Title Guidelines section coming soon...</p>
-                    </Card>
+                    <div className="space-y-6">
+                        {/* Preferred Title Formats */}
+                        <Card className="p-6">
+                            <div className="flex items-start justify-between mb-4">
+                                <div>
+                                    <h2 className="text-xl font-semibold text-gray-900 mb-1 flex items-center gap-2">
+                                        <Type className="w-5 h-5 text-indigo-600" />
+                                        Preferred Title Formats
+                                    </h2>
+                                    <p className="text-sm text-gray-600">
+                                        Define template patterns for blog post titles (use [X] as placeholder)
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="flex gap-2">
+                                    <Input
+                                        placeholder="e.g., How to [X], [Number] Ways to [X]"
+                                        value={newFormat}
+                                        onChange={(e) => setNewFormat(e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && addPreferredFormat()}
+                                        className="flex-1"
+                                    />
+                                    <Button
+                                        onClick={addPreferredFormat}
+                                        size="sm"
+                                        className="whitespace-nowrap"
+                                    >
+                                        <Plus className="w-4 h-4 mr-1" />
+                                        Add Format
+                                    </Button>
+                                </div>
+
+                                <div className="flex flex-wrap gap-2">
+                                    {preferredFormats.length === 0 ? (
+                                        <p className="text-sm text-gray-500 italic">
+                                            No preferred formats yet. Add common title patterns like "How to [X]" or "[Number] Tips for [X]"
+                                        </p>
+                                    ) : (
+                                        preferredFormats.map((format, index) => (
+                                            <Badge
+                                                key={index}
+                                                variant="secondary"
+                                                className="px-3 py-1.5 flex items-center gap-2 bg-blue-50 text-blue-700 border-blue-200"
+                                            >
+                                                {format}
+                                                <button
+                                                    onClick={() => removePreferredFormat(index)}
+                                                    className="hover:text-blue-900"
+                                                >
+                                                    <X className="w-3 h-3" />
+                                                </button>
+                                            </Badge>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        </Card>
+
+                        {/* Power Words */}
+                        <Card className="p-6">
+                            <div className="mb-4">
+                                <h2 className="text-xl font-semibold text-gray-900 mb-1 flex items-center gap-2">
+                                    <Sparkles className="w-5 h-5 text-indigo-600" />
+                                    Power Words
+                                </h2>
+                                <p className="text-sm text-gray-600">
+                                    High-impact words to include in titles for better engagement
+                                </p>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="flex gap-2">
+                                    <Input
+                                        placeholder="e.g., Ultimate, Essential, Proven, Secret"
+                                        value={newPowerWord}
+                                        onChange={(e) => setNewPowerWord(e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && addPowerWord()}
+                                        className="flex-1"
+                                    />
+                                    <Button
+                                        onClick={addPowerWord}
+                                        size="sm"
+                                        className="whitespace-nowrap"
+                                    >
+                                        <Plus className="w-4 h-4 mr-1" />
+                                        Add Word
+                                    </Button>
+                                </div>
+
+                                <div className="flex flex-wrap gap-2">
+                                    {powerWords.length === 0 ? (
+                                        <p className="text-sm text-gray-500 italic">
+                                            No power words yet. Add impactful words like "Ultimate", "Essential", "Proven"
+                                        </p>
+                                    ) : (
+                                        powerWords.map((word, index) => (
+                                            <Badge
+                                                key={index}
+                                                variant="secondary"
+                                                className="px-3 py-1.5 flex items-center gap-2 bg-green-50 text-green-700 border-green-200"
+                                            >
+                                                {word}
+                                                <button
+                                                    onClick={() => removePowerWord(index)}
+                                                    className="hover:text-green-900"
+                                                >
+                                                    <X className="w-3 h-3" />
+                                                </button>
+                                            </Badge>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        </Card>
+
+                        {/* Words to Avoid */}
+                        <Card className="p-6">
+                            <div className="mb-4">
+                                <h2 className="text-xl font-semibold text-gray-900 mb-1 flex items-center gap-2">
+                                    <Ban className="w-5 h-5 text-indigo-600" />
+                                    Words to Avoid in Titles
+                                </h2>
+                                <p className="text-sm text-gray-600">
+                                    Words or phrases that should not appear in blog titles
+                                </p>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="flex gap-2">
+                                    <Input
+                                        placeholder="e.g., Shocking, Click here, You won't believe"
+                                        value={newWordToAvoid}
+                                        onChange={(e) => setNewWordToAvoid(e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && addWordToAvoid()}
+                                        className="flex-1"
+                                    />
+                                    <Button
+                                        onClick={addWordToAvoid}
+                                        size="sm"
+                                        variant="outline"
+                                        className="whitespace-nowrap"
+                                    >
+                                        <Plus className="w-4 h-4 mr-1" />
+                                        Add Word
+                                    </Button>
+                                </div>
+
+                                <div className="flex flex-wrap gap-2">
+                                    {wordsToAvoid.length === 0 ? (
+                                        <p className="text-sm text-gray-500 italic">
+                                            No words to avoid yet. Add clickbait or low-quality words to exclude
+                                        </p>
+                                    ) : (
+                                        wordsToAvoid.map((word, index) => (
+                                            <Badge
+                                                key={index}
+                                                variant="secondary"
+                                                className="px-3 py-1.5 flex items-center gap-2 bg-red-50 text-red-700 border-red-200"
+                                            >
+                                                {word}
+                                                <button
+                                                    onClick={() => removeWordToAvoid(index)}
+                                                    className="hover:text-red-900"
+                                                >
+                                                    <X className="w-3 h-3" />
+                                                </button>
+                                            </Badge>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        </Card>
+
+                        {/* High-Performing Patterns */}
+                        <Card className="p-6">
+                            <div className="mb-4">
+                                <h2 className="text-xl font-semibold text-gray-900 mb-1 flex items-center gap-2">
+                                    <Trophy className="w-5 h-5 text-indigo-600" />
+                                    High-Performing Patterns
+                                </h2>
+                                <p className="text-sm text-gray-600">
+                                    Historical data on successful title patterns with engagement metrics
+                                </p>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Pattern Template
+                                        </label>
+                                        <Input
+                                            placeholder="e.g., [Number] Reasons Why [X]"
+                                            value={newTitlePattern.pattern}
+                                            onChange={(e) => setNewTitlePattern({...newTitlePattern, pattern: e.target.value})}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Example Title
+                                        </label>
+                                        <Input
+                                            placeholder="e.g., 10 Reasons Why React is Great"
+                                            value={newTitlePattern.example_title}
+                                            onChange={(e) => setNewTitlePattern({...newTitlePattern, example_title: e.target.value})}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Avg CTR % (optional)
+                                        </label>
+                                        <Input
+                                            type="number"
+                                            step="0.1"
+                                            placeholder="e.g., 3.5"
+                                            value={newTitlePattern.avg_ctr || ''}
+                                            onChange={(e) => setNewTitlePattern({...newTitlePattern, avg_ctr: e.target.value ? parseFloat(e.target.value) : undefined})}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Avg Engagement % (optional)
+                                        </label>
+                                        <Input
+                                            type="number"
+                                            step="0.1"
+                                            placeholder="e.g., 65.2"
+                                            value={newTitlePattern.avg_engagement || ''}
+                                            onChange={(e) => setNewTitlePattern({...newTitlePattern, avg_engagement: e.target.value ? parseFloat(e.target.value) : undefined})}
+                                        />
+                                    </div>
+                                </div>
+                                <Button
+                                    onClick={addHighPerformingPattern}
+                                    size="sm"
+                                    className="w-full"
+                                >
+                                    <Plus className="w-4 h-4 mr-1" />
+                                    Add High-Performing Pattern
+                                </Button>
+
+                                <div className="space-y-3">
+                                    {highPerformingPatterns.length === 0 ? (
+                                        <p className="text-sm text-gray-500 italic text-center py-4">
+                                            No high-performing patterns yet. Add patterns from your historical data with metrics
+                                        </p>
+                                    ) : (
+                                        highPerformingPatterns.map((pattern, index) => (
+                                            <div
+                                                key={index}
+                                                className="p-4 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-lg"
+                                            >
+                                                <div className="flex items-start justify-between mb-2">
+                                                    <div className="flex-1">
+                                                        <h3 className="font-semibold text-gray-900 mb-1">
+                                                            {pattern.pattern}
+                                                        </h3>
+                                                        <p className="text-sm text-gray-600 mb-2">
+                                                            Example: <span className="italic">{pattern.example_title}</span>
+                                                        </p>
+                                                        <div className="flex gap-4 text-xs text-gray-600">
+                                                            {pattern.avg_ctr && (
+                                                                <span className="flex items-center gap-1">
+                                                                    <TrendingUp className="w-3 h-3 text-green-600" />
+                                                                    CTR: {pattern.avg_ctr}%
+                                                                </span>
+                                                            )}
+                                                            {pattern.avg_engagement && (
+                                                                <span className="flex items-center gap-1">
+                                                                    <BarChart3 className="w-3 h-3 text-blue-600" />
+                                                                    Engagement: {pattern.avg_engagement}%
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => removeHighPerformingPattern(index)}
+                                                        className="text-gray-400 hover:text-red-600"
+                                                    >
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        </Card>
+
+                        {/* Preview Section */}
+                        <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-indigo-200">
+                            <div className="mb-4">
+                                <h2 className="text-xl font-semibold text-gray-900 mb-1 flex items-center gap-2">
+                                    <Check className="w-5 h-5 text-indigo-600" />
+                                    Title Guidelines Summary
+                                </h2>
+                                <p className="text-sm text-gray-600">
+                                    Active title guidelines for AI content generation
+                                </p>
+                            </div>
+
+                            <div className="space-y-3 text-sm">
+                                <div className="flex items-start gap-2">
+                                    <Type className="w-4 h-4 text-indigo-600 mt-0.5" />
+                                    <div>
+                                        <span className="font-medium text-gray-900">Preferred Formats:</span>
+                                        <span className="text-gray-700 ml-2">
+                                            {preferredFormats.length > 0 ? `${preferredFormats.length} format(s)` : 'None configured'}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-2">
+                                    <Sparkles className="w-4 h-4 text-indigo-600 mt-0.5" />
+                                    <div>
+                                        <span className="font-medium text-gray-900">Power Words:</span>
+                                        <span className="text-gray-700 ml-2">
+                                            {powerWords.length > 0 ? powerWords.slice(0, 5).join(', ') + (powerWords.length > 5 ? '...' : '') : 'None configured'}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-2">
+                                    <Ban className="w-4 h-4 text-indigo-600 mt-0.5" />
+                                    <div>
+                                        <span className="font-medium text-gray-900">Words to Avoid:</span>
+                                        <span className="text-gray-700 ml-2">
+                                            {wordsToAvoid.length > 0 ? `${wordsToAvoid.length} word(s) blocked` : 'None configured'}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-2">
+                                    <Trophy className="w-4 h-4 text-indigo-600 mt-0.5" />
+                                    <div>
+                                        <span className="font-medium text-gray-900">High-Performing Patterns:</span>
+                                        <span className="text-gray-700 ml-2">
+                                            {highPerformingPatterns.length > 0 ? `${highPerformingPatterns.length} pattern(s) with metrics` : 'None configured'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="mt-4 p-3 bg-white/50 rounded-lg border border-indigo-200">
+                                <p className="text-xs text-gray-600">
+                                    💡 These guidelines will be used by AI agents when generating blog post titles.
+                                    Configure formats and power words to match your brand voice and improve engagement.
+                                </p>
+                            </div>
+                        </Card>
+                    </div>
                 )}
             </div>
         </div>
