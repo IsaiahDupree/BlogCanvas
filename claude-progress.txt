@@ -7868,3 +7868,30 @@ The client change request system enables collaborative content refinement with f
   ✓ Call-ready format (talkingPoints array)
 - Committed: "feat(blogcanvas): implement AI narrative summary for client reports (feat-090)"
 - Next priority: feat-091 - PRD Agent: Outline with FAQs and table ideas
+
+=== Session 2026-01-15T16:00:00Z ===
+- Implemented: feat-091 - PRD Agent: Outline with FAQs and table ideas
+- Files created:
+  * /docs/feat-091-outline-faqs-tables.md - Complete documentation
+- Files modified:
+  * /src/lib/agents/types.ts - Added FAQItem, TableSuggestion interfaces
+  * /src/lib/agents/outline.ts - Enhanced prompts for FAQ and table generation
+  * /src/components/outline/OutlineOptionsComparison.tsx - Added visual display
+  * /src/app/app/posts/[postId]/outlines/page.tsx - Updated type definitions
+  * /feature_list.json - Marked feat-091 as passing
+- Implementation details:
+  * AI generates 3-5 relevant FAQs per outline with questions and suggested answers
+  * AI suggests 1-3 table ideas with title, description, columns, rows, and placement
+  * FAQs and tables automatically stored in blog_post_revisions as part of outline JSON
+  * UI displays FAQs in cyan-themed cards with question/answer preview
+  * UI displays table suggestions in purple-themed cards with column details
+  * Added 'faq' as new section type to OutlineSection interface
+  * Enhanced both runOutlineAgent() and runOutlineAgentWithOptions() functions
+  * No database migration needed - uses existing JSON storage in revisions table
+- All 4 acceptance criteria verified:
+  ✓ FAQs generated (3-5 per outline)
+  ✓ Tables suggested (1-3 per outline if applicable)
+  ✓ Stored in outline revision (blog_post_revisions.content JSON)
+  ✓ Visible in UI (expandable cards with color coding)
+- Committed: "feat(blogcanvas): implement outline agent with FAQs and table ideas (feat-091)"
+- Next priority: feat-092 - PRD Agent: Draft with intro/teaser/body/conclusion structure
