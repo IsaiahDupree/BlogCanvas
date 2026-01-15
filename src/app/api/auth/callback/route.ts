@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     
     if (error) {
       console.error('OAuth callback error:', error)
-      return NextResponse.redirect(`${origin}/portal/login?error=${encodeURIComponent(error.message)}`)
+      return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error.message)}`)
     }
 
     if (data.user) {
@@ -48,5 +48,5 @@ export async function GET(request: Request) {
   }
 
   // If no code, redirect to login
-  return NextResponse.redirect(`${origin}/portal/login`)
+  return NextResponse.redirect(`${origin}/login`)
 }

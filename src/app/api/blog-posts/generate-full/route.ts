@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Topic is required' }, { status: 400 });
     }
 
-    // Get client profile if clientId provided
+    // Get client profile if clientId provided - FULL BRAND CONTEXT
     let clientProfile: BlogGenerationInput['clientProfile'] = {
       productServiceSummary: 'General business',
       targetAudience: 'Business professionals'
@@ -46,10 +46,35 @@ export async function POST(request: NextRequest) {
       if (client) {
         const brandGuide = client.brand_guides?.[0];
         clientProfile = {
+          // Basic Info
+          clientName: client.name,
+          industry: client.industry,
+          
+          // Brand Snapshot - Core
           productServiceSummary: brandGuide?.product_service_summary || client.industry || 'General business',
           targetAudience: brandGuide?.target_audience || 'Business professionals',
+          positioning: brandGuide?.positioning || '',
+          
+          // Tone & Voice
           brandVoice: brandGuide?.tone_profile?.voice || ['Professional', 'Helpful'],
-          brandTone: brandGuide?.tone_profile?.tone || 'Professional'
+          brandTone: brandGuide?.tone_profile?.tone || 'Professional',
+          formalityLevel: brandGuide?.tone_profile?.formality || 5,
+          playfulnessLevel: brandGuide?.tone_profile?.playfulness || 3,
+          
+          // Brand Messaging
+          tagline: brandGuide?.brand_messaging?.tagline,
+          keyMessages: brandGuide?.brand_messaging?.key_messages || [],
+          valuePropositions: brandGuide?.brand_messaging?.value_props || [],
+          
+          // Competitive Context
+          competitors: brandGuide?.competitors?.map((c: any) => c.name) || [],
+          keyDifferentiators: brandGuide?.key_differentiators || [],
+          
+          // Content Guidelines
+          keywordsToInclude: brandGuide?.content_guidelines?.keywords_include || [],
+          keywordsToAvoid: brandGuide?.content_guidelines?.keywords_avoid || [],
+          topicsToAvoid: brandGuide?.content_guidelines?.topics_avoid || [],
+          styleNotes: brandGuide?.content_guidelines?.style_notes
         };
       }
     }

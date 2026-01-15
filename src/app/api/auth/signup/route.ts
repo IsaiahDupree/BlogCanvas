@@ -52,6 +52,19 @@ export async function POST(request: NextRequest) {
         })
 
         if (error) {
+            // Handle "User already registered" error - suggest login instead
+            if (error.message.toLowerCase().includes('already registered') || 
+                error.message.toLowerCase().includes('already exists') ||
+                error.message.toLowerCase().includes('user already')) {
+                return NextResponse.json(
+                    { 
+                        success: false, 
+                        error: 'An account with this email already exists. Please sign in instead.',
+                        existingUser: true
+                    },
+                    { status: 409 }
+                )
+            }
             return NextResponse.json(
                 { success: false, error: error.message },
                 { status: 400 }

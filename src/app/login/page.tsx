@@ -130,7 +130,13 @@ export default function LoginPage() {
             const data = await response.json()
 
             if (!data.success) {
-                setError(data.error || 'Registration failed')
+                // If user already exists, switch to login mode
+                if (data.existingUser) {
+                    setMode('login')
+                    setError('Account exists. Please sign in with your password.')
+                } else {
+                    setError(data.error || 'Registration failed')
+                }
                 setLoading(false)
                 return
             }

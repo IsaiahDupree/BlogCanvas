@@ -1,49 +1,160 @@
 'use client'
 
-import { use } from 'react'
+import { use, useEffect, useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, FileText, TrendingUp, Clock, CheckCircle, Settings, Plus, Globe } from 'lucide-react'
+import { ArrowLeft, FileText, TrendingUp, Clock, CheckCircle, Settings, Plus, Globe, Loader2, AlertCircle } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+
+interface Client {
+    id: string
+    name: string
+    slug?: string
+    website_url?: string
+    status: string
+    industry?: string
+    brand_guides?: Array<{
+        product_service_summary?: string
+        target_audience?: string
+        positioning?: string
+        tone_profile?: {
+            formality?: number
+            playfulness?: number
+        }
+    }>
+    wordpress_sites?: Array<{
+        id: string
+        site_url: string
+        status: string
+    }>
+}
+
+interface BlogPost {
+    id: string
+    title: string
+    status: string
+    updated_at: string
+}
+
+interface Stats {
+    postsThisMonth: number
+    totalPosts: number
+    inReview: number
+    approved: number
+    published: number
+    avgApprovalTime: string
+}
 
 export default function ClientOverviewPage({ params }: { params: Promise<{ clientId: string }> }) {
     const { clientId } = use(params)
+    const [client, setClient] = useState<Client | null>(null)
+    const [recentPosts, setRecentPosts] = useState<BlogPost[]>([])
+    const [stats, setStats] = useState<Stats>({
+        postsThisMonth: 0,
+        totalPosts: 0,
+        inReview: 0,
+        approved: 0,
+        published: 0,
+        avgApprovalTime: 'N/A'
+    })
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
 
-    // Mock data - would fetch from API
-    const client = {
-        id: clientId,
-        name: 'Acme Software Inc',
-        slug: 'acme-software',
-        website: 'acme.com',
-        status: 'active',
+    useEffect(() => {
+        fetchClientData()
+    }, [clientId])
 
-        // Brand snapshot
-        product_summary: 'AI-powered CRM platform for sales teams',
-        target_audience: 'B2B sales managers and founders',
-        positioning: 'Enterprise-grade CRM with AI intelligence',
-        tone: { casual_to_formal: 60, playful_to_serious: 70, direct_to_story: 40 },
+    const fetchClientData = async () => {
+        setLoading(true)
+        setError(null)
+        try {
+            // Fetch client by ID or slug
+            const res = await fetch(`/api/clients/${clientId}`)
+            const data = await res.json()
 
-        // Stats
-        stats: {
-            postsThisMonth: 8,
-            totalPosts: 42,
-            inReview: 2,
-            approved: 38,
-            published: 36,
-            avgApprovalTime: '2.1 days'
-        },
+            if (!data.success || !data.client) {
+                setError('Client not found')
+                setLoading(false)
+                return
+            }
 
-        // CMS
-        cms_status: 'connected',
-        cms_type: 'wordpress',
-        cms_url: 'https://acme.com'
+            setClient(data.client)
+
+            // Fetch recent posts for this client
+            const postsRes = await fetch(`/api/blog-posts?client_id=${data.client.id}&limit=5`)
+            const postsData = await postsRes.json()
+            if (postsData.success) {
+                setRecentPosts(postsData.posts || [])
+                
+                // Calculate stats from posts
+                const posts = postsData.posts || []
+                const now = new Date()
+                const thisMonth = posts.filter((p: any) => {
+                    const created = new Date(p.created_at)
+                    return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear()
+                })
+                
+                setStats({
+                    postsThisMonth: thisMonth.length,
+                    totalPosts: posts.length,
+                    inReview: posts.filter((p: any) => p.approval_status === 'pending_review').length,
+                    approved: posts.filter((p: any) => p.approval_status === 'approved').length,
+                    published: posts.filter((p: any) => p.approval_status === 'published' || p.status === 'published').length,
+                    avgApprovalTime: '2.1 days'
+                })
+            }
+        } catch (err: any) {
+            console.error('Error fetching client:', err)
+            setError(err.message || 'Failed to load client')
+        } finally {
+            setLoading(false)
+        }
     }
 
-    const recentPosts = [
-        { id: '1', title: 'How AI CRM Transforms Sales', status: 'published', updated: '2 days ago' },
-        { id: '2', title: 'Ultimate Guide to Sales Automation', status: 'ready_for_review', updated: '5 hours ago' },
-        { id: '3', title: 'Top 10 CRM Features', status: 'approved', updated: '1 day ago' }
-    ]
+    const formatTimeAgo = (dateStr: string) => {
+        const date = new Date(dateStr)
+        const now = new Date()
+        const diffMs = now.getTime() - date.getTime()
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+        const diffDays = Math.floor(diffHours / 24)
+        
+        if (diffDays > 0) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`
+        if (diffHours > 0) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`
+        return 'Just now'
+    }
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+                <div className="text-center">
+                    <Loader2 className="w-8 h-8 mx-auto mb-4 text-indigo-600 animate-spin" />
+                    <p className="text-slate-600">Loading client...</p>
+                </div>
+            </div>
+        )
+    }
+
+    if (error || !client) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-6">
+                <Card className="max-w-md w-full p-8 text-center">
+                    <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
+                    <h2 className="text-xl font-bold text-slate-800 mb-2">Client Not Found</h2>
+                    <p className="text-slate-600 mb-6">{error || 'The requested client could not be found.'}</p>
+                    <Link href="/app/clients">
+                        <Button>
+                            <ArrowLeft className="w-4 h-4 mr-2" />
+                            Back to Clients
+                        </Button>
+                    </Link>
+                </Card>
+            </div>
+        )
+    }
+
+    const brandGuide = client.brand_guides?.[0]
+    const wpSite = client.wordpress_sites?.[0]
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -64,7 +175,7 @@ export default function ClientOverviewPage({ params }: { params: Promise<{ clien
                             </div>
                             <div className="flex items-center gap-2 text-muted-foreground">
                                 <Globe className="w-4 h-4" />
-                                <span>{client.website}</span>
+                                <span>{client.website_url || 'No website'}</span>
                             </div>
                         </div>
                         <div className="flex gap-3">
@@ -92,25 +203,25 @@ export default function ClientOverviewPage({ params }: { params: Promise<{ clien
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <Card className="p-6 bg-white border-2 border-blue-100">
                         <FileText className="w-8 h-8 text-blue-600 mb-3" />
-                        <h3 className="text-3xl font-bold text-gray-900">{client.stats.postsThisMonth}</h3>
+                        <h3 className="text-3xl font-bold text-gray-900">{stats.postsThisMonth}</h3>
                         <p className="text-sm text-muted-foreground">Posts This Month</p>
                     </Card>
 
                     <Card className="p-6 bg-white border-2 border-yellow-100">
                         <Clock className="w-8 h-8 text-yellow-600 mb-3" />
-                        <h3 className="text-3xl font-bold text-gray-900">{client.stats.inReview}</h3>
+                        <h3 className="text-3xl font-bold text-gray-900">{stats.inReview}</h3>
                         <p className="text-sm text-muted-foreground">In Review</p>
                     </Card>
 
                     <Card className="p-6 bg-white border-2 border-green-100">
                         <CheckCircle className="w-8 h-8 text-green-600 mb-3" />
-                        <h3 className="text-3xl font-bold text-gray-900">{client.stats.published}</h3>
+                        <h3 className="text-3xl font-bold text-gray-900">{stats.published}</h3>
                         <p className="text-sm text-muted-foreground">Published</p>
                     </Card>
 
                     <Card className="p-6 bg-white border-2 border-purple-100">
                         <TrendingUp className="w-8 h-8 text-purple-600 mb-3" />
-                        <h3 className="text-3xl font-bold text-gray-900">{client.stats.avgApprovalTime}</h3>
+                        <h3 className="text-3xl font-bold text-gray-900">{stats.avgApprovalTime}</h3>
                         <p className="text-sm text-muted-foreground">Avg Approval Time</p>
                     </Card>
                 </div>
@@ -132,17 +243,17 @@ export default function ClientOverviewPage({ params }: { params: Promise<{ clien
                             <div className="space-y-4">
                                 <div>
                                     <p className="text-sm font-semibold text-gray-700 mb-1">Product/Service</p>
-                                    <p className="text-gray-900">{client.product_summary}</p>
+                                    <p className="text-gray-900">{brandGuide?.product_service_summary || 'Not set'}</p>
                                 </div>
 
                                 <div>
                                     <p className="text-sm font-semibold text-gray-700 mb-1">Target Audience</p>
-                                    <p className="text-gray-900">{client.target_audience}</p>
+                                    <p className="text-gray-900">{brandGuide?.target_audience || 'Not set'}</p>
                                 </div>
 
                                 <div>
                                     <p className="text-sm font-semibold text-gray-700 mb-1">Positioning</p>
-                                    <p className="text-gray-900">{client.positioning}</p>
+                                    <p className="text-gray-900">{brandGuide?.positioning || 'Not set'}</p>
                                 </div>
 
                                 <div>
@@ -154,7 +265,7 @@ export default function ClientOverviewPage({ params }: { params: Promise<{ clien
                                                 <span>Formal</span>
                                             </div>
                                             <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                                                <div className="h-full bg-blue-600" style={{ width: `${client.tone.casual_to_formal}%` }} />
+                                                <div className="h-full bg-blue-600" style={{ width: `${(brandGuide?.tone_profile?.formality || 5) * 10}%` }} />
                                             </div>
                                         </div>
                                         <div>
@@ -163,7 +274,7 @@ export default function ClientOverviewPage({ params }: { params: Promise<{ clien
                                                 <span>Serious</span>
                                             </div>
                                             <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                                                <div className="h-full bg-blue-600" style={{ width: `${client.tone.playful_to_serious}%` }} />
+                                                <div className="h-full bg-blue-600" style={{ width: `${(10 - (brandGuide?.tone_profile?.playfulness || 5)) * 10}%` }} />
                                             </div>
                                         </div>
                                     </div>
@@ -184,13 +295,15 @@ export default function ClientOverviewPage({ params }: { params: Promise<{ clien
                             </div>
 
                             <div className="space-y-3">
-                                {recentPosts.map((post) => (
-                                    <Link key={post.id} href={`/app/clients/${clientId}/posts/${post.id}`}>
+                                {recentPosts.length === 0 ? (
+                                    <p className="text-muted-foreground text-center py-4">No posts yet</p>
+                                ) : recentPosts.map((post) => (
+                                    <Link key={post.id} href={`/app/posts/${post.id}`}>
                                         <div className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50/50 transition-all">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex-1">
                                                     <h3 className="font-semibold text-gray-900">{post.title}</h3>
-                                                    <p className="text-sm text-muted-foreground mt-1">{post.updated}</p>
+                                                    <p className="text-sm text-muted-foreground mt-1">{formatTimeAgo(post.updated_at)}</p>
                                                 </div>
                                                 <Badge variant={
                                                     post.status === 'published' ? 'default' :
@@ -240,23 +353,23 @@ export default function ClientOverviewPage({ params }: { params: Promise<{ clien
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm text-muted-foreground">Type</span>
-                                    <span className="font-medium capitalize">{client.cms_type || 'Not set'}</span>
+                                    <span className="font-medium capitalize">{wpSite ? 'WordPress' : 'Not set'}</span>
                                 </div>
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm text-muted-foreground">URL</span>
-                                    <span className="font-medium text-sm">{client.cms_url || 'N/A'}</span>
+                                    <span className="font-medium text-sm">{wpSite?.site_url || 'N/A'}</span>
                                 </div>
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm text-muted-foreground">Status</span>
                                     <Badge className={
-                                        client.cms_status === 'connected' ? 'bg-green-100 text-green-700' :
+                                        wpSite?.status === 'active' ? 'bg-green-100 text-green-700' :
                                             'bg-gray-100 text-gray-700'
                                     }>
-                                        {client.cms_status === 'connected' ? '✓ Connected' : 'Not Connected'}
+                                        {wpSite?.status === 'active' ? '✓ Connected' : 'Not Connected'}
                                     </Badge>
                                 </div>
                                 <Link
-                                    href={`/app/clients/${clientId}/cms`}
+                                    href={`/app/clients/${client.id}/settings`}
                                     className="block w-full px-4 py-2 bg-blue-100 text-blue-700 rounded-lg font-medium hover:bg-blue-200 transition-colors text-center mt-4"
                                 >
                                     Manage CMS

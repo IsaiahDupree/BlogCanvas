@@ -71,13 +71,17 @@ export async function middleware(request: NextRequest) {
         return response;
     }
 
+    // Redirect /portal/login to unified /login page
+    if (request.nextUrl.pathname === '/portal/login') {
+        return NextResponse.redirect(new URL('/login', request.url));
+    }
+
     // Protect portal routes - require authentication
-    if (request.nextUrl.pathname.startsWith('/portal') &&
-        !request.nextUrl.pathname.startsWith('/portal/login')) {
+    if (request.nextUrl.pathname.startsWith('/portal')) {
         const { data: { user } } = await supabase.auth.getUser();
 
         if (!user) {
-            return NextResponse.redirect(new URL('/portal/login', request.url));
+            return NextResponse.redirect(new URL('/login', request.url));
         }
 
         // Check if user is a client (includes client_admin and client_reviewer)

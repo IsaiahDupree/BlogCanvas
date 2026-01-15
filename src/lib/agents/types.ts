@@ -105,3 +105,40 @@ export interface QualityGates {
     voiceTone?: QualityGate;
     factCheck?: QualityGate;
 }
+
+/**
+ * Enhanced Client Profile for Brand Context Integration
+ * Pulls all brand guide data for content generation
+ */
+export interface EnhancedClientProfile {
+    // Basic Info
+    clientName?: string;
+    industry?: string;
+    websiteUrl?: string;
+    
+    // Brand Snapshot - Core
+    productServiceSummary?: string;
+    targetAudience?: string;
+    positioning?: string;
+    
+    // Tone & Voice
+    brandVoice?: string[];
+    brandTone?: string;
+    formalityLevel?: number;        // 1-10 scale
+    playfulnessLevel?: number;      // 1-10 scale
+    
+    // Brand Messaging
+    tagline?: string;
+    keyMessages?: string[];
+    valuePropositions?: string[];
+    
+    // Competitive Context
+    competitors?: string[];
+    keyDifferentiators?: string[];
+    
+    // Content Guidelines
+    keywordsToInclude?: string[];
+    keywordsToAvoid?: string[];
+    topicsToAvoid?: string[];
+    styleNotes?: string;
+}

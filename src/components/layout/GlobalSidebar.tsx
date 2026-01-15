@@ -21,7 +21,9 @@ import {
     Mail,
     Key,
     Shield,
-    Lock
+    Lock,
+    Sparkles,
+    MessageSquare
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -48,6 +50,7 @@ const staffNavigation: NavGroup[] = [
     {
         name: 'Content Pipeline',
         items: [
+            { name: 'Pipeline', href: '/app/pipeline', icon: Sparkles },
             { name: 'Websites', href: '/app/websites', icon: Globe },
             { name: 'Content Batches', href: '/app/batches', icon: FileText },
             { name: 'Review Board', href: '/app/review', icon: CheckSquare },
@@ -57,6 +60,8 @@ const staffNavigation: NavGroup[] = [
     {
         name: 'Management',
         items: [
+            { name: 'Requests', href: '/app/requests', icon: MessageSquare },
+            { name: 'Approvals', href: '/app/approvals', icon: CheckSquare },
             { name: 'Clients', href: '/app/clients', icon: Users },
             { name: 'Analytics', href: '/app/analytics', icon: BarChart3 },
         ]
@@ -89,6 +94,7 @@ const clientNavigation: NavGroup[] = [
     {
         name: 'Content',
         items: [
+            { name: 'Approvals', href: '/portal/approvals', icon: CheckSquare },
             { name: 'Blog Posts', href: '/portal/posts', icon: BookOpen },
             { name: 'Content Batches', href: '/portal/batches', icon: FileText },
         ]
@@ -125,7 +131,7 @@ export function GlobalSidebar() {
 
     const signOut = async () => {
         await fetch('/api/auth/logout', { method: 'POST' })
-        window.location.href = '/portal/login'
+        window.location.href = '/login'
     }
 
     // Determine which navigation to show based on route
@@ -135,8 +141,7 @@ export function GlobalSidebar() {
 
     // Don't show sidebar on login/auth pages or public pages
     const hideSidebarRoutes = [
-        '/portal/login',
-        '/auth/',
+                '/auth/',
         '/login',
         '/register',
         '/signup',

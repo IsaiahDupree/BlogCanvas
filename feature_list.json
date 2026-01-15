@@ -991,7 +991,9 @@
         "Forms usable",
         "No horizontal scroll"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T05:27:11.813Z",
+      "notes": "Complete mobile responsiveness testing with 29 passing E2E tests. Tests cover: core pages rendering (landing, login, dashboard, clients, batches, review), mobile navigation (hamburger menu, sidebar), forms usability, modals/dialogs, touch interactions, no horizontal scroll across 5 devices (iPhone SE, iPhone 12, iPhone XR, Pixel 5, Galaxy S21), client portal pages, and mobile accessibility (text readability, contrast, focus indicators). All acceptance criteria verified: pages render on mobile, nav works, forms usable, no horizontal scroll."
     },
     {
       "id": "feat-044",
@@ -1242,6 +1244,2374 @@
         "Examples work",
         "Arch documented",
         "Functions documented"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-056",
+      "epic": "Epic 1: SEO Audit",
+      "category": "high",
+      "priority": 56,
+      "description": "PRD: Run Audit button with baseline SEO score display",
+      "steps": [
+        "Add Run Audit button to website detail page",
+        "Display baseline SEO score",
+        "Show topic coverage percentage",
+        "Display indexed pages count"
+      ],
+      "acceptance_criteria": [
+        "CSM can click Run Audit button",
+        "Baseline SEO score displays (0-100)",
+        "Topic coverage shows as percentage",
+        "Audit results persist to seo_audits table"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-057",
+      "epic": "Epic 6: Analytics",
+      "category": "medium",
+      "priority": 57,
+      "description": "PRD: Check-back schedule configuration (Day 7, 30, 60, 90)",
+      "steps": [
+        "Create check-back schedule configuration UI",
+        "Allow custom day intervals",
+        "Show scheduled check-backs on post detail",
+        "Trigger metric collection on scheduled days"
+      ],
+      "acceptance_criteria": [
+        "Check-back days are configurable",
+        "System schedules Day 7, 30, 60, 90",
+        "Check-back results display in timeline",
+        "Metrics pulled automatically"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-058",
+      "epic": "Epic 1: SEO Audit",
+      "category": "medium",
+      "priority": 58,
+      "description": "PRD: Topic cluster traffic estimates and article recommendations",
+      "steps": [
+        "Display estimated_traffic per cluster",
+        "Calculate recommended article count",
+        "Show difficulty with color coding",
+        "Display Covered/Not Covered status"
+      ],
+      "acceptance_criteria": [
+        "Topic clusters show estimated traffic",
+        "System recommends article count",
+        "Difficulty displayed as Low/Medium/High",
+        "Coverage status visible per cluster"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-059",
+      "epic": "Epic 2: Plan Builder",
+      "category": "high",
+      "priority": 59,
+      "description": "PRD: SEO score slider with posts/months projection",
+      "steps": [
+        "Enhance ForecastSlider with posts/months calculation",
+        "Show current vs target score",
+        "Calculate recommended post count",
+        "Suggest optimal cadence"
+      ],
+      "acceptance_criteria": [
+        "Slider allows dragging current to target",
+        "System calculates required posts",
+        "Cadence recommendation shown",
+        "Time horizon displayed"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-060",
+      "epic": "Epic 3: Content Batch",
+      "category": "high",
+      "priority": 60,
+      "description": "PRD: Content batch with full topic parameters",
+      "steps": [
+        "Batch includes topic, keyword, cluster, intent",
+        "Add word count target",
+        "Include tone/voice setting",
+        "Set due date per post"
+      ],
+      "acceptance_criteria": [
+        "Each post has topic, keyword, cluster",
+        "Search intent is set",
+        "Target word count configurable",
+        "Due dates can be tracked"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-061",
+      "epic": "Epic 4: Human Review",
+      "category": "medium",
+      "priority": 61,
+      "description": "PRD: Editor diff view and sign-off toggle",
+      "steps": [
+        "Add diff view between versions",
+        "Create sign-off toggle",
+        "Show revision comparison",
+        "Track who signed off"
+      ],
+      "acceptance_criteria": [
+        "Diff view shows changes",
+        "Editor can toggle Approved for Client",
+        "Sign-off includes timestamp",
+        "Notes can be added"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-062",
+      "epic": "Epic 5: CMS Publishing",
+      "category": "medium",
+      "priority": 62,
+      "description": "PRD: WordPress publish with full metadata",
+      "steps": [
+        "Push title, slug, HTML to WordPress",
+        "Upload featured image",
+        "Set meta title/description",
+        "Assign categories/tags"
+      ],
+      "acceptance_criteria": [
+        "Posts publish with correct title/slug",
+        "Featured image uploads",
+        "Meta tags set correctly",
+        "Canonical URL stored"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-063",
+      "epic": "Epic 8: Client Portal",
+      "category": "high",
+      "priority": 63,
+      "description": "PRD: Client project overview with SEO baseline and target",
+      "steps": [
+        "Show project overview on dashboard",
+        "Display SEO baseline score",
+        "Show target and expected uplift",
+        "List posts with status"
+      ],
+      "acceptance_criteria": [
+        "Client sees project overview",
+        "Baseline to Target displayed",
+        "Expected uplift shown",
+        "Post list visible"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-064",
+      "epic": "Epic 6: Reporting",
+      "category": "high",
+      "priority": 64,
+      "description": "PRD: Monthly report with baseline vs current comparison",
+      "steps": [
+        "Generate baseline vs current comparison",
+        "Show topic coverage growth",
+        "List top performing posts",
+        "Identify underperformers"
+      ],
+      "acceptance_criteria": [
+        "Report shows baseline vs current",
+        "Topic coverage delta displayed",
+        "Top gainers highlighted",
+        "Underperformers with recommendations"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-065",
+      "epic": "Epic 3: AI Pipeline",
+      "category": "high",
+      "priority": 65,
+      "description": "PRD: Full AI pipeline with all 5 agents in sequence",
+      "steps": [
+        "Outline Agent creates H2/H3, FAQs",
+        "Drafting Agent writes full post",
+        "SEO Agent checks keywords/meta",
+        "Fact-Check flags claims",
+        "Enhancement adds tables/images"
+      ],
+      "acceptance_criteria": [
+        "All 5 PRD agents run in sequence",
+        "Revision history shows each output",
+        "Pipeline keeps full history",
+        "SEO quality score calculated"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-066",
+      "epic": "Epic 1: Client Onboarding",
+      "category": "high",
+      "priority": 66,
+      "description": "PRD Stage 1: Client brand info, niche, and goals input",
+      "steps": [
+        "Create brand info form fields",
+        "Add niche/industry selector",
+        "Goal setting interface",
+        "Target market selection"
+      ],
+      "acceptance_criteria": [
+        "Client brand info captured",
+        "Niche stored in database",
+        "Goals trackable per client",
+        "Target markets saved"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-067",
+      "epic": "Epic 1: Client Onboarding",
+      "category": "high",
+      "priority": 67,
+      "description": "PRD Stage 1: Website URL(s) with target markets",
+      "steps": [
+        "Multiple website URLs per client",
+        "Target market per website",
+        "Platform detection (WordPress/Webflow/etc)",
+        "Website validation"
+      ],
+      "acceptance_criteria": [
+        "Client can have multiple websites",
+        "Each website has target market",
+        "Platform auto-detected",
+        "Invalid URLs rejected"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-068",
+      "epic": "Epic 1: SEO Audit",
+      "category": "critical",
+      "priority": 68,
+      "description": "PRD Stage 2: Crawl site for indexed pages count",
+      "steps": [
+        "Website crawler implementation",
+        "Count indexed pages",
+        "Store in seo_audits.pages_indexed",
+        "Display in UI"
+      ],
+      "acceptance_criteria": [
+        "Crawler fetches all pages",
+        "Indexed page count accurate",
+        "Stored in database",
+        "Visible in audit results"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-069",
+      "epic": "Epic 1: SEO Audit",
+      "category": "critical",
+      "priority": 69,
+      "description": "PRD Stage 2: Content depth analysis",
+      "steps": [
+        "Analyze word count per page",
+        "Calculate content depth score",
+        "Identify thin content",
+        "Store in raw_metrics_json"
+      ],
+      "acceptance_criteria": [
+        "Word count analyzed per page",
+        "Depth score calculated",
+        "Thin content flagged",
+        "Metrics stored"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-070",
+      "epic": "Epic 1: SEO Audit",
+      "category": "high",
+      "priority": 70,
+      "description": "PRD Stage 2: Existing blog performance analysis",
+      "steps": [
+        "Identify existing blog posts",
+        "Analyze current performance",
+        "Compare against benchmarks",
+        "Identify gaps"
+      ],
+      "acceptance_criteria": [
+        "Existing blogs detected",
+        "Performance metrics captured",
+        "Benchmarks compared",
+        "Gaps identified"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-071",
+      "epic": "Epic 1: SEO Audit",
+      "category": "critical",
+      "priority": 71,
+      "description": "PRD Stage 3: Build Topic Map with pillars and long-tail",
+      "steps": [
+        "Generate pillar topics",
+        "Create long-tail keywords",
+        "Build cluster hierarchy",
+        "Visualize topic map"
+      ],
+      "acceptance_criteria": [
+        "Pillar topics identified",
+        "Long-tail keywords generated",
+        "Hierarchy stored",
+        "Visual map displayed"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-072",
+      "epic": "Epic 1: SEO Audit",
+      "category": "high",
+      "priority": 72,
+      "description": "PRD Stage 3: Current vs ideal coverage comparison",
+      "steps": [
+        "Calculate current topic coverage",
+        "Define ideal coverage",
+        "Generate gap percentage",
+        "Prioritize gaps"
+      ],
+      "acceptance_criteria": [
+        "Current coverage calculated",
+        "Ideal state defined",
+        "Gap percentage shown",
+        "Priorities ranked"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-073",
+      "epic": "Epic 1: SEO Audit",
+      "category": "high",
+      "priority": 73,
+      "description": "PRD Stage 3: Output gap report document",
+      "steps": [
+        "Generate gap analysis report",
+        "Include recommendations",
+        "Export as PDF",
+        "Share with client"
+      ],
+      "acceptance_criteria": [
+        "Gap report generated",
+        "Recommendations included",
+        "PDF downloadable",
+        "Shareable link created"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-074",
+      "epic": "Epic 7: Data Integration",
+      "category": "critical",
+      "priority": 74,
+      "description": "PRD Data: website → client_id foreign key relationship",
+      "steps": [
+        "Enforce website belongs to client",
+        "Cascade on client delete",
+        "Filter by client in all queries",
+        "RLS policy for client access"
+      ],
+      "acceptance_criteria": [
+        "FK constraint enforced",
+        "Cascade works",
+        "Queries filter by client",
+        "RLS prevents cross-client access"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-075",
+      "epic": "Epic 7: Data Integration",
+      "category": "critical",
+      "priority": 75,
+      "description": "PRD Data: seo_audits → website_id integration",
+      "steps": [
+        "Link audits to websites",
+        "Historical audit tracking",
+        "Compare audits over time",
+        "Display audit history"
+      ],
+      "acceptance_criteria": [
+        "Audits linked to website",
+        "History preserved",
+        "Comparison available",
+        "Timeline view works"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-076",
+      "epic": "Epic 7: Data Integration",
+      "category": "critical",
+      "priority": 76,
+      "description": "PRD Data: topic_clusters → website_id integration",
+      "steps": [
+        "Clusters belong to website",
+        "Filter clusters by website",
+        "Update coverage status",
+        "Track cluster over time"
+      ],
+      "acceptance_criteria": [
+        "Clusters linked to website",
+        "Filtering works",
+        "Coverage updates",
+        "Historical tracking"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-077",
+      "epic": "Epic 7: Data Integration",
+      "category": "critical",
+      "priority": 77,
+      "description": "PRD Data: content_batches → website_id with goal scores",
+      "steps": [
+        "Batch links to website",
+        "Goal score from/to stored",
+        "Progress toward goal calculated",
+        "Batch status updates"
+      ],
+      "acceptance_criteria": [
+        "Batch-website link works",
+        "Goal scores tracked",
+        "Progress calculated",
+        "Status transitions work"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-078",
+      "epic": "Epic 7: Data Integration",
+      "category": "critical",
+      "priority": 78,
+      "description": "PRD Data: blog_posts → content_batch_id + topic_cluster_id",
+      "steps": [
+        "Post belongs to batch and cluster",
+        "Filter posts by batch",
+        "Filter posts by cluster",
+        "Update cluster coverage on publish"
+      ],
+      "acceptance_criteria": [
+        "Post-batch link works",
+        "Post-cluster link works",
+        "Filters work",
+        "Coverage auto-updates"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-079",
+      "epic": "Epic 7: Data Integration",
+      "category": "high",
+      "priority": 79,
+      "description": "PRD Data: blog_post_revisions → blog_post_id with revision_type",
+      "steps": [
+        "Track all revision types",
+        "Store outline revision",
+        "Store draft revision",
+        "Store seo_pass revision",
+        "Store fact_check revision",
+        "Store human_edit revision"
+      ],
+      "acceptance_criteria": [
+        "All 5 revision types tracked",
+        "Timeline shows revisions",
+        "Diff between revisions",
+        "Restore previous version"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-080",
+      "epic": "Epic 7: Data Integration",
+      "category": "high",
+      "priority": 80,
+      "description": "PRD Data: blog_post_metrics → blog_post_id snapshots",
+      "steps": [
+        "Store metrics per snapshot date",
+        "Track impressions, clicks, CTR",
+        "Track avg_position over time",
+        "Track sessions and conversions"
+      ],
+      "acceptance_criteria": [
+        "Snapshot dates work",
+        "All metrics captured",
+        "Historical trends visible",
+        "Export metrics"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-081",
+      "epic": "Epic 7: Data Integration",
+      "category": "high",
+      "priority": 81,
+      "description": "PRD Data: reports → website_id with period and type",
+      "steps": [
+        "Reports linked to website",
+        "Period start/end dates",
+        "Report type (email/slide/pdf)",
+        "Storage URL tracking"
+      ],
+      "acceptance_criteria": [
+        "Report-website link works",
+        "Date range enforced",
+        "All 3 types supported",
+        "Files accessible"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-082",
+      "epic": "Epic 4: Workflow",
+      "category": "critical",
+      "priority": 82,
+      "description": "PRD Status: Blog post ai_drafting → editor_review transition",
+      "steps": [
+        "Auto-transition after AI completes",
+        "Notification to editor",
+        "Update UI in real-time",
+        "Log status change"
+      ],
+      "acceptance_criteria": [
+        "Auto-transition works",
+        "Editor notified",
+        "UI updates",
+        "Audit log created"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-083",
+      "epic": "Epic 4: Workflow",
+      "category": "critical",
+      "priority": 83,
+      "description": "PRD Status: Blog post editor_review → client_review transition",
+      "steps": [
+        "Editor marks Ready for Client",
+        "Post appears in client portal",
+        "Client notified",
+        "Status synced"
+      ],
+      "acceptance_criteria": [
+        "Editor can mark ready",
+        "Shows in portal",
+        "Client gets email",
+        "Status synced both sides"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-084",
+      "epic": "Epic 4: Workflow",
+      "category": "critical",
+      "priority": 84,
+      "description": "PRD Status: Blog post client_review → approved transition",
+      "steps": [
+        "Client clicks Approve",
+        "Status updates to approved",
+        "CSM notified",
+        "Ready for publish queue"
+      ],
+      "acceptance_criteria": [
+        "Client can approve",
+        "Status updates",
+        "CSM notified",
+        "Appears in publish queue"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-085",
+      "epic": "Epic 4: Workflow",
+      "category": "critical",
+      "priority": 85,
+      "description": "PRD Status: Blog post approved → published with cms_url",
+      "steps": [
+        "Publish to WordPress",
+        "Capture cms_url",
+        "Set published_at timestamp",
+        "Update cluster coverage"
+      ],
+      "acceptance_criteria": [
+        "WordPress publish works",
+        "URL stored",
+        "Timestamp set",
+        "Coverage updated"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-086",
+      "epic": "Epic 3: Batch Management",
+      "category": "high",
+      "priority": 86,
+      "description": "PRD Status: Content batch planned → in_progress → completed",
+      "steps": [
+        "Track batch status",
+        "Auto-update on first post start",
+        "Auto-complete when all posts done",
+        "Dashboard shows status"
+      ],
+      "acceptance_criteria": [
+        "Status tracks correctly",
+        "Auto-transitions work",
+        "Completion detected",
+        "Dashboard accurate"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-087",
+      "epic": "Epic 4: Client Portal",
+      "category": "high",
+      "priority": 87,
+      "description": "PRD Story: Client Request Changes per post",
+      "steps": [
+        "Add Request Changes button",
+        "Capture change feedback",
+        "Route back to editor",
+        "Track change requests"
+      ],
+      "acceptance_criteria": [
+        "Button visible to client",
+        "Feedback captured",
+        "Editor sees request",
+        "History tracked"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-088",
+      "epic": "Epic 4: Client Portal",
+      "category": "high",
+      "priority": 88,
+      "description": "PRD Story: Client read-only blog preview",
+      "steps": [
+        "Render blog preview",
+        "Show formatted HTML",
+        "Include images/tables",
+        "Prevent editing"
+      ],
+      "acceptance_criteria": [
+        "Preview renders correctly",
+        "Formatting preserved",
+        "Media displays",
+        "Read-only enforced"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-089",
+      "epic": "Epic 6: Reporting",
+      "category": "high",
+      "priority": 89,
+      "description": "PRD Story: Report with underperformers and proposed fixes",
+      "steps": [
+        "Identify underperforming posts",
+        "Generate fix recommendations",
+        "Include in report",
+        "Track fix implementation"
+      ],
+      "acceptance_criteria": [
+        "Underperformers identified",
+        "Fixes suggested",
+        "In report output",
+        "Tracking available"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-090",
+      "epic": "Epic 6: Reporting",
+      "category": "medium",
+      "priority": 90,
+      "description": "PRD Story: Report narrative summary for client calls",
+      "steps": [
+        "Generate AI narrative",
+        "Summarize key metrics",
+        "Highlight wins",
+        "Suggest talking points"
+      ],
+      "acceptance_criteria": [
+        "Narrative generated",
+        "Metrics summarized",
+        "Wins highlighted",
+        "Call-ready format"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-091",
+      "epic": "Epic 3: AI Pipeline",
+      "category": "high",
+      "priority": 91,
+      "description": "PRD Agent: Outline with FAQs and table ideas",
+      "steps": [
+        "Generate FAQ section",
+        "Suggest table structures",
+        "Include in outline",
+        "Track in revision"
+      ],
+      "acceptance_criteria": [
+        "FAQs generated",
+        "Tables suggested",
+        "Stored in outline revision",
+        "Visible in UI"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-092",
+      "epic": "Epic 3: AI Pipeline",
+      "category": "high",
+      "priority": 92,
+      "description": "PRD Agent: Draft with intro teaser body conclusion structure",
+      "steps": [
+        "Generate intro paragraph",
+        "Create teaser/hook",
+        "Write body sections",
+        "Add conclusion with CTA"
+      ],
+      "acceptance_criteria": [
+        "Intro compelling",
+        "Teaser hooks reader",
+        "Body comprehensive",
+        "Conclusion actionable"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-093",
+      "epic": "Epic 3: AI Pipeline",
+      "category": "high",
+      "priority": 93,
+      "description": "PRD Agent: SEO with internal link hints",
+      "steps": [
+        "Analyze existing content",
+        "Suggest internal links",
+        "Check anchor text",
+        "Optimize link placement"
+      ],
+      "acceptance_criteria": [
+        "Links suggested",
+        "Anchor text optimized",
+        "Placement logical",
+        "Stored in SEO pass"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-094",
+      "epic": "Epic 3: AI Pipeline",
+      "category": "high",
+      "priority": 94,
+      "description": "PRD Agent: Fact-check with source citations",
+      "steps": [
+        "Extract claims",
+        "Verify accuracy",
+        "Find citation sources",
+        "Format citations"
+      ],
+      "acceptance_criteria": [
+        "Claims extracted",
+        "Verification attempted",
+        "Sources linked",
+        "Citations formatted"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-095",
+      "epic": "Epic 3: AI Pipeline",
+      "category": "high",
+      "priority": 95,
+      "description": "PRD Agent: Enhancement with image prompts",
+      "steps": [
+        "Suggest image placements",
+        "Generate image prompts",
+        "Recommend alt text",
+        "Store enhancement suggestions"
+      ],
+      "acceptance_criteria": [
+        "Placements suggested",
+        "Prompts generated",
+        "Alt text included",
+        "Stored in revision"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-096",
+      "epic": "Epic 2: Plan Builder",
+      "category": "high",
+      "priority": 96,
+      "description": "PRD: Pitch deck with baseline SEO and topic gaps",
+      "steps": [
+        "Include current SEO score",
+        "List topic gaps",
+        "Show cluster coverage",
+        "Generate visual charts"
+      ],
+      "acceptance_criteria": [
+        "Score prominently displayed",
+        "Gaps listed",
+        "Coverage visual",
+        "Charts render"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-097",
+      "epic": "Epic 2: Plan Builder",
+      "category": "high",
+      "priority": 97,
+      "description": "PRD: Pitch deck with proposed blog package details",
+      "steps": [
+        "Show post count",
+        "Display timeline",
+        "List topic titles",
+        "Include pricing tier"
+      ],
+      "acceptance_criteria": [
+        "Post count shown",
+        "Timeline clear",
+        "Topics listed",
+        "Price visible"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-098",
+      "epic": "Epic 2: Plan Builder",
+      "category": "medium",
+      "priority": 98,
+      "description": "PRD: Pitch deck expected outcome ranges",
+      "steps": [
+        "Calculate score improvement range",
+        "Estimate traffic increase",
+        "Show confidence intervals",
+        "Display timeline"
+      ],
+      "acceptance_criteria": [
+        "Score range shown",
+        "Traffic estimate",
+        "Confidence displayed",
+        "Timeline included"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-099",
+      "epic": "Epic 2: Plan Builder",
+      "category": "medium",
+      "priority": 99,
+      "description": "PRD: Content depth level selection (basic/advanced/technical)",
+      "steps": [
+        "Add depth level selector",
+        "Store per batch",
+        "Affect word count targets",
+        "Adjust AI prompts"
+      ],
+      "acceptance_criteria": [
+        "3 depth levels available",
+        "Stored in batch",
+        "Word counts adjust",
+        "AI adapts"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-100",
+      "epic": "Epic 3: Content Batch",
+      "category": "high",
+      "priority": 100,
+      "description": "PRD: Topic list with search intent per topic",
+      "steps": [
+        "Add intent field",
+        "Options: informational/commercial/transactional/navigational",
+        "Display in UI",
+        "Use in AI generation"
+      ],
+      "acceptance_criteria": [
+        "Intent selectable",
+        "All 4 types",
+        "Visible in batch",
+        "AI uses intent"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-101",
+      "epic": "Epic 3: Content Batch",
+      "category": "medium",
+      "priority": 101,
+      "description": "PRD: Topic list with tone setting per post",
+      "steps": [
+        "Add tone/voice field",
+        "Options from brand guide",
+        "Override per post",
+        "Pass to AI"
+      ],
+      "acceptance_criteria": [
+        "Tone selectable",
+        "Brand defaults",
+        "Override works",
+        "AI follows tone"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-102",
+      "epic": "Epic 3: Content Batch",
+      "category": "medium",
+      "priority": 102,
+      "description": "PRD: Topic list with publish window/due date",
+      "steps": [
+        "Add due_date field",
+        "Add publish_window",
+        "Show in batch view",
+        "Alert on overdue"
+      ],
+      "acceptance_criteria": [
+        "Due date settable",
+        "Window configurable",
+        "Visible in UI",
+        "Alerts work"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-103",
+      "epic": "Epic 5: CMS Publishing",
+      "category": "high",
+      "priority": 103,
+      "description": "PRD: WordPress category and tag assignment",
+      "steps": [
+        "Fetch WP categories",
+        "Map to topic clusters",
+        "Auto-assign tags",
+        "Manual override"
+      ],
+      "acceptance_criteria": [
+        "Categories fetched",
+        "Auto-mapping works",
+        "Tags assigned",
+        "Override available"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-104",
+      "epic": "Epic 5: CMS Publishing",
+      "category": "high",
+      "priority": 104,
+      "description": "PRD: Track canonical URL after WordPress publish",
+      "steps": [
+        "Capture published URL",
+        "Store in cms_url field",
+        "Verify URL accessible",
+        "Link in dashboard"
+      ],
+      "acceptance_criteria": [
+        "URL captured",
+        "Stored correctly",
+        "Verification runs",
+        "Clickable link"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-105",
+      "epic": "Epic 5: CMS Publishing",
+      "category": "medium",
+      "priority": 105,
+      "description": "PRD: Scheduled publish with date/time picker",
+      "steps": [
+        "Add schedule datetime picker",
+        "Queue for future publish",
+        "Show scheduled posts",
+        "Cancel/reschedule"
+      ],
+      "acceptance_criteria": [
+        "Datetime picker works",
+        "Queue holds",
+        "List shows scheduled",
+        "Can modify"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-106",
+      "epic": "Epic 6: Analytics",
+      "category": "high",
+      "priority": 106,
+      "description": "PRD: Pull Google Search Console metrics",
+      "steps": [
+        "Connect GSC API",
+        "Fetch impressions/clicks",
+        "Get avg position",
+        "Store in metrics"
+      ],
+      "acceptance_criteria": [
+        "GSC connected",
+        "Impressions fetched",
+        "Position tracked",
+        "Data stored"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-107",
+      "epic": "Epic 6: Analytics",
+      "category": "high",
+      "priority": 107,
+      "description": "PRD: Aggregate metrics per client and per batch",
+      "steps": [
+        "Sum metrics by client",
+        "Sum metrics by batch",
+        "Calculate averages",
+        "Display in dashboard"
+      ],
+      "acceptance_criteria": [
+        "Client totals work",
+        "Batch totals work",
+        "Averages calculated",
+        "Dashboard shows"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-108",
+      "epic": "Epic 6: Analytics",
+      "category": "medium",
+      "priority": 108,
+      "description": "PRD: Track conversions per published post",
+      "steps": [
+        "Define conversion goals",
+        "Track via GA/GSC",
+        "Store in metrics",
+        "Display per post"
+      ],
+      "acceptance_criteria": [
+        "Goals configurable",
+        "Tracking works",
+        "Data stored",
+        "Visible per post"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-109",
+      "epic": "Epic 1: SEO Audit",
+      "category": "high",
+      "priority": 109,
+      "description": "PRD: Compute projected SEO score after plan execution",
+      "steps": [
+        "Calculate impact per post",
+        "Sum projected improvement",
+        "Show before/after",
+        "Update as posts publish"
+      ],
+      "acceptance_criteria": [
+        "Per-post impact calculated",
+        "Total projected",
+        "Before/after shown",
+        "Live updates"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-110",
+      "epic": "Epic 1: SEO Audit",
+      "category": "medium",
+      "priority": 110,
+      "description": "PRD: seo_quality_score per blog post",
+      "steps": [
+        "Calculate score per post",
+        "Based on keyword density, structure, readability",
+        "Store in blog_posts",
+        "Display in UI"
+      ],
+      "acceptance_criteria": [
+        "Score calculated",
+        "Multiple factors",
+        "Stored correctly",
+        "Visible per post"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-111",
+      "epic": "Epic 4: Human Review",
+      "category": "high",
+      "priority": 111,
+      "description": "PRD: Kanban with 5 status columns matching workflow",
+      "steps": [
+        "Draft column",
+        "Review column",
+        "Ready for Client column",
+        "Changes Requested column",
+        "Approved column"
+      ],
+      "acceptance_criteria": [
+        "All 5 columns exist",
+        "Drag-drop between",
+        "Status updates",
+        "Count per column"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-112",
+      "epic": "Epic 4: Client Portal",
+      "category": "high",
+      "priority": 112,
+      "description": "PRD: Client sees project overview dashboard",
+      "steps": [
+        "Show project summary",
+        "Display post counts by status",
+        "Show timeline",
+        "Highlight actions needed"
+      ],
+      "acceptance_criteria": [
+        "Summary visible",
+        "Status counts shown",
+        "Timeline displayed",
+        "Actions highlighted"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-113",
+      "epic": "Epic 4: Client Portal",
+      "category": "medium",
+      "priority": 113,
+      "description": "PRD: Client comment thread on posts",
+      "steps": [
+        "Add comment input",
+        "Thread conversation",
+        "Notify CSM/editor",
+        "Track resolution"
+      ],
+      "acceptance_criteria": [
+        "Comments work",
+        "Threading enabled",
+        "Notifications sent",
+        "Resolution tracked"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-114",
+      "epic": "Epic 6: Reporting",
+      "category": "high",
+      "priority": 114,
+      "description": "PRD: Report type slide_deck generation",
+      "steps": [
+        "Generate slide format",
+        "Include charts/graphs",
+        "Export as PPTX or HTML",
+        "Store URL"
+      ],
+      "acceptance_criteria": [
+        "Slides generated",
+        "Charts included",
+        "Export works",
+        "URL stored"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-115",
+      "epic": "Epic 6: Reporting",
+      "category": "high",
+      "priority": 115,
+      "description": "PRD: Report generated_by tracking (user or system)",
+      "steps": [
+        "Track who generated",
+        "Manual vs auto distinction",
+        "Store in reports table",
+        "Display in history"
+      ],
+      "acceptance_criteria": [
+        "Generator tracked",
+        "Type distinguished",
+        "Stored correctly",
+        "History shows"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-116",
+      "epic": "Epic 3: AI Pipeline",
+      "category": "critical",
+      "priority": 116,
+      "description": "PRD Pipeline: Orchestrator with sequential agent execution",
+      "steps": [
+        "Create pipeline orchestrator service",
+        "Execute agents in sequence: Outline→Draft→SEO→Fact-Check→Enhancement",
+        "Pass output from one agent to next",
+        "Handle failures and retries"
+      ],
+      "acceptance_criteria": [
+        "Orchestrator runs all 5 agents",
+        "Outputs chain correctly",
+        "Failures handled gracefully",
+        "Retry logic works"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-117",
+      "epic": "Epic 3: AI Pipeline",
+      "category": "critical",
+      "priority": 117,
+      "description": "PRD Pipeline: Quality gates between agents",
+      "steps": [
+        "Add quality check after each agent",
+        "Minimum score thresholds",
+        "Block progression if failed",
+        "Allow manual override"
+      ],
+      "acceptance_criteria": [
+        "Quality checked after each agent",
+        "Thresholds enforced",
+        "Blocking works",
+        "Override available"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-118",
+      "epic": "Epic 3: AI Pipeline",
+      "category": "high",
+      "priority": 118,
+      "description": "PRD Pipeline: agent_outputs database table",
+      "steps": [
+        "Create agent_outputs table",
+        "Store each agent output with timestamp",
+        "Link to blog_post_id",
+        "Track agent_type and version"
+      ],
+      "acceptance_criteria": [
+        "Table created",
+        "All outputs stored",
+        "Linked to post",
+        "Versioning works"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-119",
+      "epic": "Epic 3: AI Pipeline",
+      "category": "high",
+      "priority": 119,
+      "description": "PRD Pipeline: POST /api/ai/agents/{agent-name} endpoints",
+      "steps": [
+        "Create endpoint per agent",
+        "Accept post context input",
+        "Return structured output",
+        "Log to agent_outputs"
+      ],
+      "acceptance_criteria": [
+        "All 5 endpoints work",
+        "Inputs validated",
+        "Outputs structured",
+        "Logged correctly"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-120",
+      "epic": "Epic 3: AI Pipeline",
+      "category": "high",
+      "priority": 120,
+      "description": "PRD Pipeline: Pipeline status tracking per post",
+      "steps": [
+        "Track current pipeline stage",
+        "Show progress indicator",
+        "Display estimated time",
+        "Allow pause/resume"
+      ],
+      "acceptance_criteria": [
+        "Stage tracked",
+        "Progress visible",
+        "Time estimate shown",
+        "Pause works"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-121",
+      "epic": "Epic 3: AI Pipeline",
+      "category": "high",
+      "priority": 121,
+      "description": "PRD Revision: Timeline component showing all agent outputs",
+      "steps": [
+        "Create timeline UI component",
+        "Show each agent output as node",
+        "Display timestamp and type",
+        "Expandable content preview"
+      ],
+      "acceptance_criteria": [
+        "Timeline renders",
+        "All outputs shown",
+        "Timestamps correct",
+        "Preview works"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-122",
+      "epic": "Epic 3: AI Pipeline",
+      "category": "high",
+      "priority": 122,
+      "description": "PRD Revision: Split/unified diff viewer",
+      "steps": [
+        "Create diff viewer component",
+        "Support split view (side-by-side)",
+        "Support unified view",
+        "Highlight additions/deletions"
+      ],
+      "acceptance_criteria": [
+        "Diff renders correctly",
+        "Split view works",
+        "Unified view works",
+        "Highlighting clear"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-123",
+      "epic": "Epic 3: AI Pipeline",
+      "category": "medium",
+      "priority": 123,
+      "description": "PRD Revision: Compare any two revisions",
+      "steps": [
+        "Add revision selector dropdowns",
+        "Compare any revision pair",
+        "Show diff between selected",
+        "Navigate between comparisons"
+      ],
+      "acceptance_criteria": [
+        "Selectors work",
+        "Any pair comparable",
+        "Diff accurate",
+        "Navigation smooth"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-124",
+      "epic": "Epic 3: AI Pipeline",
+      "category": "medium",
+      "priority": 124,
+      "description": "PRD Revision: Restore previous revision",
+      "steps": [
+        "Add restore button per revision",
+        "Confirmation modal",
+        "Create new revision from restore",
+        "Preserve history"
+      ],
+      "acceptance_criteria": [
+        "Restore button exists",
+        "Confirmation required",
+        "New revision created",
+        "History preserved"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-125",
+      "epic": "Epic 3: AI Pipeline",
+      "category": "medium",
+      "priority": 125,
+      "description": "PRD Revision: GET/POST /api/blog-posts/{id}/revisions endpoints",
+      "steps": [
+        "GET returns all revisions",
+        "POST creates new revision",
+        "Support filtering by type",
+        "Pagination for large histories"
+      ],
+      "acceptance_criteria": [
+        "GET works",
+        "POST works",
+        "Filtering works",
+        "Pagination works"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-126",
+      "epic": "Epic 3: Content Batch",
+      "category": "high",
+      "priority": 126,
+      "description": "PRD CSV: Import modal with validation preview",
+      "steps": [
+        "Create import modal UI",
+        "Parse CSV and preview rows",
+        "Validate each field",
+        "Show errors inline"
+      ],
+      "acceptance_criteria": [
+        "Modal opens",
+        "Preview shows data",
+        "Validation runs",
+        "Errors highlighted"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-127",
+      "epic": "Epic 3: Content Batch",
+      "category": "high",
+      "priority": 127,
+      "description": "PRD CSV: Field mapping for CSV columns",
+      "steps": [
+        "Auto-detect column mapping",
+        "Allow manual remapping",
+        "Support custom columns",
+        "Save mapping preferences"
+      ],
+      "acceptance_criteria": [
+        "Auto-detect works",
+        "Manual mapping works",
+        "Custom columns supported",
+        "Preferences saved"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-128",
+      "epic": "Epic 3: Content Batch",
+      "category": "medium",
+      "priority": 128,
+      "description": "PRD CSV: Downloadable CSV template",
+      "steps": [
+        "Create template endpoint",
+        "Include all required columns",
+        "Add example data row",
+        "Instructions in header"
+      ],
+      "acceptance_criteria": [
+        "Template downloads",
+        "Columns correct",
+        "Example helpful",
+        "Instructions clear"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-129",
+      "epic": "Epic 3: Content Batch",
+      "category": "high",
+      "priority": 129,
+      "description": "PRD CSV: Export with filtering options",
+      "steps": [
+        "Add export button",
+        "Filter by status",
+        "Filter by date range",
+        "Select columns to export"
+      ],
+      "acceptance_criteria": [
+        "Export works",
+        "Status filter works",
+        "Date filter works",
+        "Column selection works"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-130",
+      "epic": "Epic 3: Content Batch",
+      "category": "medium",
+      "priority": 130,
+      "description": "PRD CSV: POST /api/content-batches/{id}/import endpoint",
+      "steps": [
+        "Accept multipart CSV file",
+        "Validate and parse",
+        "Create posts in batch",
+        "Return success/error summary"
+      ],
+      "acceptance_criteria": [
+        "File upload works",
+        "Validation runs",
+        "Posts created",
+        "Summary returned"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-131",
+      "epic": "Epic 2: Plan Builder",
+      "category": "critical",
+      "priority": 131,
+      "description": "PRD Pitch: SEO score slider with recommendations",
+      "steps": [
+        "Create interactive slider component",
+        "Calculate posts needed per score delta",
+        "Show timeline estimate",
+        "Display cost estimate"
+      ],
+      "acceptance_criteria": [
+        "Slider interactive",
+        "Calculation accurate",
+        "Timeline shown",
+        "Cost displayed"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-132",
+      "epic": "Epic 2: Plan Builder",
+      "category": "critical",
+      "priority": 132,
+      "description": "PRD Pitch: PDF pitch deck generation (7 sections)",
+      "steps": [
+        "Executive summary section",
+        "Current state analysis",
+        "Gap/opportunity section",
+        "Proposed solution",
+        "Timeline/milestones",
+        "Investment/ROI",
+        "Next steps"
+      ],
+      "acceptance_criteria": [
+        "All 7 sections present",
+        "Data populated",
+        "PDF renders",
+        "Professional design"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-133",
+      "epic": "Epic 2: Plan Builder",
+      "category": "high",
+      "priority": 133,
+      "description": "PRD Pitch: Email template with variable substitution",
+      "steps": [
+        "Create email template",
+        "Support variables: {client_name}, {score}, etc",
+        "Preview before send",
+        "Copy to clipboard"
+      ],
+      "acceptance_criteria": [
+        "Template created",
+        "Variables substitute",
+        "Preview works",
+        "Copy works"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-134",
+      "epic": "Epic 2: Plan Builder",
+      "category": "high",
+      "priority": 134,
+      "description": "PRD Pitch: POST /api/websites/{id}/pitch/pdf endpoint",
+      "steps": [
+        "Accept pitch parameters",
+        "Generate PDF with jsPDF/Puppeteer",
+        "Return downloadable file",
+        "Store in reports table"
+      ],
+      "acceptance_criteria": [
+        "Parameters accepted",
+        "PDF generates",
+        "Download works",
+        "Stored correctly"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-135",
+      "epic": "Epic 6: Reporting",
+      "category": "critical",
+      "priority": 135,
+      "description": "PRD Report: Monthly performance report format",
+      "steps": [
+        "Period selection",
+        "Baseline vs current comparison",
+        "Post-by-post metrics",
+        "Recommendations section"
+      ],
+      "acceptance_criteria": [
+        "Period works",
+        "Comparison accurate",
+        "Metrics displayed",
+        "Recommendations shown"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-136",
+      "epic": "Epic 6: Reporting",
+      "category": "high",
+      "priority": 136,
+      "description": "PRD Report: Campaign/batch report format",
+      "steps": [
+        "Select batch/campaign",
+        "Show all posts in batch",
+        "Aggregate metrics",
+        "Goal progress tracking"
+      ],
+      "acceptance_criteria": [
+        "Batch selectable",
+        "Posts listed",
+        "Metrics aggregated",
+        "Progress shown"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-137",
+      "epic": "Epic 6: Reporting",
+      "category": "high",
+      "priority": 137,
+      "description": "PRD Report: Slide deck export format",
+      "steps": [
+        "Generate presentation slides",
+        "Include charts and graphs",
+        "Export as PPTX or HTML",
+        "Branded template"
+      ],
+      "acceptance_criteria": [
+        "Slides generate",
+        "Charts included",
+        "Export works",
+        "Branding applied"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-138",
+      "epic": "Epic 6: Reporting",
+      "category": "high",
+      "priority": 138,
+      "description": "PRD Report: POST /api/reports/pdf endpoint",
+      "steps": [
+        "Accept report parameters",
+        "Generate PDF report",
+        "Include all metrics and charts",
+        "Return downloadable file"
+      ],
+      "acceptance_criteria": [
+        "Parameters accepted",
+        "PDF generates",
+        "Content complete",
+        "Download works"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-139",
+      "epic": "Epic 6: Reporting",
+      "category": "medium",
+      "priority": 139,
+      "description": "PRD Report: Email report delivery",
+      "steps": [
+        "Add email recipients",
+        "Attach PDF report",
+        "Include summary in body",
+        "Track delivery status"
+      ],
+      "acceptance_criteria": [
+        "Recipients work",
+        "Attachment included",
+        "Summary in email",
+        "Status tracked"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-140",
+      "epic": "Epic 6: Reporting",
+      "category": "medium",
+      "priority": 140,
+      "description": "PRD Report: Report storage and history",
+      "steps": [
+        "Store generated reports",
+        "Link to storage_url",
+        "List report history",
+        "Re-download past reports"
+      ],
+      "acceptance_criteria": [
+        "Reports stored",
+        "URL accessible",
+        "History listed",
+        "Re-download works"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-141",
+      "epic": "Epic 1: SEO Audit",
+      "category": "medium",
+      "priority": 141,
+      "description": "PRD Pipeline Page: Job deletion with confirmation",
+      "steps": [
+        "Add delete button to job history",
+        "Confirmation modal",
+        "Delete from pipeline_jobs table",
+        "Update UI list"
+      ],
+      "acceptance_criteria": [
+        "Delete button visible",
+        "Confirmation required",
+        "Job deleted",
+        "UI updates"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-142",
+      "epic": "Epic 1: SEO Audit",
+      "category": "high",
+      "priority": 142,
+      "description": "PRD Pipeline Page: Retry failed job with same inputs",
+      "steps": [
+        "Add retry button on failed jobs",
+        "Clone job parameters",
+        "Create new pipeline run",
+        "Track retry count"
+      ],
+      "acceptance_criteria": [
+        "Retry button shown on failed",
+        "Parameters cloned",
+        "New job created",
+        "Retry counted"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-143",
+      "epic": "Epic 1: SEO Audit",
+      "category": "medium",
+      "priority": 143,
+      "description": "PRD Pipeline Page: Cancel running job",
+      "steps": [
+        "Add cancel button on running jobs",
+        "Stop pipeline execution",
+        "Mark as cancelled status",
+        "Clean up partial results"
+      ],
+      "acceptance_criteria": [
+        "Cancel button on running",
+        "Execution stops",
+        "Status updated",
+        "Cleanup done"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-144",
+      "epic": "Epic 1: SEO Audit",
+      "category": "high",
+      "priority": 144,
+      "description": "PRD Pipeline Page: Export topics to CSV download",
+      "steps": [
+        "Add Export CSV button to results",
+        "Include all topic fields",
+        "Format as downloadable CSV",
+        "Track export action"
+      ],
+      "acceptance_criteria": [
+        "Export button visible",
+        "All fields included",
+        "CSV downloads",
+        "Action logged"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-145",
+      "epic": "Epic 1: SEO Audit",
+      "category": "high",
+      "priority": 145,
+      "description": "PRD Pipeline Page: Save topics to content batch",
+      "steps": [
+        "Add Create Batch button",
+        "Select topics to include",
+        "Create content_batch record",
+        "Create blog_posts from topics"
+      ],
+      "acceptance_criteria": [
+        "Button visible",
+        "Selection works",
+        "Batch created",
+        "Posts created"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-146",
+      "epic": "Epic 1: SEO Audit",
+      "category": "medium",
+      "priority": 146,
+      "description": "PRD Pipeline Page: Topic selection checkboxes",
+      "steps": [
+        "Add checkbox per topic",
+        "Select all/none toggle",
+        "Track selected count",
+        "Use in bulk actions"
+      ],
+      "acceptance_criteria": [
+        "Checkboxes render",
+        "Toggle works",
+        "Count shown",
+        "Selection persists"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-147",
+      "epic": "Epic 2: Plan Builder",
+      "category": "critical",
+      "priority": 147,
+      "description": "PRD Pipeline Page: SEO Score slider with forecast (drag 62→78)",
+      "steps": [
+        "Create interactive score slider",
+        "Calculate posts needed for target",
+        "Show timeline projection",
+        "Display monthly cadence"
+      ],
+      "acceptance_criteria": [
+        "Slider draggable",
+        "Calculation accurate",
+        "Timeline shown",
+        "Cadence displayed"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-148",
+      "epic": "Epic 2: Plan Builder",
+      "category": "high",
+      "priority": 148,
+      "description": "PRD Pipeline Page: Generate pitch from analysis results",
+      "steps": [
+        "Add Generate Pitch button",
+        "Use analysis data for pitch",
+        "Link to pitch generator",
+        "Pre-fill pitch fields"
+      ],
+      "acceptance_criteria": [
+        "Button visible",
+        "Data passed",
+        "Generator opens",
+        "Fields pre-filled"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-149",
+      "epic": "Epic 1: SEO Audit",
+      "category": "medium",
+      "priority": 149,
+      "description": "PRD API: DELETE /api/pipeline-jobs/[id] endpoint",
+      "steps": [
+        "Create DELETE handler",
+        "Verify ownership",
+        "Delete job record",
+        "Return success response"
+      ],
+      "acceptance_criteria": [
+        "Endpoint works",
+        "Auth checked",
+        "Record deleted",
+        "Response correct"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-150",
+      "epic": "Epic 1: SEO Audit",
+      "category": "medium",
+      "priority": 150,
+      "description": "PRD API: POST /api/pipeline-jobs/[id]/cancel endpoint",
+      "steps": [
+        "Create POST handler",
+        "Stop running job",
+        "Update status to cancelled",
+        "Clean up resources"
+      ],
+      "acceptance_criteria": [
+        "Endpoint works",
+        "Job stops",
+        "Status updated",
+        "Cleanup done"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-151",
+      "epic": "Epic 1: SEO Audit",
+      "category": "high",
+      "priority": 151,
+      "description": "PRD API: POST /api/pipeline-jobs/[id]/retry endpoint",
+      "steps": [
+        "Create POST handler",
+        "Clone job inputs",
+        "Create new job",
+        "Return new job ID"
+      ],
+      "acceptance_criteria": [
+        "Endpoint works",
+        "Inputs cloned",
+        "Job created",
+        "ID returned"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-152",
+      "epic": "Epic 1: SEO Audit",
+      "category": "medium",
+      "priority": 152,
+      "description": "PRD Pipeline Page: Job progress percentage display",
+      "steps": [
+        "Calculate progress per step",
+        "Show percentage indicator",
+        "Update in real-time",
+        "Display ETA"
+      ],
+      "acceptance_criteria": [
+        "Percentage shown",
+        "Accurate calculation",
+        "Real-time updates",
+        "ETA displayed"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-153",
+      "epic": "Epic 1: SEO Audit",
+      "category": "low",
+      "priority": 153,
+      "description": "PRD Pipeline Page: Job comparison between runs",
+      "steps": [
+        "Select two jobs to compare",
+        "Show side-by-side results",
+        "Highlight differences",
+        "Track improvements"
+      ],
+      "acceptance_criteria": [
+        "Selection works",
+        "Comparison renders",
+        "Diffs highlighted",
+        "Trends shown"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-154",
+      "epic": "Epic 1: SEO Audit",
+      "category": "medium",
+      "priority": 154,
+      "description": "PRD Pipeline Page: Scheduled/recurring pipeline runs",
+      "steps": [
+        "Add schedule option",
+        "Configure frequency",
+        "Auto-run at schedule",
+        "Compare to previous"
+      ],
+      "acceptance_criteria": [
+        "Scheduling UI works",
+        "Frequency configurable",
+        "Auto-runs execute",
+        "Comparison available"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-155",
+      "epic": "Epic 1: SEO Audit",
+      "category": "medium",
+      "priority": 155,
+      "description": "PRD Pipeline Page: Email notification on job completion",
+      "steps": [
+        "Add notification preference",
+        "Send email on complete",
+        "Include results summary",
+        "Link to full results"
+      ],
+      "acceptance_criteria": [
+        "Preference settable",
+        "Email sends",
+        "Summary included",
+        "Link works"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-156",
+      "epic": "Epic 8: Brand Context",
+      "category": "high",
+      "priority": 156,
+      "description": "PRD Brand: styles_to_avoid JSONB column in brand_guides",
+      "steps": [
+        "Add styles_to_avoid column",
+        "Store word patterns to avoid",
+        "Store structural rules (passive voice %, sentence length)",
+        "Track data backing"
+      ],
+      "acceptance_criteria": [
+        "Column exists",
+        "Patterns stored",
+        "Rules enforced",
+        "Data tracked"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-157",
+      "epic": "Epic 8: Brand Context",
+      "category": "high",
+      "priority": 157,
+      "description": "PRD Brand: Styles to Avoid UI in Brand Guide Editor",
+      "steps": [
+        "Create avoid patterns input",
+        "Add structural rules config",
+        "Show data backing metrics",
+        "Preview impact on content"
+      ],
+      "acceptance_criteria": [
+        "Patterns editable",
+        "Rules configurable",
+        "Metrics displayed",
+        "Preview works"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-158",
+      "epic": "Epic 8: Brand Context",
+      "category": "high",
+      "priority": 158,
+      "description": "PRD Brand: styles_to_keep JSONB column in brand_guides",
+      "steps": [
+        "Add styles_to_keep column",
+        "Store preferred patterns",
+        "Auto-learn from top posts",
+        "Track CTR/engagement metrics"
+      ],
+      "acceptance_criteria": [
+        "Column exists",
+        "Patterns stored",
+        "Auto-learning works",
+        "Metrics tracked"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-159",
+      "epic": "Epic 8: Brand Context",
+      "category": "high",
+      "priority": 159,
+      "description": "PRD Brand: Styles to Keep UI with good/bad voice examples",
+      "steps": [
+        "Create keep patterns input",
+        "Show successful content examples",
+        "Display engagement metrics",
+        "Allow manual additions"
+      ],
+      "acceptance_criteria": [
+        "Patterns editable",
+        "Examples shown",
+        "Metrics displayed",
+        "Manual add works"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-160",
+      "epic": "Epic 8: Brand Context",
+      "category": "high",
+      "priority": 160,
+      "description": "PRD Brand: image_guidelines JSONB column in brand_guides",
+      "steps": [
+        "Add image_guidelines column",
+        "Store featured image specs",
+        "Store AI generation settings",
+        "Store alt text rules"
+      ],
+      "acceptance_criteria": [
+        "Column exists",
+        "Specs stored",
+        "AI settings saved",
+        "Alt rules saved"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-161",
+      "epic": "Epic 8: Brand Context",
+      "category": "high",
+      "priority": 161,
+      "description": "PRD Brand: Image Guidelines UI editor",
+      "steps": [
+        "Featured image specs (aspect ratio, min width)",
+        "AI generation provider settings",
+        "Banned elements list",
+        "Alt text rules config"
+      ],
+      "acceptance_criteria": [
+        "Specs editable",
+        "Provider configurable",
+        "Ban list works",
+        "Alt rules saved"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-162",
+      "epic": "Epic 8: Brand Context",
+      "category": "high",
+      "priority": 162,
+      "description": "PRD Brand: title_guidelines JSONB column in brand_guides",
+      "steps": [
+        "Add title_guidelines column",
+        "Store preferred formats",
+        "Store power words",
+        "Store words to avoid"
+      ],
+      "acceptance_criteria": [
+        "Column exists",
+        "Formats stored",
+        "Power words saved",
+        "Avoid words saved"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-163",
+      "epic": "Epic 8: Brand Context",
+      "category": "high",
+      "priority": 163,
+      "description": "PRD Brand: Title Guidelines UI with format patterns",
+      "steps": [
+        "Preferred formats (How to [X], [Number] Tips)",
+        "Power words list",
+        "Words to avoid list",
+        "High-performing patterns from history"
+      ],
+      "acceptance_criteria": [
+        "Formats editable",
+        "Power words configurable",
+        "Avoid list works",
+        "History shown"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-164",
+      "epic": "Epic 8: Brand Context",
+      "category": "critical",
+      "priority": 164,
+      "description": "PRD Brand: getSharedClientContext() unified function",
+      "steps": [
+        "Create shared context service",
+        "Aggregate all brand settings",
+        "Include voice, tone, styles",
+        "Return unified context object"
+      ],
+      "acceptance_criteria": [
+        "Service created",
+        "All settings aggregated",
+        "Context complete",
+        "Object returned"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-165",
+      "epic": "Epic 8: Brand Context",
+      "category": "critical",
+      "priority": 165,
+      "description": "PRD Brand: GET /api/clients/{id}/context endpoint",
+      "steps": [
+        "Create context API endpoint",
+        "Return full brand context",
+        "Include all guidelines",
+        "Cache for performance"
+      ],
+      "acceptance_criteria": [
+        "Endpoint works",
+        "Context complete",
+        "Guidelines included",
+        "Caching works"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-166",
+      "epic": "Epic 8: Brand Context",
+      "category": "critical",
+      "priority": 166,
+      "description": "PRD Brand: Integration points for Pipeline, Topics, Blogs, Images",
+      "steps": [
+        "Pipeline page pulls context",
+        "Topic generation uses context",
+        "Blog generation uses context",
+        "Image generation uses context"
+      ],
+      "acceptance_criteria": [
+        "Pipeline integrated",
+        "Topics use context",
+        "Blogs use context",
+        "Images use context"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-167",
+      "epic": "Epic 8: Brand Context",
+      "category": "high",
+      "priority": 167,
+      "description": "PRD Brand: Context preview UI on Pipeline page",
+      "steps": [
+        "Show brand context summary card",
+        "Display voice/tone",
+        "Show avoid/keep rules",
+        "Link to full brand guide"
+      ],
+      "acceptance_criteria": [
+        "Card displays",
+        "Voice shown",
+        "Rules summarized",
+        "Link works"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-168",
+      "epic": "Epic 8: Brand Context",
+      "category": "medium",
+      "priority": 168,
+      "description": "PRD Brand: Context loading flow in pipeline",
+      "steps": [
+        "Load context on client select",
+        "Show loading state",
+        "Display context preview",
+        "Allow context override"
+      ],
+      "acceptance_criteria": [
+        "Loads on select",
+        "Loading shown",
+        "Preview displays",
+        "Override available"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-169",
+      "epic": "Epic 8: Brand Context",
+      "category": "critical",
+      "priority": 169,
+      "description": "PRD Brand: Database migration for brand_guides enhancements",
+      "steps": [
+        "ALTER TABLE brand_guides",
+        "ADD styles_to_avoid JSONB",
+        "ADD styles_to_keep JSONB",
+        "ADD image_guidelines JSONB",
+        "ADD title_guidelines JSONB"
+      ],
+      "acceptance_criteria": [
+        "Migration created",
+        "All columns added",
+        "JSONB types correct",
+        "Migration runs"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-170",
+      "epic": "Epic 8: Brand Context",
+      "category": "medium",
+      "priority": 170,
+      "description": "PRD Brand: Auto-learn styles from top performing posts",
+      "steps": [
+        "Analyze high-engagement posts",
+        "Extract common patterns",
+        "Update styles_to_keep automatically",
+        "Track pattern effectiveness"
+      ],
+      "acceptance_criteria": [
+        "Analysis runs",
+        "Patterns extracted",
+        "Auto-updates work",
+        "Tracking works"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-171",
+      "epic": "Epic 8: Brand Context",
+      "category": "medium",
+      "priority": 171,
+      "description": "PRD Brand: Data backing for style rules with metrics",
+      "steps": [
+        "Track engagement per style",
+        "Show metrics in UI",
+        "Rank styles by performance",
+        "Suggest optimizations"
+      ],
+      "acceptance_criteria": [
+        "Tracking works",
+        "Metrics shown",
+        "Ranking works",
+        "Suggestions generated"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-172",
+      "epic": "Epic 8: Brand Context",
+      "category": "high",
+      "priority": 172,
+      "description": "PRD Brand: Ensure all AI agents use shared context",
+      "steps": [
+        "Pass context to Outline agent",
+        "Pass context to Draft agent",
+        "Pass context to SEO agent",
+        "Pass context to Enhancement agent"
+      ],
+      "acceptance_criteria": [
+        "Outline uses context",
+        "Draft uses context",
+        "SEO uses context",
+        "Enhancement uses context"
+      ],
+      "passes": false
+    },
+    {
+      "id": "feat-173",
+      "epic": "Epic 8: Brand Context",
+      "category": "medium",
+      "priority": 173,
+      "description": "PRD Brand: Context validation before generation",
+      "steps": [
+        "Check context completeness",
+        "Warn if missing fields",
+        "Suggest defaults",
+        "Allow generation with warnings"
+      ],
+      "acceptance_criteria": [
+        "Validation runs",
+        "Warnings shown",
+        "Defaults suggested",
+        "Override available"
       ],
       "passes": false
     }

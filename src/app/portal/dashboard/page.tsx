@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { FileText, Clock, CheckCircle, Calendar, ArrowRight, Bell } from 'lucide-react'
+import { FileText, Clock, CheckCircle, Calendar, ArrowRight, Bell, PenSquare, Settings } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import TopPerformingPosts from '@/components/analytics/TopPerformingPosts'
@@ -69,13 +69,26 @@ export default function PortalDashboardPage() {
                             <h1 className="text-3xl font-bold text-gray-900">Welcome back!</h1>
                             <p className="text-muted-foreground mt-1">{clientName}</p>
                         </div>
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3">
                             <Link
-                                href="/portal/settings/notifications"
+                                href="/portal/request"
+                                className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-medium hover:from-indigo-700 hover:to-purple-700 transition-all shadow-md flex items-center gap-2"
+                            >
+                                <PenSquare className="w-4 h-4" />
+                                Request Content
+                            </Link>
+                            <Link
+                                href="/portal/notifications"
                                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors relative"
                             >
                                 <Bell className="w-6 h-6 text-gray-600" />
                                 <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                            </Link>
+                            <Link
+                                href="/portal/settings"
+                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                            >
+                                <Settings className="w-6 h-6 text-gray-600" />
                             </Link>
                             <Link
                                 href="/portal/posts"

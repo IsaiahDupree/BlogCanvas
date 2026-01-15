@@ -18,7 +18,13 @@ import {
   RefreshCw,
   Eye,
   Play,
-  ChevronRight
+  ChevronRight,
+  Clock,
+  History,
+  Search,
+  ExternalLink,
+  Trash2,
+  RotateCcw
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -30,9 +36,36 @@ interface Client {
   website_url?: string
 }
 
+interface PipelineJob {
+  id: string
+  website_url: string
+  target_market?: string
+  client_goals?: string
+  ideal_customer_profile?: string
+  status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled'
+  current_step?: string
+  progress: number
+  seo_score?: number
+  pages_indexed?: number
+  content_gaps?: number
+  topics_generated?: number
+  blogs_created?: number
+  error_message?: string
+  error_step?: string
+  crawl_result?: any
+  analyze_result?: any
+  gaps_result?: any
+  topics_result?: any
+  started_at?: string
+  created_at: string
+  completed_at?: string
+  clients?: { id: string; name: string }
+}
+
 interface PipelineStep {
   id: string
   label: string
+  description: string
   status: 'pending' | 'running' | 'completed' | 'error'
   result?: any
 }
@@ -58,7 +91,10 @@ interface AnalysisResult {
 
 export default function PipelinePage() {
   const [clients, setClients] = useState<Client[]>([])
+  const [recentJobs, setRecentJobs] = useState<PipelineJob[]>([])
   const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState<'new' | 'history'>('new')
+  const [currentJobId, setCurrentJobId] = useState<string | null>(null)
   
   // Form state
   const [websiteUrl, setWebsiteUrl] = useState('')
@@ -71,10 +107,10 @@ export default function PipelinePage() {
   const [isRunning, setIsRunning] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
   const [steps, setSteps] = useState<PipelineStep[]>([
-    { id: 'crawl', label: 'Crawling website pages', status: 'pending' },
-    { id: 'analyze', label: 'Analyzing SEO health', status: 'pending' },
-    { id: 'gaps', label: 'Identifying content gaps', status: 'pending' },
-    { id: 'topics', label: 'Generating topic recommendations', status: 'pending' },
+    { id: 'crawl', label: 'Crawl & Index', description: 'Scanning website pages', status: 'pending' },
+    { id: 'analyze', label: 'SEO Analysis', description: 'Analyzing SEO health', status: 'pending' },
+    { id: 'gaps', label: 'Gap Analysis', description: 'Finding content opportunities', status: 'pending' },
+    { id: 'topics', label: 'Topic Generation', description: 'Creating recommendations', status: 'pending' },
   ])
   
   // Results
@@ -83,16 +119,23 @@ export default function PipelinePage() {
   const [generatedCount, setGeneratedCount] = useState(0)
 
   useEffect(() => {
-    fetchClients()
+    fetchInitialData()
   }, [])
 
-  const fetchClients = async () => {
+  const fetchInitialData = async () => {
     try {
-      const res = await fetch('/api/clients')
-      const data = await res.json()
-      setClients(data.clients || [])
+      const [clientsRes, jobsRes] = await Promise.all([
+        fetch('/api/clients'),
+        fetch('/api/pipeline-jobs?limit=10')
+      ])
+      
+      const clientsData = await clientsRes.json()
+      const jobsData = await jobsRes.json()
+      
+      setClients(clientsData.clients || [])
+      setRecentJobs(jobsData.jobs || [])
     } catch (error) {
-      console.error('Failed to fetch clients:', error)
+      console.error('Failed to fetch data:', error)
     } finally {
       setLoading(false)
     }
@@ -104,6 +147,43 @@ export default function PipelinePage() {
     ))
   }
 
+  const createJob = async () => {
+    try {
+      const res = await fetch('/api/pipeline-jobs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          website_url: websiteUrl,
+          client_id: selectedClient || null,
+          target_market: targetMarket,
+          client_goals: clientGoals,
+          ideal_customer_profile: icp
+        })
+      })
+      const data = await res.json()
+      if (data.success && data.job) {
+        setCurrentJobId(data.job.id)
+        return data.job.id
+      }
+      return null
+    } catch (error) {
+      console.error('Failed to create job:', error)
+      return null
+    }
+  }
+
+  const updateJob = async (jobId: string, updates: Partial<PipelineJob>) => {
+    try {
+      await fetch(`/api/pipeline-jobs/${jobId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates)
+      })
+    } catch (error) {
+      console.error('Failed to update job:', error)
+    }
+  }
+
   const runPipeline = async () => {
     if (!websiteUrl) return
     
@@ -111,10 +191,17 @@ export default function PipelinePage() {
     setResult(null)
     setSteps(steps.map(s => ({ ...s, status: 'pending' })))
 
+    // Create job in database
+    const jobId = await createJob()
+    if (jobId) {
+      await updateJob(jobId, { status: 'running', started_at: new Date().toISOString() })
+    }
+
     try {
       // Step 1: Crawl website
       setCurrentStep(0)
       updateStep('crawl', 'running')
+      if (jobId) await updateJob(jobId, { current_step: 'crawl', progress: 10 })
       
       const crawlRes = await fetch('/api/ai/website-audit', {
         method: 'POST',
@@ -130,22 +217,31 @@ export default function PipelinePage() {
       
       if (!crawlData.success && !crawlData.audit) {
         updateStep('crawl', 'error')
+        if (jobId) await updateJob(jobId, { status: 'failed', error_message: crawlData.error, error_step: 'crawl' })
         throw new Error(crawlData.error || 'Failed to crawl website')
       }
       updateStep('crawl', 'completed', crawlData)
+      if (jobId) await updateJob(jobId, { crawl_result: crawlData, progress: 25 })
 
       // Step 2: Analyze SEO
       setCurrentStep(1)
       updateStep('analyze', 'running')
+      if (jobId) await updateJob(jobId, { current_step: 'analyze', progress: 35 })
       
-      // Use the audit data from crawl
       const seoScore = crawlData.audit?.baseline_score || crawlData.score || 50
       const pagesIndexed = crawlData.audit?.pages_indexed || crawlData.pages?.length || 0
       updateStep('analyze', 'completed', { seoScore, pagesIndexed })
+      if (jobId) await updateJob(jobId, { 
+        analyze_result: { seoScore, pagesIndexed }, 
+        seo_score: seoScore,
+        pages_indexed: pagesIndexed,
+        progress: 50 
+      })
 
       // Step 3: Content Gap Analysis
       setCurrentStep(2)
       updateStep('gaps', 'running')
+      if (jobId) await updateJob(jobId, { current_step: 'gaps', progress: 60 })
       
       const gapsRes = await fetch('/api/ai/content-analysis', {
         method: 'POST',
@@ -159,10 +255,12 @@ export default function PipelinePage() {
       })
       const gapsData = await gapsRes.json()
       updateStep('gaps', 'completed', gapsData)
+      if (jobId) await updateJob(jobId, { gaps_result: gapsData, progress: 75 })
 
       // Step 4: Generate Topics
       setCurrentStep(3)
       updateStep('topics', 'running')
+      if (jobId) await updateJob(jobId, { current_step: 'topics', progress: 85 })
       
       const topicsRes = await fetch('/api/ai/topic-clusters', {
         method: 'POST',
@@ -191,18 +289,40 @@ export default function PipelinePage() {
         blog_generated: false
       }))
 
-      setResult({
+      const finalResult = {
         seoScore,
         pagesIndexed,
         contentGaps: gapsData.gaps?.length || topics.filter((t: TopicCluster) => t.priority === 'high').length,
         topPerformers: gapsData.topPerformers || [],
         underperformers: gapsData.underperformers || [],
         topics
-      })
+      }
+
+      setResult(finalResult)
+
+      // Update job with final results
+      if (jobId) {
+        await updateJob(jobId, { 
+          status: 'completed',
+          topics_result: topicsData,
+          content_gaps: finalResult.contentGaps,
+          topics_generated: topics.length,
+          progress: 100,
+          completed_at: new Date().toISOString()
+        })
+      }
+
+      // Refresh jobs list
+      fetchInitialData()
 
     } catch (error: any) {
       console.error('Pipeline error:', error)
-      alert(`Pipeline error: ${error.message}`)
+      if (jobId) {
+        await updateJob(jobId, { 
+          status: 'failed', 
+          error_message: error.message 
+        })
+      }
     } finally {
       setIsRunning(false)
     }
@@ -239,6 +359,11 @@ export default function PipelinePage() {
               t.id === topic.id ? { ...t, blog_generated: true } : t
             )
           } : null)
+
+          // Update job blogs_created count
+          if (currentJobId) {
+            await updateJob(currentJobId, { blogs_created: i + 1 })
+          }
         }
       } catch (error) {
         console.error(`Failed to generate blog for ${topic.name}:`, error)
@@ -246,263 +371,503 @@ export default function PipelinePage() {
     }
 
     setGeneratingBlogs(false)
-    alert(`Generated ${generatedCount} blog posts! Check the Posts page to review.`)
   }
 
   const getScoreColor = (score: number) => {
-    if (score >= 70) return 'text-green-600'
-    if (score >= 50) return 'text-yellow-600'
+    if (score >= 70) return 'text-emerald-600'
+    if (score >= 50) return 'text-amber-600'
     return 'text-red-600'
+  }
+
+  const getScoreBg = (score: number) => {
+    if (score >= 70) return 'from-emerald-500 to-green-600'
+    if (score >= 50) return 'from-amber-500 to-orange-600'
+    return 'from-red-500 to-rose-600'
   }
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'bg-red-100 text-red-800'
-      case 'medium': return 'bg-yellow-100 text-yellow-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'high': return 'bg-rose-100 text-rose-700 border-rose-200'
+      case 'medium': return 'bg-amber-100 text-amber-700 border-amber-200'
+      default: return 'bg-slate-100 text-slate-700 border-slate-200'
     }
+  }
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">Completed</Badge>
+      case 'running':
+        return <Badge className="bg-blue-100 text-blue-700 border-blue-200 animate-pulse">Running</Badge>
+      case 'failed':
+        return <Badge className="bg-red-100 text-red-700 border-red-200">Failed</Badge>
+      default:
+        return <Badge className="bg-slate-100 text-slate-700 border-slate-200">Pending</Badge>
+    }
+  }
+
+  const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-indigo-600 mx-auto mb-4" />
+          <p className="text-slate-600">Loading pipeline...</p>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-6">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-              <Sparkles className="w-6 h-6 text-white" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200">
+                <Sparkles className="w-7 h-7 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  Content Pipeline
+                </h1>
+                <p className="text-slate-500">
+                  Analyze websites and generate AI-powered content strategies
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Website-to-Content Pipeline</h1>
-              <p className="text-muted-foreground">
-                Analyze any website and generate a complete content strategy
-              </p>
+            
+            {/* Tab Switcher */}
+            <div className="flex bg-white rounded-xl p-1 shadow-sm border border-slate-200">
+              <button
+                onClick={() => setActiveTab('new')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  activeTab === 'new' 
+                    ? 'bg-indigo-600 text-white shadow-sm' 
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Zap className="w-4 h-4 inline mr-2" />
+                New Analysis
+              </button>
+              <button
+                onClick={() => setActiveTab('history')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  activeTab === 'history' 
+                    ? 'bg-indigo-600 text-white shadow-sm' 
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <History className="w-4 h-4 inline mr-2" />
+                History ({recentJobs.length})
+              </button>
             </div>
           </div>
         </div>
 
-        {!result ? (
-          <>
-            {/* Input Form */}
-            <Card className="mb-8 border-2 border-indigo-200 shadow-xl">
-              <CardHeader className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-t-lg">
-                <CardTitle className="flex items-center gap-2">
-                  <Globe className="w-5 h-5" />
-                  Start Analysis
-                </CardTitle>
-                <CardDescription className="text-indigo-100">
-                  Paste a website URL to begin the content analysis pipeline
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-6 space-y-6">
-                {/* URL Input */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Website URL *
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="url"
-                      value={websiteUrl}
-                      onChange={(e) => setWebsiteUrl(e.target.value)}
-                      placeholder="https://example.com"
-                      className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none"
-                      disabled={isRunning}
-                    />
-                  </div>
-                </div>
-
-                {/* Client Selection */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Client (Optional)
-                    </label>
-                    <select
-                      value={selectedClient}
-                      onChange={(e) => setSelectedClient(e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500"
-                      disabled={isRunning}
+        {activeTab === 'history' ? (
+          /* Job History Tab */
+          <Card className="border-0 shadow-xl bg-white/80 backdrop-blur">
+            <CardHeader className="border-b border-slate-100">
+              <CardTitle className="flex items-center gap-2 text-slate-800">
+                <Clock className="w-5 h-5 text-indigo-600" />
+                Recent Pipeline Jobs
+              </CardTitle>
+              <CardDescription>View and manage your previous website analyses</CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              {recentJobs.length > 0 ? (
+                <div className="divide-y divide-slate-100">
+                  {recentJobs.map((job) => (
+                    <div 
+                      key={job.id} 
+                      className="p-5 hover:bg-slate-50/50 transition-colors cursor-pointer"
                     >
-                      <option value="">New/No Client</option>
-                      {clients.map((client) => (
-                        <option key={client.id} value={client.id}>{client.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Target Market
-                    </label>
-                    <input
-                      type="text"
-                      value={targetMarket}
-                      onChange={(e) => setTargetMarket(e.target.value)}
-                      placeholder="e.g., Small businesses in US"
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500"
-                      disabled={isRunning}
-                    />
-                  </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4 flex-1">
+                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                            job.status === 'completed' ? 'bg-emerald-100' :
+                            job.status === 'running' ? 'bg-blue-100' :
+                            job.status === 'failed' ? 'bg-red-100' : 'bg-slate-100'
+                          }`}>
+                            {job.status === 'completed' ? <CheckCircle className="w-6 h-6 text-emerald-600" /> :
+                             job.status === 'running' ? <Loader2 className="w-6 h-6 text-blue-600 animate-spin" /> :
+                             job.status === 'failed' ? <AlertCircle className="w-6 h-6 text-red-600" /> :
+                             <Globe className="w-6 h-6 text-slate-400" />}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-1">
+                              <span className="font-semibold text-slate-800 truncate max-w-md">
+                                {job.website_url}
+                              </span>
+                              {getStatusBadge(job.status)}
+                            </div>
+                            <div className="flex items-center gap-4 text-sm text-slate-500">
+                              <span className="flex items-center gap-1">
+                                <Clock className="w-3.5 h-3.5" />
+                                {formatDate(job.created_at)}
+                              </span>
+                              {job.clients && (
+                                <span className="flex items-center gap-1">
+                                  <Users className="w-3.5 h-3.5" />
+                                  {job.clients.name}
+                                </span>
+                              )}
+                              {job.seo_score && (
+                                <span className={`font-medium ${getScoreColor(job.seo_score)}`}>
+                                  SEO: {job.seo_score}
+                                </span>
+                              )}
+                              {job.topics_generated && (
+                                <span className="text-indigo-600">
+                                  {job.topics_generated} topics
+                                </span>
+                              )}
+                              {job.blogs_created && job.blogs_created > 0 && (
+                                <span className="text-emerald-600">
+                                  {job.blogs_created} blogs
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button variant="ghost" size="sm" className="text-slate-400 hover:text-indigo-600">
+                            <ExternalLink className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm" className="text-slate-400 hover:text-red-600">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      {job.status === 'running' && (
+                        <div className="mt-3 ml-16">
+                          <div className="flex items-center gap-3">
+                            <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-500"
+                                style={{ width: `${job.progress}%` }}
+                              />
+                            </div>
+                            <span className="text-sm font-medium text-indigo-600">{job.progress}%</span>
+                          </div>
+                          <p className="text-xs text-slate-500 mt-1">
+                            Current step: {job.current_step || 'Initializing...'}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
-
-                {/* Goals & ICP */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      <Target className="w-4 h-4 inline mr-1" />
-                      Client Goals
-                    </label>
-                    <textarea
-                      value={clientGoals}
-                      onChange={(e) => setClientGoals(e.target.value)}
-                      placeholder="e.g., Increase organic traffic, establish thought leadership, generate leads..."
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 h-24"
-                      disabled={isRunning}
-                    />
+              ) : (
+                <div className="p-12 text-center">
+                  <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <Search className="w-8 h-8 text-slate-400" />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      <Users className="w-4 h-4 inline mr-1" />
-                      Ideal Customer Profile (ICP)
-                    </label>
-                    <textarea
-                      value={icp}
-                      onChange={(e) => setIcp(e.target.value)}
-                      placeholder="e.g., Marketing managers at B2B SaaS companies with 50-200 employees..."
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 h-24"
-                      disabled={isRunning}
-                    />
-                  </div>
+                  <h3 className="text-lg font-semibold text-slate-700 mb-2">No jobs yet</h3>
+                  <p className="text-slate-500 mb-4">Start your first website analysis to see it here</p>
+                  <Button onClick={() => setActiveTab('new')} className="bg-indigo-600 hover:bg-indigo-700">
+                    <Zap className="w-4 h-4 mr-2" />
+                    Start New Analysis
+                  </Button>
                 </div>
+              )}
+            </CardContent>
+          </Card>
+        ) : !result ? (
+          <>
+            {/* New Analysis Form */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Main Form */}
+              <div className="lg:col-span-2">
+                <Card className="border-0 shadow-xl bg-white/80 backdrop-blur overflow-hidden">
+                  <CardHeader className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white pb-8">
+                    <CardTitle className="flex items-center gap-2 text-xl">
+                      <Globe className="w-6 h-6" />
+                      Website Analysis
+                    </CardTitle>
+                    <CardDescription className="text-indigo-100 text-base">
+                      Enter a website URL to analyze its content and generate SEO topics
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-6 space-y-6">
+                    {/* URL Input */}
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">
+                        Website URL <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                        <input
+                          type="url"
+                          value={websiteUrl}
+                          onChange={(e) => setWebsiteUrl(e.target.value)}
+                          placeholder="https://example.com"
+                          className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none transition-all text-lg"
+                          disabled={isRunning}
+                        />
+                      </div>
+                    </div>
 
-                {/* Run Button */}
-                <Button
-                  onClick={runPipeline}
-                  disabled={!websiteUrl || isRunning}
-                  size="lg"
-                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-6 text-lg shadow-lg"
-                >
-                  {isRunning ? (
-                    <>
-                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Running Pipeline...
-                    </>
-                  ) : (
-                    <>
-                      <Zap className="w-5 h-5 mr-2" />
-                      Analyze Website & Generate Topics
-                    </>
-                  )}
-                </Button>
-              </CardContent>
-            </Card>
+                    {/* Client & Market */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">
+                          <Users className="w-4 h-4 inline mr-1" />
+                          Client
+                        </label>
+                        <select
+                          value={selectedClient}
+                          onChange={(e) => setSelectedClient(e.target.value)}
+                          className="w-full px-4 py-3.5 bg-slate-50 border-2 border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none transition-all"
+                          disabled={isRunning}
+                        >
+                          <option value="">Select client (optional)</option>
+                          {clients.map((client) => (
+                            <option key={client.id} value={client.id}>{client.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">
+                          <TrendingUp className="w-4 h-4 inline mr-1" />
+                          Target Market
+                        </label>
+                        <input
+                          type="text"
+                          value={targetMarket}
+                          onChange={(e) => setTargetMarket(e.target.value)}
+                          placeholder="e.g., Small businesses in US"
+                          className="w-full px-4 py-3.5 bg-slate-50 border-2 border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none transition-all"
+                          disabled={isRunning}
+                        />
+                      </div>
+                    </div>
 
-            {/* Pipeline Steps */}
-            {isRunning && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Pipeline Progress</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
+                    {/* Goals & ICP */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">
+                          <Target className="w-4 h-4 inline mr-1" />
+                          Business Goals
+                        </label>
+                        <textarea
+                          value={clientGoals}
+                          onChange={(e) => setClientGoals(e.target.value)}
+                          placeholder="e.g., Increase organic traffic, generate leads..."
+                          className="w-full px-4 py-3 bg-slate-50 border-2 border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none transition-all h-28 resize-none"
+                          disabled={isRunning}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">
+                          <Users className="w-4 h-4 inline mr-1" />
+                          Ideal Customer Profile
+                        </label>
+                        <textarea
+                          value={icp}
+                          onChange={(e) => setIcp(e.target.value)}
+                          placeholder="e.g., Marketing managers at B2B SaaS companies..."
+                          className="w-full px-4 py-3 bg-slate-50 border-2 border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none transition-all h-28 resize-none"
+                          disabled={isRunning}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Run Button */}
+                    <Button
+                      onClick={runPipeline}
+                      disabled={!websiteUrl || isRunning}
+                      size="lg"
+                      className="w-full bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 text-white py-7 text-lg font-semibold shadow-lg shadow-indigo-200 rounded-xl transition-all hover:shadow-xl"
+                    >
+                      {isRunning ? (
+                        <>
+                          <Loader2 className="w-6 h-6 mr-3 animate-spin" />
+                          Analyzing Website...
+                        </>
+                      ) : (
+                        <>
+                          <Zap className="w-6 h-6 mr-3" />
+                          Start Analysis Pipeline
+                        </>
+                      )}
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Sidebar - Steps or Stats */}
+              <div className="space-y-6">
+                {/* Pipeline Steps */}
+                <Card className="border-0 shadow-xl bg-white/80 backdrop-blur">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-lg text-slate-800">Pipeline Steps</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
                     {steps.map((step, index) => (
-                      <div key={step.id} className="flex items-center gap-4">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          step.status === 'completed' ? 'bg-green-100 text-green-600' :
-                          step.status === 'running' ? 'bg-indigo-100 text-indigo-600' :
+                      <div key={step.id} className="flex items-start gap-3">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all ${
+                          step.status === 'completed' ? 'bg-emerald-100 text-emerald-600' :
+                          step.status === 'running' ? 'bg-indigo-100 text-indigo-600 shadow-lg shadow-indigo-100' :
                           step.status === 'error' ? 'bg-red-100 text-red-600' :
-                          'bg-gray-100 text-gray-400'
+                          'bg-slate-100 text-slate-400'
                         }`}>
                           {step.status === 'completed' ? <CheckCircle className="w-5 h-5" /> :
                            step.status === 'running' ? <Loader2 className="w-5 h-5 animate-spin" /> :
                            step.status === 'error' ? <AlertCircle className="w-5 h-5" /> :
-                           <span className="text-sm font-medium">{index + 1}</span>}
+                           <span className="text-sm font-bold">{index + 1}</span>}
                         </div>
-                        <div className="flex-1">
-                          <p className={`font-medium ${
+                        <div className="flex-1 pt-1">
+                          <p className={`font-semibold text-sm ${
                             step.status === 'running' ? 'text-indigo-600' :
-                            step.status === 'completed' ? 'text-green-600' :
+                            step.status === 'completed' ? 'text-emerald-600' :
                             step.status === 'error' ? 'text-red-600' :
-                            'text-gray-400'
+                            'text-slate-500'
                           }`}>
                             {step.label}
                           </p>
+                          <p className="text-xs text-slate-400 mt-0.5">{step.description}</p>
                         </div>
-                        {step.status === 'running' && (
-                          <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
-                            <div className="h-full bg-indigo-600 animate-pulse" style={{ width: '60%' }} />
-                          </div>
-                        )}
                       </div>
                     ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+                  </CardContent>
+                </Card>
+
+                {/* Quick Stats */}
+                <Card className="border-0 shadow-xl bg-gradient-to-br from-indigo-600 to-purple-700 text-white">
+                  <CardContent className="pt-6">
+                    <h3 className="font-semibold text-indigo-100 mb-4">Recent Stats</h3>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-indigo-200">Total Jobs</span>
+                        <span className="font-bold text-xl">{recentJobs.length}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-indigo-200">Completed</span>
+                        <span className="font-bold text-xl text-emerald-300">
+                          {recentJobs.filter(j => j.status === 'completed').length}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-indigo-200">Topics Generated</span>
+                        <span className="font-bold text-xl">
+                          {recentJobs.reduce((acc, j) => acc + (j.topics_generated || 0), 0)}
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
           </>
         ) : (
           <>
             {/* Results Dashboard */}
             <div className="space-y-6">
+              {/* Success Header */}
+              <Card className="border-0 shadow-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white overflow-hidden">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center">
+                        <CheckCircle className="w-8 h-8 text-white" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-bold">Analysis Complete!</h2>
+                        <p className="text-emerald-100">
+                          {websiteUrl} • {result.topics.length} topics discovered
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setResult(null)
+                        setSteps(steps.map(s => ({ ...s, status: 'pending' })))
+                        setWebsiteUrl('')
+                      }}
+                      className="bg-white/10 border-white/30 text-white hover:bg-white/20"
+                    >
+                      <RotateCcw className="w-4 h-4 mr-2" />
+                      New Analysis
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
               {/* Score Cards */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Card>
+                <Card className="border-0 shadow-lg bg-white/80 backdrop-blur overflow-hidden">
+                  <div className={`h-1 bg-gradient-to-r ${getScoreBg(result.seoScore)}`} />
                   <CardContent className="pt-6 text-center">
-                    <BarChart3 className="w-8 h-8 mx-auto mb-2 text-indigo-600" />
-                    <div className={`text-3xl font-bold ${getScoreColor(result.seoScore)}`}>
+                    <div className={`w-14 h-14 rounded-2xl mx-auto mb-3 flex items-center justify-center bg-gradient-to-br ${getScoreBg(result.seoScore)}`}>
+                      <BarChart3 className="w-7 h-7 text-white" />
+                    </div>
+                    <div className={`text-4xl font-bold ${getScoreColor(result.seoScore)}`}>
                       {result.seoScore}
                     </div>
-                    <p className="text-sm text-muted-foreground">SEO Score</p>
+                    <p className="text-sm text-slate-500 font-medium mt-1">SEO Score</p>
                   </CardContent>
                 </Card>
-                <Card>
+                <Card className="border-0 shadow-lg bg-white/80 backdrop-blur overflow-hidden">
+                  <div className="h-1 bg-gradient-to-r from-purple-500 to-violet-600" />
                   <CardContent className="pt-6 text-center">
-                    <Globe className="w-8 h-8 mx-auto mb-2 text-purple-600" />
-                    <div className="text-3xl font-bold text-purple-600">{result.pagesIndexed}</div>
-                    <p className="text-sm text-muted-foreground">Pages Found</p>
+                    <div className="w-14 h-14 rounded-2xl mx-auto mb-3 flex items-center justify-center bg-gradient-to-br from-purple-500 to-violet-600">
+                      <Globe className="w-7 h-7 text-white" />
+                    </div>
+                    <div className="text-4xl font-bold text-purple-600">{result.pagesIndexed}</div>
+                    <p className="text-sm text-slate-500 font-medium mt-1">Pages Found</p>
                   </CardContent>
                 </Card>
-                <Card>
+                <Card className="border-0 shadow-lg bg-white/80 backdrop-blur overflow-hidden">
+                  <div className="h-1 bg-gradient-to-r from-amber-500 to-orange-600" />
                   <CardContent className="pt-6 text-center">
-                    <AlertCircle className="w-8 h-8 mx-auto mb-2 text-orange-600" />
-                    <div className="text-3xl font-bold text-orange-600">{result.contentGaps}</div>
-                    <p className="text-sm text-muted-foreground">Content Gaps</p>
+                    <div className="w-14 h-14 rounded-2xl mx-auto mb-3 flex items-center justify-center bg-gradient-to-br from-amber-500 to-orange-600">
+                      <Target className="w-7 h-7 text-white" />
+                    </div>
+                    <div className="text-4xl font-bold text-amber-600">{result.contentGaps}</div>
+                    <p className="text-sm text-slate-500 font-medium mt-1">Content Gaps</p>
                   </CardContent>
                 </Card>
-                <Card>
+                <Card className="border-0 shadow-lg bg-white/80 backdrop-blur overflow-hidden">
+                  <div className="h-1 bg-gradient-to-r from-indigo-500 to-blue-600" />
                   <CardContent className="pt-6 text-center">
-                    <FileText className="w-8 h-8 mx-auto mb-2 text-cyan-600" />
-                    <div className="text-3xl font-bold text-cyan-600">{result.topics.length}</div>
-                    <p className="text-sm text-muted-foreground">Topics Generated</p>
+                    <div className="w-14 h-14 rounded-2xl mx-auto mb-3 flex items-center justify-center bg-gradient-to-br from-indigo-500 to-blue-600">
+                      <FileText className="w-7 h-7 text-white" />
+                    </div>
+                    <div className="text-4xl font-bold text-indigo-600">{result.topics.length}</div>
+                    <p className="text-sm text-slate-500 font-medium mt-1">Topics Generated</p>
                   </CardContent>
                 </Card>
               </div>
 
               {/* Topic Recommendations */}
-              <Card>
-                <CardHeader>
+              <Card className="border-0 shadow-xl bg-white/80 backdrop-blur">
+                <CardHeader className="border-b border-slate-100">
                   <div className="flex items-center justify-between">
                     <div>
-                      <CardTitle className="flex items-center gap-2">
+                      <CardTitle className="flex items-center gap-2 text-slate-800">
                         <Sparkles className="w-5 h-5 text-indigo-600" />
                         Recommended Topics
                       </CardTitle>
                       <CardDescription>
-                        AI-generated topics based on gaps, goals, and ICP
+                        AI-generated topics based on content gaps, goals, and target audience
                       </CardDescription>
                     </div>
                     <Button
                       onClick={generateAllBlogs}
                       disabled={generatingBlogs || result.topics.every(t => t.blog_generated)}
-                      className="bg-gradient-to-r from-green-600 to-emerald-600"
+                      className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg shadow-emerald-200"
                     >
                       {generatingBlogs ? (
                         <>
@@ -518,41 +883,56 @@ export default function PipelinePage() {
                     </Button>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {result.topics.map((topic) => (
+                <CardContent className="p-0">
+                  <div className="divide-y divide-slate-100">
+                    {result.topics.map((topic, index) => (
                       <div
                         key={topic.id}
-                        className={`flex items-center justify-between p-4 border rounded-lg ${
-                          topic.blog_generated ? 'bg-green-50 border-green-200' : 'bg-white'
+                        className={`flex items-center justify-between p-5 hover:bg-slate-50/50 transition-colors ${
+                          topic.blog_generated ? 'bg-emerald-50/50' : ''
                         }`}
                       >
                         <div className="flex items-center gap-4">
-                          {topic.blog_generated ? (
-                            <CheckCircle className="w-5 h-5 text-green-600" />
-                          ) : (
-                            <FileText className="w-5 h-5 text-gray-400" />
-                          )}
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                            topic.blog_generated 
+                              ? 'bg-emerald-100 text-emerald-600' 
+                              : 'bg-slate-100 text-slate-400'
+                          }`}>
+                            {topic.blog_generated ? (
+                              <CheckCircle className="w-5 h-5" />
+                            ) : (
+                              <span className="text-sm font-bold">{index + 1}</span>
+                            )}
+                          </div>
                           <div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium">{topic.name}</span>
-                              <Badge className={getPriorityColor(topic.priority)}>
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-semibold text-slate-800">{topic.name}</span>
+                              <Badge className={`${getPriorityColor(topic.priority)} border`}>
                                 {topic.priority}
                               </Badge>
                               {topic.blog_generated && (
-                                <Badge className="bg-green-100 text-green-800">Generated</Badge>
+                                <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
+                                  <CheckCircle className="w-3 h-3 mr-1" />
+                                  Generated
+                                </Badge>
                               )}
                             </div>
-                            <div className="text-sm text-muted-foreground mt-1">
-                              Keyword: {topic.primary_keyword} • 
-                              Difficulty: {topic.difficulty}/100 • 
-                              Est. Traffic: {topic.estimated_traffic.toLocaleString()}/mo
+                            <div className="flex items-center gap-3 text-sm text-slate-500">
+                              <span className="font-medium text-indigo-600">{topic.primary_keyword}</span>
+                              <span>•</span>
+                              <span>Difficulty: {topic.difficulty}/100</span>
+                              <span>•</span>
+                              <span>~{topic.estimated_traffic.toLocaleString()} traffic/mo</span>
                             </div>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
                           {!topic.blog_generated && !generatingBlogs && (
-                            <Button variant="outline" size="sm">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              className="border-indigo-200 text-indigo-600 hover:bg-indigo-50"
+                            >
                               <Zap className="w-4 h-4 mr-1" />
                               Generate
                             </Button>
@@ -568,16 +948,18 @@ export default function PipelinePage() {
               <div className="flex justify-center gap-4">
                 <Button
                   variant="outline"
-                  onClick={() => {
-                    setResult(null)
-                    setSteps(steps.map(s => ({ ...s, status: 'pending' })))
-                  }}
+                  size="lg"
+                  onClick={() => setActiveTab('history')}
+                  className="border-slate-300"
                 >
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Analyze Another Website
+                  <History className="w-4 h-4 mr-2" />
+                  View History
                 </Button>
                 <Link href="/app/posts">
-                  <Button className="bg-gradient-to-r from-indigo-600 to-purple-600">
+                  <Button 
+                    size="lg"
+                    className="bg-gradient-to-r from-indigo-600 to-purple-600 shadow-lg shadow-indigo-200"
+                  >
                     <Eye className="w-4 h-4 mr-2" />
                     View Generated Posts
                     <ChevronRight className="w-4 h-4 ml-1" />

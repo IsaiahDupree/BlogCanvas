@@ -107,7 +107,7 @@ export default function VendorRegisterPage() {
 
       setSuccess(true)
       setTimeout(() => {
-        router.push('/portal/login')
+        router.push('/login')
       }, 3000)
 
     } catch (err: any) {
@@ -305,7 +305,7 @@ export default function VendorRegisterPage() {
 
           <p className="text-center text-sm text-muted-foreground mt-6">
             Already have an account?{' '}
-            <Link href="/portal/login" className="text-indigo-600 hover:text-indigo-700 font-medium">
+            <Link href="/login" className="text-indigo-600 hover:text-indigo-700 font-medium">
               Sign in
             </Link>
           </p>

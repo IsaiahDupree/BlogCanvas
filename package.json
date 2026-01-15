@@ -17,7 +17,10 @@
     "test:supabase": "tsx scripts/test-supabase-connection.ts",
     "migrations:list": "tsx scripts/manage-migrations.ts list",
     "migrations:status": "tsx scripts/manage-migrations.ts status",
-    "migrations:apply": "tsx scripts/manage-migrations.ts apply"
+    "migrations:apply": "tsx scripts/manage-migrations.ts apply",
+    "harness": "node harness/run-harness-v2.js",
+    "harness:continuous": "node harness/run-harness-v2.js --continuous",
+    "harness:20hr": "node harness/run-harness-v2.js --continuous --max=200"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.3.3",

@@ -149,7 +149,7 @@ function ClientInvitationContent() {
                         <h2 className="text-2xl font-bold text-gray-900 mb-2">Invalid Invitation</h2>
                         <p className="text-gray-600 mb-6">{error}</p>
                         <Link
-                            href="/portal/login"
+                            href="/login"
                             className="inline-block px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
                         >
                             Go to Login
@@ -300,7 +300,7 @@ function ClientInvitationContent() {
 
                 <p className="text-center text-sm text-indigo-100 mt-6">
                     Already have an account?{' '}
-                    <Link href="/portal/login" className="font-semibold hover:text-white transition-colors">
+                    <Link href="/login" className="font-semibold hover:text-white transition-colors">
                         Sign In
                     </Link>
                 </p>

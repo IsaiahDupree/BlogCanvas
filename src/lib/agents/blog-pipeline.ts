@@ -19,10 +19,35 @@ export interface BlogGenerationInput {
   targetKeyword: string;
   wordCountGoal: number;
   clientProfile: {
+    // Basic Info
+    clientName?: string;
+    industry?: string;
+    
+    // Brand Snapshot - Core
     productServiceSummary?: string;
     targetAudience?: string;
+    positioning?: string;
+    
+    // Tone & Voice
     brandVoice?: string[];
     brandTone?: string;
+    formalityLevel?: number;
+    playfulnessLevel?: number;
+    
+    // Brand Messaging
+    tagline?: string;
+    keyMessages?: string[];
+    valuePropositions?: string[];
+    
+    // Competitive Context
+    competitors?: string[];
+    keyDifferentiators?: string[];
+    
+    // Content Guidelines
+    keywordsToInclude?: string[];
+    keywordsToAvoid?: string[];
+    topicsToAvoid?: string[];
+    styleNotes?: string;
   };
   options?: {
     generateMultipleOutlines?: boolean;
