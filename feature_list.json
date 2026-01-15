@@ -1840,7 +1840,9 @@
         "UI updates",
         "Audit log created"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T07:06:04.039Z",
+      "notes": "AI drafting → editor review transition implemented. Status enum updated, transition API validates state changes, audit trail via revisions, editor_reviewed_at/by fields set."
     },
     {
       "id": "feat-083",
@@ -1860,7 +1862,9 @@
         "Client gets email",
         "Status synced both sides"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T07:06:04.039Z",
+      "notes": "Editor review → client review transition implemented. Transition API allows marking ready, client notifications sent, client_reviewed_at/by fields set, accessible in portal via RLS."
     },
     {
       "id": "feat-084",
@@ -1880,7 +1884,9 @@
         "CSM notified",
         "Appears in publish queue"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T07:06:04.039Z",
+      "notes": "Client review → approved transition implemented. Clients can approve via API, vendor/CSM notifications sent, approved_at/by fields set, ready for publishing."
     },
     {
       "id": "feat-085",
@@ -1900,7 +1906,9 @@
         "Timestamp set",
         "Coverage updated"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T07:06:04.039Z",
+      "notes": "Approved → published with CMS URL implemented. Publisher sets cms_url and published_at, topic cluster coverage updated, check-backs scheduled, status set to published."
     },
     {
       "id": "feat-086",

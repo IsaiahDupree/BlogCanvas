@@ -171,7 +171,7 @@ export async function publishToWordPress(
     // Update database with publish info
     if (result.success) {
         const publishedAt = options?.scheduleDate ? options.scheduleDate : new Date();
-        
+
         await supabaseAdmin
             .from('blog_posts')
             .update({
@@ -183,6 +183,8 @@ export async function publishToWordPress(
                     cms_type: 'wordpress',
                     status: wpPost.status
                 },
+                cms_url: result.url, // PRD: Set cms_url column
+                published_at: publishedAt.toISOString(), // PRD: Set published_at timestamp
                 updated_at: new Date().toISOString()
             })
             .eq('id', postId);
@@ -195,6 +197,19 @@ export async function publishToWordPress(
             } catch (error) {
                 console.error('Failed to schedule check-backs:', error);
                 // Don't fail the publish if check-back scheduling fails
+            }
+        }
+
+        // Update topic cluster coverage (PRD requirement)
+        if (post.topic_cluster_id) {
+            try {
+                await supabaseAdmin
+                    .from('topic_clusters')
+                    .update({ currently_covered: true })
+                    .eq('id', post.topic_cluster_id);
+            } catch (error) {
+                console.error('Failed to update topic cluster coverage:', error);
+                // Don't fail the publish if cluster update fails
             }
         }
     } else {
