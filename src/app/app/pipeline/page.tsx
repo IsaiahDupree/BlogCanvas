@@ -25,7 +25,8 @@ import {
   ExternalLink,
   Trash2,
   RotateCcw,
-  Download
+  Download,
+  X
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -207,6 +208,42 @@ export default function PipelinePage() {
     }
   }
 
+  const cancelJob = async (jobId: string) => {
+    if (!confirm('Are you sure you want to cancel this running job?')) {
+      return
+    }
+
+    try {
+      const res = await fetch(`/api/pipeline-jobs/${jobId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: 'cancelled',
+          completed_at: new Date().toISOString()
+        })
+      })
+      const data = await res.json()
+
+      if (data.success) {
+        // Update the jobs list with the cancelled status
+        setRecentJobs(prev => prev.map(job =>
+          job.id === jobId ? { ...job, status: 'cancelled' } : job
+        ))
+
+        // If this is the current running job, stop it
+        if (currentJobId === jobId) {
+          setIsRunning(false)
+          setCurrentJobId(null)
+        }
+      } else {
+        alert('Failed to cancel job: ' + (data.error || 'Unknown error'))
+      }
+    } catch (error) {
+      console.error('Failed to cancel job:', error)
+      alert('Failed to cancel job')
+    }
+  }
+
   const retryJob = async (job: PipelineJob) => {
     if (!confirm(`Retry this job?\n\nWebsite: ${job.website_url}\nThis will create a new job with the same parameters.`)) {
       return
@@ -247,9 +284,20 @@ export default function PipelinePage() {
     }
   }
 
+  const checkIfCancelled = async (jobId: string | null): Promise<boolean> => {
+    if (!jobId) return false
+    try {
+      const res = await fetch(`/api/pipeline-jobs/${jobId}`)
+      const data = await res.json()
+      return data.job?.status === 'cancelled'
+    } catch {
+      return false
+    }
+  }
+
   const runPipeline = async () => {
     if (!websiteUrl) return
-    
+
     setIsRunning(true)
     setResult(null)
     setSteps(steps.map(s => ({ ...s, status: 'pending' })))
@@ -265,6 +313,11 @@ export default function PipelinePage() {
       setCurrentStep(0)
       updateStep('crawl', 'running')
       if (jobId) await updateJob(jobId, { current_step: 'crawl', progress: 10 })
+
+      // Check for cancellation
+      if (await checkIfCancelled(jobId)) {
+        throw new Error('Job cancelled by user')
+      }
       
       const crawlRes = await fetch('/api/ai/website-audit', {
         method: 'POST',
@@ -286,6 +339,11 @@ export default function PipelinePage() {
       updateStep('crawl', 'completed', crawlData)
       if (jobId) await updateJob(jobId, { crawl_result: crawlData, progress: 25 })
 
+      // Check for cancellation
+      if (await checkIfCancelled(jobId)) {
+        throw new Error('Job cancelled by user')
+      }
+
       // Step 2: Analyze SEO
       setCurrentStep(1)
       updateStep('analyze', 'running')
@@ -294,12 +352,17 @@ export default function PipelinePage() {
       const seoScore = crawlData.audit?.baseline_score || crawlData.score || 50
       const pagesIndexed = crawlData.audit?.pages_indexed || crawlData.pages?.length || 0
       updateStep('analyze', 'completed', { seoScore, pagesIndexed })
-      if (jobId) await updateJob(jobId, { 
-        analyze_result: { seoScore, pagesIndexed }, 
+      if (jobId) await updateJob(jobId, {
+        analyze_result: { seoScore, pagesIndexed },
         seo_score: seoScore,
         pages_indexed: pagesIndexed,
-        progress: 50 
+        progress: 50
       })
+
+      // Check for cancellation
+      if (await checkIfCancelled(jobId)) {
+        throw new Error('Job cancelled by user')
+      }
 
       // Step 3: Content Gap Analysis
       setCurrentStep(2)
@@ -319,6 +382,11 @@ export default function PipelinePage() {
       const gapsData = await gapsRes.json()
       updateStep('gaps', 'completed', gapsData)
       if (jobId) await updateJob(jobId, { gaps_result: gapsData, progress: 75 })
+
+      // Check for cancellation
+      if (await checkIfCancelled(jobId)) {
+        throw new Error('Job cancelled by user')
+      }
 
       // Step 4: Generate Topics
       setCurrentStep(3)
@@ -500,6 +568,8 @@ export default function PipelinePage() {
         return <Badge className="bg-blue-100 text-blue-700 border-blue-200 animate-pulse">Running</Badge>
       case 'failed':
         return <Badge className="bg-red-100 text-red-700 border-red-200">Failed</Badge>
+      case 'cancelled':
+        return <Badge className="bg-orange-100 text-orange-700 border-orange-200">Cancelled</Badge>
       default:
         return <Badge className="bg-slate-100 text-slate-700 border-slate-200">Pending</Badge>
     }
@@ -596,11 +666,13 @@ export default function PipelinePage() {
                           <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
                             job.status === 'completed' ? 'bg-emerald-100' :
                             job.status === 'running' ? 'bg-blue-100' :
-                            job.status === 'failed' ? 'bg-red-100' : 'bg-slate-100'
+                            job.status === 'failed' ? 'bg-red-100' :
+                            job.status === 'cancelled' ? 'bg-orange-100' : 'bg-slate-100'
                           }`}>
                             {job.status === 'completed' ? <CheckCircle className="w-6 h-6 text-emerald-600" /> :
                              job.status === 'running' ? <Loader2 className="w-6 h-6 text-blue-600 animate-spin" /> :
                              job.status === 'failed' ? <AlertCircle className="w-6 h-6 text-red-600" /> :
+                             job.status === 'cancelled' ? <X className="w-6 h-6 text-orange-600" /> :
                              <Globe className="w-6 h-6 text-slate-400" />}
                           </div>
                           <div className="flex-1">
@@ -640,6 +712,17 @@ export default function PipelinePage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
+                          {job.status === 'running' && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-slate-400 hover:text-orange-600"
+                              onClick={() => cancelJob(job.id)}
+                              title="Cancel running job"
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          )}
                           {job.status === 'failed' && (
                             <Button
                               variant="ghost"
