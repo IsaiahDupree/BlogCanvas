@@ -4,15 +4,29 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 
 /**
  * Middleware to handle:
- * 1. Supabase auth session refresh
- * 2. CORS headers
- * 3. Security headers
- * 4. Route protection
+ * 1. Request correlation ID generation
+ * 2. Supabase auth session refresh
+ * 3. CORS headers
+ * 4. Security headers
+ * 5. Route protection
+ * 6. Request logging
  */
 export async function middleware(request: NextRequest) {
+    const startTime = Date.now();
+
+    // Generate or extract correlation ID for request tracing
+    const correlationId = request.headers.get('x-request-id') ||
+                         request.headers.get('x-correlation-id') ||
+                         crypto.randomUUID();
+
+    // Clone headers and add correlation ID
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set('x-request-id', correlationId);
+    requestHeaders.set('x-correlation-id', correlationId);
+
     let response = NextResponse.next({
         request: {
-            headers: request.headers,
+            headers: requestHeaders,
         },
     });
 
@@ -172,6 +186,38 @@ export async function middleware(request: NextRequest) {
     response.headers.set('X-Content-Type-Options', 'nosniff');
     response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
     response.headers.set('X-XSS-Protection', '1; mode=block');
+
+    // Add correlation ID to response headers for client-side tracking
+    response.headers.set('X-Request-ID', correlationId);
+    response.headers.set('X-Correlation-ID', correlationId);
+
+    // Log request completion (API routes only)
+    if (request.nextUrl.pathname.startsWith('/api')) {
+        const duration = Date.now() - startTime;
+        const logEntry = {
+            requestId: correlationId,
+            method: request.method,
+            path: request.nextUrl.pathname,
+            duration: `${duration}ms`,
+            status: response.status,
+            timestamp: new Date().toISOString(),
+        };
+
+        // Structured logging for production monitoring
+        if (process.env.NODE_ENV === 'production') {
+            console.log('[REQUEST]', JSON.stringify(logEntry));
+        } else {
+            console.log('[REQUEST]', logEntry);
+        }
+
+        // Warn on slow requests (>2s)
+        if (duration > 2000) {
+            console.warn('[SLOW REQUEST]', {
+                ...logEntry,
+                warning: 'Request took longer than 2 seconds'
+            });
+        }
+    }
 
     return response;
 }
