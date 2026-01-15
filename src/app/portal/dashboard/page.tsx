@@ -5,6 +5,7 @@ import { FileText, Clock, CheckCircle, Calendar, ArrowRight, Bell, PenSquare, Se
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import TopPerformingPosts from '@/components/analytics/TopPerformingPosts'
+import ProjectOverview from '@/components/portal/ProjectOverview'
 
 export default function PortalDashboardPage() {
     // Mock data - would come from API filtered by client_id
@@ -102,6 +103,9 @@ export default function PortalDashboardPage() {
             </div>
 
             <div className="max-w-7xl mx-auto px-6 py-8">
+                {/* Project Overview with SEO Baseline and Target */}
+                <ProjectOverview />
+
                 {/* Needs Your Review - Priority Section */}
                 <Card className="p-6 bg-gradient-to-br from-yellow-50 to-orange-50 border-2 border-yellow-200 shadow-xl mb-8">
                     <div className="flex items-center gap-3 mb-6">
