@@ -2519,7 +2519,9 @@
         "Timeline displayed",
         "Actions highlighted"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T11:35:00Z",
+      "notes": "Client portal dashboard fully implemented with all required features. Components: ProjectOverview (SEO metrics, active batch, timeline), status counts (Quick Stats grid), needs review section (highlighted actions), recently approved and upcoming posts. API endpoint /api/portal/project-overview provides real-time data from Supabase. Dashboard shows: project summary with baseline/target SEO scores, post counts by status (pending review, approved, published, total), timeline with start/end dates and progress bar, highlighted actions in prominent yellow/orange card. All acceptance criteria verified."
     },
     {
       "id": "feat-113",
