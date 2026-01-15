@@ -539,14 +539,14 @@ function identifyUnderperformers(posts: any[], metrics: any[]): any[] {
  * Generate email report
  */
 function generateEmailReport(data: any): any {
-    const { client, period, summary, baseline, current, comparison, topicCoverageDelta, topPosts, underperformers, trends, narrative } = data;
+    const { client, batch, period, summary, baseline, current, comparison, topicCoverageDelta, topPosts, underperformers, trends, narrative } = data;
     const periodStart = new Date(period.start).toLocaleDateString();
     const periodEnd = new Date(period.end).toLocaleDateString();
 
     const email = `
 Hi ${client.name},
 
-Here's your monthly SEO content performance report for ${periodStart} - ${periodEnd}.
+Here's your ${batch ? `content batch "${batch.name}"` : 'monthly SEO content'} performance report for ${periodStart} - ${periodEnd}.
 
 ${narrative ? `
 📋 EXECUTIVE SUMMARY
@@ -561,6 +561,18 @@ ${narrative.concernsAndOpportunities.length > 0 ? `
 💡 OPPORTUNITIES FOR IMPROVEMENT
 ${narrative.concernsAndOpportunities.map((opp: string, i: number) => `${i + 1}. ${opp}`).join('\n')}
 ` : ''}
+` : ''}
+
+${batch ? `
+📦 Content Batch Progress: ${batch.name}
+- Goal: Increase SEO score from ${batch.goalScoreFrom || 'baseline'} to ${batch.goalScoreTo || 'target'}
+- Current Score: ${current ? current.score : 'N/A'}/100
+${batch.goalScoreFrom && batch.goalScoreTo && current ? `
+- Progress: ${current.score >= batch.goalScoreTo ? '✅ Goal Achieved!' :
+  `${Math.round(((current.score - (batch.goalScoreFrom || 0)) / ((batch.goalScoreTo || 100) - (batch.goalScoreFrom || 0))) * 100)}% toward goal`}
+` : ''}
+- Posts in Batch: ${summary.totalPosts}
+
 ` : ''}
 
 ${comparison ? `
@@ -641,7 +653,7 @@ Your SEO Team
  * Generate PDF report HTML
  */
 function generatePDFReport(data: any): string {
-    const { website, client, period, summary, baseline, current, comparison, topicCoverageDelta, topPosts, underperformers, trends, narrative } = data;
+    const { website, client, batch, period, summary, baseline, current, comparison, topicCoverageDelta, topPosts, underperformers, trends, narrative } = data;
     const periodStart = new Date(period.start).toLocaleDateString();
     const periodEnd = new Date(period.end).toLocaleDateString();
 
@@ -650,7 +662,7 @@ function generatePDFReport(data: any): string {
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>SEO Performance Report - ${client.name}</title>
+    <title>SEO Performance Report - ${client.name}${batch ? ` - ${batch.name}` : ''}</title>
     <style>
         body { font-family: Arial, sans-serif; padding: 40px; color: #333; }
         .header { border-bottom: 3px solid #6366f1; padding-bottom: 20px; margin-bottom: 30px; }
@@ -679,8 +691,37 @@ function generatePDFReport(data: any): string {
     <div class="header">
         <h1>SEO Performance Report</h1>
         <p>${client.name} - ${website.url}</p>
+        ${batch ? `<p><strong>Content Batch:</strong> ${batch.name}</p>` : ''}
         <p>Period: ${periodStart} to ${periodEnd}</p>
     </div>
+
+    ${batch ? `
+    <div class="section">
+        <h2>Content Batch Progress</h2>
+        <p style="font-size: 16px;"><strong>${batch.name}</strong></p>
+        <div class="metrics">
+            <div class="metric-card">
+                <div class="metric-value">${batch.goalScoreFrom || 'N/A'}</div>
+                <div class="metric-label">Starting Goal</div>
+            </div>
+            <div class="metric-card ${current && batch.goalScoreTo && current.score >= batch.goalScoreTo ? 'positive' : ''}">
+                <div class="metric-value ${current && batch.goalScoreTo && current.score >= batch.goalScoreTo ? 'positive' : ''}">${current ? current.score : 'N/A'}</div>
+                <div class="metric-label">Current Score</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">${batch.goalScoreTo || 'N/A'}</div>
+                <div class="metric-label">Target Goal</div>
+            </div>
+        </div>
+        ${batch.goalScoreFrom && batch.goalScoreTo && current ? `
+        <div style="background: ${current.score >= batch.goalScoreTo ? '#ecfdf5' : '#fef3c7'}; padding: 20px; border-radius: 8px; margin-top: 20px; text-align: center;">
+            <strong>${current.score >= batch.goalScoreTo ? '✅ Goal Achieved!' :
+                `Progress: ${Math.round(((current.score - batch.goalScoreFrom) / (batch.goalScoreTo - batch.goalScoreFrom)) * 100)}% toward goal`}</strong>
+        </div>
+        ` : ''}
+        <p style="margin-top: 20px;"><strong>Posts in Batch:</strong> ${summary.totalPosts}</p>
+    </div>
+    ` : ''}
 
     ${narrative ? `
     <div class="section">
@@ -859,17 +900,29 @@ function generatePDFReport(data: any): string {
  * Generate slide deck report
  */
 function generateSlideReport(data: any): any[] {
-    const { client, period, summary, baseline, current, comparison, topicCoverageDelta, topPosts, underperformers, narrative } = data;
+    const { client, batch, period, summary, baseline, current, comparison, topicCoverageDelta, topPosts, underperformers, narrative } = data;
     const periodStart = new Date(period.start).toLocaleDateString();
     const periodEnd = new Date(period.end).toLocaleDateString();
 
     const slides: any[] = [
         {
             title: 'SEO Performance Report',
-            subtitle: `${client.name}`,
+            subtitle: `${client.name}${batch ? ` - ${batch.name}` : ''}`,
             content: `Period: ${periodStart} - ${periodEnd}`
         }
     ];
+
+    // Add batch progress slide if batch exists
+    if (batch) {
+        const progress = batch.goalScoreFrom && batch.goalScoreTo && current
+            ? Math.round(((current.score - batch.goalScoreFrom) / (batch.goalScoreTo - batch.goalScoreFrom)) * 100)
+            : null;
+
+        slides.push({
+            title: 'Content Batch Progress',
+            content: `Batch: ${batch.name}\n\nStarting Goal: ${batch.goalScoreFrom || 'N/A'}\nCurrent Score: ${current ? current.score : 'N/A'}/100\nTarget Goal: ${batch.goalScoreTo || 'N/A'}\n\n${progress !== null ? `Progress: ${progress}% toward goal${current && batch.goalScoreTo && current.score >= batch.goalScoreTo ? ' ✅ Goal Achieved!' : ''}` : ''}\n\nPosts in Batch: ${summary.totalPosts}`
+        });
+    }
 
     if (narrative) {
         slides.push({

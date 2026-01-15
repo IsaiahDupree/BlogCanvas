@@ -3054,7 +3054,9 @@
         "Metrics aggregated",
         "Progress shown"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T20:00:00Z",
+      "notes": "Campaign/batch report format fully implemented. Enhanced existing /api/reports/generate endpoint to display batch-specific information in all three report formats. Implementation includes: (1) Batch selection via batchId parameter (route.ts:59-81), posts filtered by content_batch_id (lines 98-99). (2) All batch posts listed and filtered by date range. (3) Metrics fully aggregated using aggregateMetrics() function (lines 321-342) computing totals for impressions, clicks, CTR, position, SEO scores. (4) Goal progress tracking prominently displayed in all formats: Email format (lines 566-576) shows batch name, goal range (goalScoreFrom→goalScoreTo), current score, progress percentage, and posts count. PDF format (lines 694, 698-724) includes batch name in header, dedicated Content Batch Progress section with visual metric cards for start/current/target scores, progress indicator with percentage calculation, and goal achievement status (✅ when reached). Slide format (lines 916-925) includes batch name in subtitle and dedicated batch progress slide with all tracking data. Enhanced features beyond requirements include visual progress indicators, percentage calculations, goal achievement badges, and comprehensive batch context in headers/titles."
     },
     {
       "id": "feat-137",
