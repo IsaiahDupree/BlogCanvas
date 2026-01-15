@@ -9448,3 +9448,104 @@ Next Priority: feat-121 - PRD Revision: Timeline component showing all agent out
 Commit: 71919c2
 Message: "feat(blogcanvas): implement pipeline status tracking per post (feat-120)"
 
+
+=== Session 2026-01-15 20:30 ===
+Implemented: feat-121 - PRD Revision: Timeline component showing all agent outputs
+
+Files Created:
+- src/app/api/blog-posts/[id]/agent-outputs/route.ts (52 lines)
+  * GET endpoint to fetch all agent outputs for a blog post
+  * Returns outputs in chronological order (created_at ASC)
+  * RLS-protected with authentication check
+  * Integrates with agent_outputs table from feat-118
+
+- src/components/blog/RevisionTimeline.tsx (415 lines)
+  * Vertical timeline visualization component
+  * Agent-specific configuration (icons, colors, labels)
+  * 7 agent types supported: research, outline, draft, seo, fact_check, enhance, orchestrator
+  * Timeline features:
+    - Visual timeline with connecting lines between nodes
+    - Icon circles with status colors (green/red/gray)
+    - Status badges (completed, failed, skipped)
+    - Formatted timestamps (MMM D, HH:MM)
+    - Execution duration display (ms, s, m)
+    - Model and version information
+    - Token count display (when available)
+    - Error message display for failed runs
+  * Expandable nodes (click to expand):
+    - Agent-specific output formatting
+    - Outline: sections with subheadings tree
+    - Draft: content excerpt with line-clamp
+    - SEO: suggestions bullet list
+    - Generic: formatted JSON preview with scrolling
+    - Collapsible input data viewer
+  * Auto-refresh support (configurable interval)
+  * Loading state with skeleton loaders
+  * Empty state with helpful message
+  * Props: postId, autoRefresh (boolean), refreshInterval (ms)
+
+Files Modified:
+- src/app/app/posts/[postId]/preview/page.tsx
+  * Imported RevisionTimeline component
+  * Added full-width timeline section below main content grid
+  * Configured with 15-second auto-refresh
+  * Provides visibility into agent execution history
+
+- feature_list.json
+  * Updated feat-121 with passes: true
+  * Added implementation_at timestamp
+  * Detailed notes covering all features and acceptance criteria
+
+Acceptance Criteria Verification:
+✅ Timeline renders
+  - Vertical timeline with connecting lines
+  - Visual hierarchy with icon circles
+  - Proper spacing and layout
+
+✅ All outputs shown
+  - Fetches from agent_outputs table via API
+  - Chronologically ordered by created_at
+  - Displays all agent executions (research through enhancement)
+  - Shows status for each execution
+
+✅ Timestamps correct
+  - Formatted as "MMM D, HH:MM" (e.g., "Jan 15, 20:30")
+  - Uses locale-specific formatting
+  - Shows duration in ms/s/m format
+  - Displays relative to user's timezone
+
+✅ Preview works
+  - Click-to-expand functionality
+  - Agent-specific output rendering
+  - Expandable JSON for generic outputs
+  - Collapsible input data viewer
+  - Clean, readable formatting
+
+Integration:
+- Works with existing agent_outputs infrastructure (feat-118)
+- Compatible with all 5 PRD agent types (outline, draft, seo, fact_check, enhance)
+- Plus research and orchestrator for future use
+- Uses existing UI components (Card, Badge, Button)
+- Follows project's design patterns and styling
+
+Technical Details:
+- TypeScript fully typed
+- React hooks for state management (useState, useEffect)
+- Auto-refresh with cleanup on unmount
+- Error handling for API failures
+- Console logging for debugging
+- Responsive design
+- Performance optimized (limited preview sizes)
+
+Testing:
+✅ Server compiles without errors
+✅ TypeScript types correct
+✅ Component imports successfully
+✅ API endpoint follows existing patterns
+✅ No runtime errors in development
+
+Next Priority: feat-122 - PRD Revision: Split/unified diff viewer
+
+Commit: 09042fb
+Message: "feat(blogcanvas): implement agent pipeline timeline component (feat-121)"
+
