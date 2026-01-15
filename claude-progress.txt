@@ -8938,3 +8938,45 @@ Implementation Details:
 - Component shows progress bar from baseline to target
 - Integrated into batch detail page for real-time monitoring
 - API endpoint supports both website_id and batch_id parameters
+
+=== Session 2026-01-15T12:00:00Z ===
+- Implemented: feat-108 - Track conversions per published post
+- Files changed:
+  - Created: supabase/migrations/20260122000001_conversion_goals.sql
+  - Created: src/app/api/conversion-goals/route.ts
+  - Created: src/app/api/conversion-goals/[id]/route.ts
+  - Created: src/app/api/blog-posts/[id]/conversions/route.ts
+  - Created: src/components/analytics/ConversionMetrics.tsx
+  - Created: src/components/settings/ConversionGoalsSettings.tsx
+  - Modified: src/lib/analytics/google-analytics-4.ts
+  - Modified: feature_list.json
+- Tests passed:
+  ✅ Database schema supports conversion tracking (blog_post_metrics.conversions exists)
+  ✅ Created conversion_goals table with RLS policies
+  ✅ API endpoints for conversion goals CRUD work correctly
+  ✅ API endpoint for per-post conversions returns proper data structure
+  ✅ ConversionMetrics component displays total and per-goal conversions
+  ✅ ConversionGoalsSettings component allows CRUD operations on goals
+  ✅ GA4 integration enhanced with queryGA4ConversionGoals function
+  ✅ Goal-specific conversions tracked and stored in goal_conversions JSONB
+  ✅ Server runs without errors (verified at http://localhost:4848)
+  ✅ TypeScript errors fixed (Next.js 16 params as Promise)
+- Committed: "feat(blogcanvas): implement conversion tracking per published post (feat-108)"
+- Next priority: feat-110 - seo_quality_score per blog post
+
+Implementation Details:
+- conversion_goals table supports event, pageview, and custom goal types
+- Each goal can have GA4 event name, target count, and target value
+- blog_post_metrics.goal_conversions stores per-goal conversion counts as JSONB
+- ConversionMetrics component displays total conversions and per-goal breakdown
+- Progress bars show completion percentage against target counts
+- ConversionGoalsSettings provides full CRUD interface for managing goals
+- GA4 sync function queries conversion events and maps them to goal IDs
+- RLS policies ensure vendors can only see their own goals
+- Clients can view goals for their websites (read-only)
+
+Acceptance Criteria Verification:
+✅ Goals configurable - ConversionGoalsSettings allows full CRUD operations
+✅ Tracking works - GA4 integration queries specific events and stores counts
+✅ Data stored - goal_conversions JSONB in blog_post_metrics table
+✅ Visible per post - ConversionMetrics component displays all conversion data
