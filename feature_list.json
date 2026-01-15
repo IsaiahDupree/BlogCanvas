@@ -2919,7 +2919,9 @@
         "Posts created",
         "Summary returned"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T22:00:00Z",
+      "notes": "Complete CSV import endpoint with comprehensive validation. Backend endpoint at /api/content-batches/[id]/import-csv accepts multipart CSV file via FormData, validates required 'topic' field, search_intent, and tone_voice values, creates blog_posts records with all fields (content_batch_id, client_id, topic_cluster_id, target_keyword, target_wordcount, search_intent, tone_of_voice, due_date, publish windows, status='idea', draft JSON with topic/notes/priority/custom_fields), updates batch total_posts counter, and returns detailed summary (success, imported count, total count, errors array, posts array). Frontend integration via CSVImportModalV2 component with three-step flow (Upload → Mapping → Preview). Additional features: flexible column mapping, custom fields support, topic cluster auto-matching, synonym handling for column names, row-level error tracking. All 4 acceptance criteria verified: ✓ File upload works (multipart/form-data with csv-parse), ✓ Validation runs (required fields, type validation, length checks), ✓ Posts created (Supabase insert with proper fields), ✓ Summary returned (JSON response with detailed stats)."
     },
     {
       "id": "feat-131",
