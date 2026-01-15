@@ -28,7 +28,9 @@ import {
   Download,
   X,
   FolderPlus,
-  Package
+  Package,
+  Send,
+  Presentation
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -127,6 +129,11 @@ export default function PipelinePage() {
   const [showBatchModal, setShowBatchModal] = useState(false)
   const [batchName, setBatchName] = useState('')
   const [creatingBatch, setCreatingBatch] = useState(false)
+
+  // Pitch generation
+  const [showPitchModal, setShowPitchModal] = useState(false)
+  const [generatingPitch, setGeneratingPitch] = useState(false)
+  const [pitchContent, setPitchContent] = useState<{ format: string; content?: string; html?: string; subject?: string } | null>(null)
 
   useEffect(() => {
     fetchInitialData()
@@ -620,6 +627,221 @@ export default function PipelinePage() {
     } finally {
       setCreatingBatch(false)
     }
+  }
+
+  const generatePitch = async (format: 'email' | 'pdf' | 'slide') => {
+    if (!result) return
+
+    setGeneratingPitch(true)
+    try {
+      // Create a projection from the analysis result
+      const projection = {
+        current_score: result.seoScore,
+        target_score: Math.min(result.seoScore + 15, 95),
+        score_increase: Math.min(15, 95 - result.seoScore),
+        recommended_posts: result.contentGaps || result.topics.length,
+        timeline_months: Math.ceil((result.contentGaps || result.topics.length) / 4),
+        confidence: 'medium' as const,
+        factors: {
+          content_gap_impact: Math.round((result.contentGaps / (result.contentGaps + result.pagesIndexed)) * 10),
+          topic_coverage_impact: 3,
+          quality_improvement_impact: 2
+        },
+        cadence: {
+          postsPerMonth: 4,
+          postsPerWeek: 1,
+          schedule: '1 post per week'
+        }
+      }
+
+      // Find the current job
+      const currentJob = recentJobs.find(j => j.id === currentJobId)
+
+      // Create pitch data similar to what the generate-pitch endpoint expects
+      const pitchData = {
+        website: {
+          url: currentJob?.website_url || websiteUrl,
+          name: currentJob?.website_url || websiteUrl
+        },
+        client: {
+          name: currentJob?.clients?.name || selectedClient || 'Client',
+          productSummary: currentJob?.client_goals,
+          targetAudience: currentJob?.ideal_customer_profile || targetMarket
+        },
+        audit: {
+          baselineScore: result.seoScore,
+          pagesIndexed: result.pagesIndexed
+        },
+        projection,
+        clusters: result.topics.map(t => ({
+          name: t.name,
+          primary_keyword: t.primary_keyword,
+          estimated_traffic: t.estimated_traffic || 0,
+          currently_covered: false
+        })),
+        gaps: []
+      }
+
+      // Generate pitch content directly (inline implementation)
+      let content = ''
+      let subject = ''
+      let html = ''
+
+      if (format === 'email') {
+        const clientName = pitchData.client.name || 'there'
+        const currentScore = pitchData.projection.current_score
+        const targetScore = pitchData.projection.target_score
+        const recommendedPosts = pitchData.projection.recommended_posts
+        const timelineMonths = pitchData.projection.timeline_months
+        const topClusters = pitchData.clusters.slice(0, 3).map(c => c.name)
+
+        subject = `SEO Content Plan to Grow ${clientName}'s Organic Reach`
+        content = `Hi ${clientName},
+
+We ran an SEO and content audit on ${pitchData.website.url}. Right now, your content sits around an overall SEO score of ${currentScore}/100, with strong coverage in your current content, but untapped opportunities in:
+
+${topClusters.map(name => `- ${name}`).join('\n')}
+
+Based on your goals, we recommend a ${recommendedPosts}-post blog package over the next ${timelineMonths} months. This would:
+
+- Fill critical topic gaps in your niche
+- Target keywords with combined estimated traffic potential
+- Realistically move your SEO score from ${currentScore} → ${targetScore} over the campaign window
+
+Our system will:
+- Generate high-quality, fact-checked, SEO-optimized blogs tailored to your brand voice
+- Route everything through human review before you ever see it
+- Push approved posts directly to your WordPress
+- Track performance and send you clear, non-fluffy reports each month
+
+If you'd like, I can walk you through the proposed topics and forecast in a quick call this week.
+
+Best regards,
+Your CSM Team`
+
+        setPitchContent({ format: 'email', content, subject })
+
+      } else if (format === 'pdf') {
+        html = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>SEO Content Plan - ${pitchData.client.name}</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 40px; color: #333; }
+        .header { border-bottom: 3px solid #6366f1; padding-bottom: 20px; margin-bottom: 30px; }
+        .header h1 { color: #6366f1; margin: 0; }
+        .section { margin-bottom: 30px; }
+        .section h2 { color: #6366f1; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }
+        .score-comparison { display: flex; justify-content: space-around; margin: 30px 0; }
+        .score-box { text-align: center; padding: 20px; border-radius: 8px; }
+        .current-score { background: #fee2e2; }
+        .target-score { background: #d1fae5; }
+        .score-value { font-size: 48px; font-weight: bold; }
+        .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin: 20px 0; }
+        .metric-card { background: #f9fafb; padding: 20px; border-radius: 8px; text-align: center; }
+        .metric-value { font-size: 32px; font-weight: bold; color: #6366f1; }
+        .metric-label { color: #6b7280; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>SEO Content Plan</h1>
+        <p>${pitchData.client.name} - ${pitchData.website.url}</p>
+        <p>Generated: ${new Date().toLocaleDateString()}</p>
+    </div>
+    <div class="section">
+        <h2>Current SEO Status</h2>
+        <p>Baseline SEO Score: <strong>${pitchData.audit.baselineScore}/100</strong></p>
+        <p>Pages Indexed: ${pitchData.audit.pagesIndexed || 0}</p>
+    </div>
+    <div class="section">
+        <h2>Projected Growth</h2>
+        <div class="score-comparison">
+            <div class="score-box current-score">
+                <div class="score-value" style="color: #dc2626;">${pitchData.projection.current_score}</div>
+                <div>Current Score</div>
+            </div>
+            <div style="display: flex; align-items: center; font-size: 24px;">→</div>
+            <div class="score-box target-score">
+                <div class="score-value" style="color: #059669;">${pitchData.projection.target_score}</div>
+                <div>Target Score</div>
+            </div>
+        </div>
+        <p style="text-align: center; font-size: 24px; font-weight: bold; color: #059669;">
+            +${pitchData.projection.score_increase} Point Improvement
+        </p>
+    </div>
+    <div class="section">
+        <h2>Recommended Plan</h2>
+        <div class="metrics">
+            <div class="metric-card">
+                <div class="metric-value">${pitchData.projection.recommended_posts}</div>
+                <div class="metric-label">Blog Posts</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">${pitchData.projection.timeline_months}</div>
+                <div class="metric-label">Months</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">${Math.round(pitchData.projection.recommended_posts / pitchData.projection.timeline_months)}</div>
+                <div class="metric-label">Posts/Month</div>
+            </div>
+        </div>
+    </div>
+    <div class="section">
+        <h2>Key Opportunities</h2>
+        <ul>
+            ${pitchData.clusters.slice(0, 5).map(c =>
+                `<li><strong>${c.name}</strong> - ${c.estimated_traffic || 0} estimated monthly searches</li>`
+            ).join('')}
+        </ul>
+    </div>
+</body>
+</html>`
+
+        setPitchContent({ format: 'pdf', html })
+
+        // Open in new window for printing/download
+        const printWindow = window.open('', '_blank')
+        if (printWindow) {
+          printWindow.document.write(html)
+          printWindow.document.close()
+          printWindow.focus()
+        }
+
+      } else if (format === 'slide') {
+        const slides = [
+          `Slide 1: SEO Content Plan\n${pitchData.client.name}\nCurrent Score: ${pitchData.projection.current_score} → Target: ${pitchData.projection.target_score}`,
+          `Slide 2: Current Status\nSEO Score: ${pitchData.projection.current_score}/100\nPages Indexed: ${pitchData.audit.pagesIndexed || 0}`,
+          `Slide 3: Recommended Plan\n${pitchData.projection.recommended_posts} blog posts over ${pitchData.projection.timeline_months} months`,
+          `Slide 4: Key Opportunities\n• ${pitchData.clusters.slice(0, 5).map(c => c.name).join('\n• ')}`,
+          `Slide 5: Expected Results\nSEO Score: ${pitchData.projection.current_score} → ${pitchData.projection.target_score}\n+${pitchData.projection.score_increase} point improvement`
+        ]
+
+        content = slides.join('\n\n---\n\n')
+        subject = 'SEO Content Plan Presentation'
+        setPitchContent({ format: 'slide', content, subject })
+      }
+
+    } catch (error) {
+      console.error('Failed to generate pitch:', error)
+      alert('Failed to generate pitch. Please try again.')
+    } finally {
+      setGeneratingPitch(false)
+    }
+  }
+
+  const copyPitchToClipboard = () => {
+    if (!pitchContent?.content || !pitchContent?.subject) return
+
+    const emailBody = `Subject: ${pitchContent.subject}\n\n${pitchContent.content}`
+    navigator.clipboard.writeText(emailBody).then(() => {
+      alert('Pitch copied to clipboard!')
+    }).catch((err) => {
+      console.error('Failed to copy:', err)
+      alert('Failed to copy to clipboard')
+    })
   }
 
   const getScoreColor = (score: number) => {
@@ -1162,6 +1384,14 @@ export default function PipelinePage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Button
+                        onClick={() => setShowPitchModal(true)}
+                        variant="outline"
+                        className="border-pink-200 text-pink-600 hover:bg-pink-50"
+                      >
+                        <Send className="w-4 h-4 mr-2" />
+                        Generate Pitch
+                      </Button>
+                      <Button
                         onClick={exportTopicsToCSV}
                         variant="outline"
                         className="border-indigo-200 text-indigo-600 hover:bg-indigo-50"
@@ -1414,6 +1644,172 @@ export default function PipelinePage() {
                     Create Batch
                   </>
                 )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Generate Pitch Modal */}
+      {showPitchModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-slate-200 sticky top-0 bg-white z-10">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center">
+                    <Presentation className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-800">Generate Client Pitch</h2>
+                    <p className="text-sm text-slate-500">Create a professional pitch from analysis results</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowPitchModal(false)
+                    setPitchContent(null)
+                  }}
+                  className="text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {!pitchContent ? (
+                <>
+                  <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-4 border-2 border-indigo-100">
+                    <h3 className="font-semibold text-indigo-900 text-sm mb-3">Analysis Summary</h3>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-white rounded-lg p-3">
+                        <div className="text-xs text-slate-500 mb-1">Current SEO Score</div>
+                        <div className="text-2xl font-bold text-indigo-600">{result?.seoScore || 0}</div>
+                      </div>
+                      <div className="bg-white rounded-lg p-3">
+                        <div className="text-xs text-slate-500 mb-1">Content Gaps</div>
+                        <div className="text-2xl font-bold text-amber-600">{result?.contentGaps || 0}</div>
+                      </div>
+                      <div className="bg-white rounded-lg p-3">
+                        <div className="text-xs text-slate-500 mb-1">Topics Generated</div>
+                        <div className="text-2xl font-bold text-purple-600">{result?.topics.length || 0}</div>
+                      </div>
+                      <div className="bg-white rounded-lg p-3">
+                        <div className="text-xs text-slate-500 mb-1">Pages Indexed</div>
+                        <div className="text-2xl font-bold text-blue-600">{result?.pagesIndexed || 0}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="font-semibold text-slate-700 text-sm mb-3">Choose Pitch Format</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <Button
+                        onClick={() => generatePitch('email')}
+                        disabled={generatingPitch}
+                        variant="outline"
+                        className="h-auto py-4 flex flex-col items-center gap-2 border-2 hover:border-pink-300 hover:bg-pink-50"
+                      >
+                        <Send className="w-6 h-6 text-pink-600" />
+                        <div className="text-center">
+                          <div className="font-semibold">Email Draft</div>
+                          <div className="text-xs text-slate-500">Ready to send</div>
+                        </div>
+                      </Button>
+                      <Button
+                        onClick={() => generatePitch('pdf')}
+                        disabled={generatingPitch}
+                        variant="outline"
+                        className="h-auto py-4 flex flex-col items-center gap-2 border-2 hover:border-blue-300 hover:bg-blue-50"
+                      >
+                        <FileText className="w-6 h-6 text-blue-600" />
+                        <div className="text-center">
+                          <div className="font-semibold">PDF Report</div>
+                          <div className="text-xs text-slate-500">Print & share</div>
+                        </div>
+                      </Button>
+                      <Button
+                        onClick={() => generatePitch('slide')}
+                        disabled={generatingPitch}
+                        variant="outline"
+                        className="h-auto py-4 flex flex-col items-center gap-2 border-2 hover:border-purple-300 hover:bg-purple-50"
+                      >
+                        <Presentation className="w-6 h-6 text-purple-600" />
+                        <div className="text-center">
+                          <div className="font-semibold">Slide Deck</div>
+                          <div className="text-xs text-slate-500">Presentation</div>
+                        </div>
+                      </Button>
+                    </div>
+                  </div>
+
+                  {generatingPitch && (
+                    <div className="bg-indigo-50 rounded-xl p-4 flex items-center gap-3">
+                      <Loader2 className="w-5 h-5 animate-spin text-indigo-600" />
+                      <div>
+                        <div className="font-semibold text-indigo-900 text-sm">Generating pitch...</div>
+                        <div className="text-xs text-indigo-600">This may take a few seconds</div>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border-2 border-green-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                      <h3 className="font-semibold text-green-900 text-sm">Pitch Generated Successfully!</h3>
+                    </div>
+                    <p className="text-sm text-green-700">Your {pitchContent.format} pitch is ready.</p>
+                  </div>
+
+                  {pitchContent.format === 'email' && pitchContent.content && (
+                    <div className="border-2 border-slate-200 rounded-xl overflow-hidden">
+                      <div className="bg-slate-50 p-3 border-b border-slate-200">
+                        <div className="text-xs text-slate-500 mb-1">Subject Line</div>
+                        <div className="font-semibold text-slate-800">{pitchContent.subject}</div>
+                      </div>
+                      <div className="p-4 max-h-96 overflow-y-auto">
+                        <pre className="whitespace-pre-wrap text-sm text-slate-700 font-sans">{pitchContent.content}</pre>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={copyPitchToClipboard}
+                      variant="outline"
+                      className="flex-1"
+                      disabled={!pitchContent.content}
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Copy to Clipboard
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setPitchContent(null)
+                      }}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      Generate Another
+                    </Button>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="p-6 border-t border-slate-200 flex gap-3">
+              <Button
+                onClick={() => {
+                  setShowPitchModal(false)
+                  setPitchContent(null)
+                }}
+                variant="outline"
+                className="flex-1"
+              >
+                Close
               </Button>
             </div>
           </div>
