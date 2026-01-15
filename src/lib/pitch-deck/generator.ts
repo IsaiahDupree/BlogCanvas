@@ -37,9 +37,21 @@ export interface PitchDeckData {
   monthlyPrice?: number;
   totalPrice?: number;
 
-  // Projections
-  projectedTrafficIncrease: number; // percentage
-  projectedKeywordRankings: number;
+  // Projections (now with ranges)
+  projectedTrafficIncrease: number; // percentage (conservative estimate)
+  projectedTrafficIncreaseRange: {
+    min: number;
+    expected: number;
+    max: number;
+    confidence: 'low' | 'medium' | 'high';
+  };
+  projectedKeywordRankings: number; // conservative estimate
+  projectedKeywordRankingsRange: {
+    min: number;
+    expected: number;
+    max: number;
+    confidence: 'low' | 'medium' | 'high';
+  };
 
   // Vendor info
   vendorName: string;
@@ -580,44 +592,106 @@ export class PitchDeckGenerator {
 
   private createResultsSlide(data: PitchDeckData) {
     this.drawSlideHeader('Expected Results');
-    
+
     const startY = 140;
     const colWidth = (this.pageWidth - this.margin * 3) / 2;
-    
-    // Left: Traffic projection
+
+    // Left: Traffic projection with range
     this.doc.setFillColor(16, 185, 129, 0.1);
-    this.doc.roundedRect(this.margin, startY, colWidth, 200, 10, 10, 'F');
-    
+    this.doc.roundedRect(this.margin, startY, colWidth, 240, 10, 10, 'F');
+
     this.doc.setTextColor(16, 185, 129);
     this.doc.setFontSize(14);
     this.doc.setFont('helvetica', 'bold');
-    this.doc.text('ORGANIC TRAFFIC', this.margin + colWidth / 2, startY + 30, { align: 'center' });
-    
+    this.doc.text('ORGANIC TRAFFIC INCREASE', this.margin + colWidth / 2, startY + 30, { align: 'center' });
+
+    // Expected value (main number)
     this.doc.setFontSize(56);
-    this.doc.text(`+${data.projectedTrafficIncrease}%`, this.margin + colWidth / 2, startY + 100, { align: 'center' });
-    
-    this.doc.setFontSize(14);
+    this.doc.text(`+${data.projectedTrafficIncreaseRange.expected}%`, this.margin + colWidth / 2, startY + 90, { align: 'center' });
+
+    // Range display
+    this.doc.setFontSize(16);
     this.doc.setFont('helvetica', 'normal');
     this.doc.setTextColor(107, 114, 128);
-    this.doc.text('projected increase over campaign period', this.margin + colWidth / 2, startY + 140, { align: 'center' });
-    
-    // Right: Keyword rankings
+    this.doc.text(
+      `Range: ${data.projectedTrafficIncreaseRange.min}% - ${data.projectedTrafficIncreaseRange.max}%`,
+      this.margin + colWidth / 2,
+      startY + 130,
+      { align: 'center' }
+    );
+
+    // Confidence indicator
+    const confidenceColor = data.projectedTrafficIncreaseRange.confidence === 'high' ? COLORS.success :
+                           data.projectedTrafficIncreaseRange.confidence === 'medium' ? COLORS.warning : COLORS.muted;
+    this.doc.setTextColor(confidenceColor);
+    this.doc.setFontSize(12);
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.text(
+      `${data.projectedTrafficIncreaseRange.confidence.toUpperCase()} CONFIDENCE`,
+      this.margin + colWidth / 2,
+      startY + 155,
+      { align: 'center' }
+    );
+
+    // Timeline
+    this.doc.setFontSize(11);
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.setTextColor(107, 114, 128);
+    this.doc.text(
+      `over ${data.timelineMonths}-month campaign period`,
+      this.margin + colWidth / 2,
+      startY + 180,
+      { align: 'center' }
+    );
+
+    // Right: Keyword rankings with range
     const rightX = this.margin * 2 + colWidth;
     this.doc.setFillColor(79, 70, 229, 0.1);
-    this.doc.roundedRect(rightX, startY, colWidth, 200, 10, 10, 'F');
-    
+    this.doc.roundedRect(rightX, startY, colWidth, 240, 10, 10, 'F');
+
     this.doc.setTextColor(79, 70, 229);
     this.doc.setFontSize(14);
     this.doc.setFont('helvetica', 'bold');
-    this.doc.text('KEYWORD RANKINGS', rightX + colWidth / 2, startY + 30, { align: 'center' });
-    
+    this.doc.text('NEW KEYWORD RANKINGS', rightX + colWidth / 2, startY + 30, { align: 'center' });
+
+    // Expected value (main number)
     this.doc.setFontSize(56);
-    this.doc.text(`${data.projectedKeywordRankings}+`, rightX + colWidth / 2, startY + 100, { align: 'center' });
-    
-    this.doc.setFontSize(14);
+    this.doc.text(`${data.projectedKeywordRankingsRange.expected}+`, rightX + colWidth / 2, startY + 90, { align: 'center' });
+
+    // Range display
+    this.doc.setFontSize(16);
     this.doc.setFont('helvetica', 'normal');
     this.doc.setTextColor(107, 114, 128);
-    this.doc.text('new keywords ranking on page 1', rightX + colWidth / 2, startY + 140, { align: 'center' });
+    this.doc.text(
+      `Range: ${data.projectedKeywordRankingsRange.min} - ${data.projectedKeywordRankingsRange.max}`,
+      rightX + colWidth / 2,
+      startY + 130,
+      { align: 'center' }
+    );
+
+    // Confidence indicator
+    const kwConfidenceColor = data.projectedKeywordRankingsRange.confidence === 'high' ? COLORS.success :
+                              data.projectedKeywordRankingsRange.confidence === 'medium' ? COLORS.warning : COLORS.muted;
+    this.doc.setTextColor(kwConfidenceColor);
+    this.doc.setFontSize(12);
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.text(
+      `${data.projectedKeywordRankingsRange.confidence.toUpperCase()} CONFIDENCE`,
+      rightX + colWidth / 2,
+      startY + 155,
+      { align: 'center' }
+    );
+
+    // Context
+    this.doc.setFontSize(11);
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.setTextColor(107, 114, 128);
+    this.doc.text(
+      'keywords ranking on page 1 of Google',
+      rightX + colWidth / 2,
+      startY + 180,
+      { align: 'center' }
+    );
     
     // Bottom benefits
     const benefitsY = startY + 230;
@@ -771,6 +845,51 @@ export function generatePitchDeckData(
   // Generate proposed topics list from gaps
   const proposedTopics = gaps.map(g => g.cluster);
 
+  // Calculate expected outcome ranges with confidence intervals
+  const scoreImprovement = targetScore - currentScore;
+
+  // Traffic increase calculation with range
+  // Base multiplier: 2.5% increase per SEO point improvement
+  const baseTrafficMultiplier = 2.5;
+  const expectedTrafficIncrease = Math.round(scoreImprovement * baseTrafficMultiplier);
+
+  // Confidence based on number of posts and timeline
+  // High confidence: 15+ posts over 6+ months
+  // Medium confidence: 8-14 posts or 3-5 months
+  // Low confidence: <8 posts or <3 months
+  const isHighConfidence = recommendedPosts >= 15 && timelineMonths >= 6;
+  const isMediumConfidence = (recommendedPosts >= 8 || timelineMonths >= 3) && !isHighConfidence;
+  const trafficConfidence = isHighConfidence ? 'high' as const :
+                           isMediumConfidence ? 'medium' as const :
+                           'low' as const;
+
+  // Range variance based on confidence
+  const trafficVariance = trafficConfidence === 'high' ? 0.2 :    // ±20%
+                         trafficConfidence === 'medium' ? 0.3 :   // ±30%
+                         0.4;                                      // ±40%
+
+  const trafficMin = Math.round(expectedTrafficIncrease * (1 - trafficVariance));
+  const trafficMax = Math.round(expectedTrafficIncrease * (1 + trafficVariance));
+
+  // Keyword rankings calculation with range
+  // Base: 70% of posts achieve page 1 rankings
+  const baseKeywordMultiplier = 0.7;
+  const expectedKeywordRankings = Math.round(recommendedPosts * baseKeywordMultiplier);
+
+  // Confidence based on gap difficulty distribution
+  const avgDifficulty = gaps.reduce((sum, g) => sum + g.difficulty, 0) / Math.max(gaps.length, 1);
+  const keywordConfidence = avgDifficulty <= 40 ? 'high' as const :
+                           avgDifficulty <= 60 ? 'medium' as const :
+                           'low' as const;
+
+  // Range variance based on difficulty
+  const keywordVariance = keywordConfidence === 'high' ? 0.15 :   // ±15%
+                         keywordConfidence === 'medium' ? 0.25 :  // ±25%
+                         0.35;                                     // ±35%
+
+  const keywordMin = Math.round(expectedKeywordRankings * (1 - keywordVariance));
+  const keywordMax = Math.round(expectedKeywordRankings * (1 + keywordVariance));
+
   return {
     clientName: client.name,
     clientWebsite: client.website_url || '',
@@ -786,8 +905,22 @@ export function generatePitchDeckData(
     pricingTier,
     monthlyPrice,
     totalPrice,
-    projectedTrafficIncrease: Math.round((targetScore - currentScore) * 2.5),
-    projectedKeywordRankings: Math.round(recommendedPosts * 0.7),
+    // Legacy single values (conservative estimates - use min values)
+    projectedTrafficIncrease: trafficMin,
+    projectedKeywordRankings: keywordMin,
+    // New range values with confidence
+    projectedTrafficIncreaseRange: {
+      min: trafficMin,
+      expected: expectedTrafficIncrease,
+      max: trafficMax,
+      confidence: trafficConfidence
+    },
+    projectedKeywordRankingsRange: {
+      min: keywordMin,
+      expected: expectedKeywordRankings,
+      max: keywordMax,
+      confidence: keywordConfidence
+    },
     vendorName: vendorInfo.name,
     csmName: vendorInfo.csmName,
     csmEmail: vendorInfo.csmEmail,
