@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import ImageGenerationDialog from '@/components/images/ImageGenerationDialog'
 import SchedulePublishDialog from '@/components/publishing/SchedulePublishDialog'
+import ProjectedSEOScore from '@/components/analytics/ProjectedSEOScore'
 
 export default function BatchDetailPage() {
     const params = useParams()
@@ -450,6 +451,11 @@ export default function BatchDetailPage() {
                         </div>
                     </CardContent>
                 </Card>
+
+                {/* Projected SEO Score */}
+                <div className="mb-8">
+                    <ProjectedSEOScore batchId={params.id as string} autoRefresh={true} />
+                </div>
 
                 {/* Overdue Alerts */}
                 {overdueStats && overdueStats.total_alerts > 0 && (

@@ -2451,7 +2451,8 @@
         "Before/after shown",
         "Live updates"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T11:15:00Z"
     },
     {
       "id": "feat-110",
