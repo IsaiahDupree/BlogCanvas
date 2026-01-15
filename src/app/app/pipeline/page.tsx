@@ -26,7 +26,9 @@ import {
   Trash2,
   RotateCcw,
   Download,
-  X
+  X,
+  FolderPlus,
+  Package
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -119,6 +121,12 @@ export default function PipelinePage() {
   const [result, setResult] = useState<AnalysisResult | null>(null)
   const [generatingBlogs, setGeneratingBlogs] = useState(false)
   const [generatedCount, setGeneratedCount] = useState(0)
+
+  // Topic selection for batch creation
+  const [selectedTopics, setSelectedTopics] = useState<Set<string>>(new Set())
+  const [showBatchModal, setShowBatchModal] = useState(false)
+  const [batchName, setBatchName] = useState('')
+  const [creatingBatch, setCreatingBatch] = useState(false)
 
   useEffect(() => {
     fetchInitialData()
@@ -537,6 +545,80 @@ export default function PipelinePage() {
     } catch (error: any) {
       console.error('Failed to export CSV:', error)
       alert('Failed to export CSV: ' + error.message)
+    }
+  }
+
+  const toggleTopicSelection = (topicId: string) => {
+    setSelectedTopics(prev => {
+      const next = new Set(prev)
+      if (next.has(topicId)) {
+        next.delete(topicId)
+      } else {
+        next.add(topicId)
+      }
+      return next
+    })
+  }
+
+  const toggleAllTopics = () => {
+    if (!result?.topics) return
+
+    if (selectedTopics.size === result.topics.length) {
+      setSelectedTopics(new Set())
+    } else {
+      setSelectedTopics(new Set(result.topics.map(t => t.id)))
+    }
+  }
+
+  const createBatchFromTopics = async () => {
+    if (!batchName.trim()) {
+      alert('Please enter a batch name')
+      return
+    }
+
+    if (selectedTopics.size === 0) {
+      alert('Please select at least one topic')
+      return
+    }
+
+    if (!currentJobId) {
+      alert('No pipeline job ID available')
+      return
+    }
+
+    setCreatingBatch(true)
+
+    try {
+      // Get the selected topics data
+      const topics = result?.topics.filter(t => selectedTopics.has(t.id)) || []
+
+      // Create the batch via API
+      const res = await fetch('/api/pipeline-jobs/create-batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pipelineJobId: currentJobId,
+          batchName: batchName.trim(),
+          topics: topics
+        })
+      })
+
+      const data = await res.json()
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to create batch')
+      }
+
+      alert(`Batch created successfully! ${data.postsCreated} posts added to batch.`)
+      setShowBatchModal(false)
+      setBatchName('')
+      setSelectedTopics(new Set())
+
+    } catch (error: any) {
+      console.error('Failed to create batch:', error)
+      alert('Failed to create batch: ' + error.message)
+    } finally {
+      setCreatingBatch(false)
     }
   }
 
@@ -1060,14 +1142,23 @@ export default function PipelinePage() {
               <Card className="border-0 shadow-xl bg-white/80 backdrop-blur">
                 <CardHeader className="border-b border-slate-100">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="flex items-center gap-2 text-slate-800">
-                        <Sparkles className="w-5 h-5 text-indigo-600" />
-                        Recommended Topics
-                      </CardTitle>
-                      <CardDescription>
-                        AI-generated topics based on content gaps, goals, and target audience
-                      </CardDescription>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        checked={result.topics.length > 0 && selectedTopics.size === result.topics.length}
+                        onChange={toggleAllTopics}
+                        className="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                        title="Select all topics"
+                      />
+                      <div>
+                        <CardTitle className="flex items-center gap-2 text-slate-800">
+                          <Sparkles className="w-5 h-5 text-indigo-600" />
+                          Recommended Topics
+                        </CardTitle>
+                        <CardDescription>
+                          AI-generated topics based on content gaps, goals, and target audience
+                        </CardDescription>
+                      </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <Button
@@ -1077,6 +1168,15 @@ export default function PipelinePage() {
                       >
                         <Download className="w-4 h-4 mr-2" />
                         Export CSV
+                      </Button>
+                      <Button
+                        onClick={() => setShowBatchModal(true)}
+                        disabled={selectedTopics.size === 0}
+                        variant="outline"
+                        className="border-purple-200 text-purple-600 hover:bg-purple-50"
+                      >
+                        <FolderPlus className="w-4 h-4 mr-2" />
+                        Create Batch ({selectedTopics.size})
                       </Button>
                       <Button
                         onClick={generateAllBlogs}
@@ -1105,12 +1205,18 @@ export default function PipelinePage() {
                         key={topic.id}
                         className={`flex items-center justify-between p-5 hover:bg-slate-50/50 transition-colors ${
                           topic.blog_generated ? 'bg-emerald-50/50' : ''
-                        }`}
+                        } ${selectedTopics.has(topic.id) ? 'bg-indigo-50/50' : ''}`}
                       >
                         <div className="flex items-center gap-4">
+                          <input
+                            type="checkbox"
+                            checked={selectedTopics.has(topic.id)}
+                            onChange={() => toggleTopicSelection(topic.id)}
+                            className="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                          />
                           <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                            topic.blog_generated 
-                              ? 'bg-emerald-100 text-emerald-600' 
+                            topic.blog_generated
+                              ? 'bg-emerald-100 text-emerald-600'
                               : 'bg-slate-100 text-slate-400'
                           }`}>
                             {topic.blog_generated ? (
@@ -1224,6 +1330,95 @@ export default function PipelinePage() {
           </Card>
         )}
       </div>
+
+      {/* Create Batch Modal */}
+      {showBatchModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+            <div className="p-6 border-b border-slate-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center">
+                    <Package className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-800">Create Content Batch</h2>
+                    <p className="text-sm text-slate-500">{selectedTopics.size} topic{selectedTopics.size !== 1 ? 's' : ''} selected</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowBatchModal(false)}
+                  className="text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Batch Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={batchName}
+                  onChange={(e) => setBatchName(e.target.value)}
+                  placeholder="e.g., Q1 2024 Content Plan"
+                  className="w-full px-4 py-3 bg-slate-50 border-2 border-slate-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all"
+                  autoFocus
+                />
+              </div>
+
+              <div className="bg-indigo-50 rounded-xl p-4">
+                <h3 className="font-semibold text-indigo-900 text-sm mb-2">What happens next?</h3>
+                <ul className="space-y-1 text-sm text-indigo-700">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    <span>A new content batch will be created</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    <span>Selected topics will be added as blog posts</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    <span>You can manage the batch in the Batches section</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-slate-200 flex gap-3">
+              <Button
+                onClick={() => setShowBatchModal(false)}
+                variant="outline"
+                className="flex-1"
+                disabled={creatingBatch}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={createBatchFromTopics}
+                disabled={!batchName.trim() || creatingBatch}
+                className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
+              >
+                {creatingBatch ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <FolderPlus className="w-4 h-4 mr-2" />
+                    Create Batch
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

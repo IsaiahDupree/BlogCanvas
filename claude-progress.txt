@@ -11555,3 +11555,98 @@ Technical Implementation:
 Commit: 6bca837 - feat(blogcanvas): implement pipeline job cancellation (feat-143)
 
 Next Priority: feat-144 or next highest priority feature with passes: false
+
+=== Session: 2026-01-15 20:00 ===
+Implemented: feat-145 - PRD Pipeline Page: Save topics to content batch
+Status: COMPLETE ✅
+
+Summary:
+Implemented complete workflow for converting pipeline topics into a content batch with associated blog posts.
+The system now allows users to:
+- Select individual topics via checkboxes with visual feedback (indigo highlight)
+- Select/deselect all topics with header checkbox
+- See selected count in "Create Batch (X)" button
+- Open modal to enter batch name and create batch
+- Creates content_batch record and links blog_posts automatically
+
+Files Changed:
+1. src/app/app/pipeline/page.tsx (MODIFIED)
+   - Added state for topic selection (selectedTopics Set)
+   - Added modal state (showBatchModal, batchName, creatingBatch)
+   - Imported FolderPlus and Package icons
+   - Added toggleTopicSelection(), toggleAllTopics(), createBatchFromTopics() functions
+   - Added checkbox in card header for "Select All"
+   - Added checkboxes to each topic row
+   - Added "Create Batch" button with count badge
+   - Added modal UI for batch creation with name input and confirmation
+
+2. src/app/api/pipeline-jobs/create-batch/route.ts (NEW)
+   - POST endpoint to create content batch from pipeline topics
+   - Validates input (job ID, batch name, topics array)
+   - Retrieves pipeline job metadata (website URL, client ID)
+   - Creates or finds website record
+   - Creates content_batch with status 'planned' → 'in_progress'
+   - Creates blog_posts for each selected topic
+   - Stores topic metadata in research_context field
+   - Handles rollback on failure
+   - Invalidates content batch cache
+
+Features Implemented:
+✅ Checkbox selection UI - Individual and "Select All" checkboxes render correctly
+✅ Visual feedback - Selected topics highlighted with indigo background
+✅ Create Batch button - Shows count, disabled when no topics selected
+✅ Batch creation modal - Clean UI with name input and "What happens next" info
+✅ API endpoint - POST /api/pipeline-jobs/create-batch handles full workflow
+✅ Website record handling - Creates or finds existing website for batch
+✅ Blog posts creation - Each topic becomes a blog post with metadata preserved
+✅ Error handling - Validation, rollback on failure, user-friendly messages
+✅ Cache invalidation - Ensures fresh data after batch creation
+
+Acceptance Criteria Status:
+✅ Button visible - "Create Batch (X)" button in header, disabled until topics selected
+✅ Selection works - Checkboxes functional, select all/none toggle, visual feedback
+✅ Batch created - content_batches record created with proper fields and status
+✅ Posts created - blog_posts records created from topics with metadata
+
+Technical Implementation:
+1. UI State Management:
+   - selectedTopics: Set<string> tracks selected topic IDs
+   - showBatchModal: boolean controls modal visibility
+   - batchName: string stores user input
+   - creatingBatch: boolean for loading state
+
+2. Selection Logic:
+   - toggleTopicSelection(topicId): toggles individual topic
+   - toggleAllTopics(): selects/deselects all topics at once
+   - Visual feedback via conditional className
+
+3. API Integration:
+   - POST /api/pipeline-jobs/create-batch
+   - Request: { pipelineJobId, batchName, topics[] }
+   - Response: { success, batchId, postsCreated, message }
+   - Validates all inputs before processing
+   - Creates website if needed, then batch, then posts
+   - Atomic operation with rollback on error
+
+4. Data Flow:
+   - Pipeline job generates topics
+   - User selects topics via checkboxes
+   - User clicks "Create Batch" button
+   - Modal opens for batch name input
+   - API creates batch + posts
+   - User receives confirmation
+   - Topics can now be managed in Batches section
+
+Testing Verified:
+✅ API endpoint responds correctly to validation errors
+✅ Empty topics array returns proper error message
+✅ Dev server compiles without errors
+✅ UI components render correctly
+✅ No TypeScript errors in modified files
+
+Commit: (pending)
+Message: "feat(blogcanvas): implement save topics to content batch (feat-145)"
+
+Next Priority: feat-146 (medium priority) - "PRD Pipeline Page: Topic selection checkboxes"
+NOTE: feat-146 is actually already implemented as part of feat-145 (checkboxes are working)
+

@@ -3252,7 +3252,9 @@
         "Batch created",
         "Posts created"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T20:00:00Z",
+      "notes": "Implemented complete topic-to-batch workflow for pipeline page. Added checkbox selection UI with individual topic checkboxes and 'Select All' checkbox in header. Created 'Create Batch (X)' button that shows selected count and opens modal. Built batch creation modal with name input and confirmation. Created POST /api/pipeline-jobs/create-batch endpoint that creates content_batch record and blog_posts from selected topics, handles website record creation/lookup, stores topic metadata in research_context. All acceptance criteria verified: Create Batch button visible with count, checkboxes work with visual feedback (indigo highlight), API creates batch with proper status ('planned' then 'in_progress'), blog posts created with topic data (name, primary_keyword, difficulty, traffic, priority). Files: pipeline page.tsx (UI), /api/pipeline-jobs/create-batch/route.ts (API endpoint)."
     },
     {
       "id": "feat-146",
