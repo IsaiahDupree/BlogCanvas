@@ -13,9 +13,10 @@ export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url);
         const { page, limit, sortBy, sortOrder } = parsePaginationParams(searchParams);
+        const clientId = searchParams.get('clientId');
 
         // Build cache key
-        const cacheKey = CacheKeys.websites({ page, limit, sortBy, sortOrder });
+        const cacheKey = CacheKeys.websites({ page, limit, sortBy, sortOrder, clientId });
 
         // Try to get from cache
         const cached = queryCache.get(cacheKey);
@@ -27,6 +28,11 @@ export async function GET(request: NextRequest) {
         let query = supabaseAdmin
             .from('websites')
             .select('*', { count: 'exact' });
+
+        // Filter by client if provided
+        if (clientId) {
+            query = query.eq('client_id', clientId);
+        }
 
         // Apply sorting
         const sortColumn = sortBy || 'created_at';
@@ -87,7 +93,8 @@ export async function POST(request: NextRequest) {
             .insert({
                 url: websiteUrl.origin,
                 domain: websiteUrl.hostname,
-                scrape_status: 'pending'
+                scrape_status: 'pending',
+                client_id: clientId || null
             })
             .select()
             .single();
