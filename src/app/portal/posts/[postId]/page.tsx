@@ -6,6 +6,7 @@ import { ArrowLeft, Calendar, Clock, Tag, MessageSquare, CheckCircle, XCircle, A
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import ThreadedComments from '@/components/ThreadedComments'
+import BlogPreview from '@/components/BlogPreview'
 
 export default function PortalPostReviewPage({ params }: { params: Promise<{ postId: string }> }) {
     const { postId } = use(params)
@@ -27,8 +28,10 @@ export default function PortalPostReviewPage({ params }: { params: Promise<{ pos
         content: `
       <h2>The Challenge of Traditional CRM</h2>
       <p>Sales teams across industries face a common struggle: managing relationships at scale while maintaining the personal touch that closes deals. Traditional CRM systems, while better than spreadsheets, still require constant manual data entry and often feel like a burden rather than a help.</p>
-      
+
       <p>The result? Missed follow-ups, lost opportunities, and sales reps spending 65% of their time on administrative tasks instead of selling.</p>
+
+      <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=800" alt="Sales team collaborating on CRM strategy" />
 
       <h2>How AI Changes Everything</h2>
       <p>AI-powered CRM systems fundamentally change this dynamic. Instead of you working for the CRM, the CRM works for you.</p>
@@ -42,6 +45,44 @@ export default function PortalPostReviewPage({ params }: { params: Promise<{ pos
       <h3>Relationship Scoring</h3>
       <p>Each contact gets a health score from 0-100 based on engagement frequency, response rates, and deal velocity. You instantly see which relationships need attention.</p>
 
+      <h2>AI CRM Features Comparison</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Traditional CRM</th>
+            <th>AI-Powered CRM</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Data Entry</td>
+            <td>Manual, time-consuming</td>
+            <td>Automatic, real-time</td>
+          </tr>
+          <tr>
+            <td>Follow-up Reminders</td>
+            <td>Generic, calendar-based</td>
+            <td>Intelligent, behavior-based</td>
+          </tr>
+          <tr>
+            <td>Lead Scoring</td>
+            <td>Static criteria</td>
+            <td>Dynamic ML predictions</td>
+          </tr>
+          <tr>
+            <td>Email Integration</td>
+            <td>Basic sync</td>
+            <td>Full context analysis</td>
+          </tr>
+          <tr>
+            <td>Reporting</td>
+            <td>Manual dashboard setup</td>
+            <td>Automated insights</td>
+          </tr>
+        </tbody>
+      </table>
+
       <h2>Real Results from Real Companies</h2>
       <p>Companies using AI CRM see measurable improvements:</p>
       <ul>
@@ -53,6 +94,8 @@ export default function PortalPostReviewPage({ params }: { params: Promise<{ pos
       <blockquote>
         "Our team closed 40% more deals in the first quarter after switching to AI CRM. The automatic follow-ups alone were game-changing. We never let a hot lead go cold again." - Sarah Martinez, VP of Sales at TechCorp
       </blockquote>
+
+      <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800" alt="Analytics dashboard showing sales metrics" />
 
       <h2>Getting Started with AI CRM</h2>
       <p>The best time to adopt AI CRM is now. Start small, measure results, and scale what works. Most teams see ROI within 60 days.</p>
@@ -159,18 +202,7 @@ export default function PortalPostReviewPage({ params }: { params: Promise<{ pos
                 {/* Main Content */}
                 <div className="lg:col-span-2">
                     <Card className="p-8 md:p-12 bg-white shadow-lg">
-                        <div
-                            className="prose prose-lg max-w-none
-                prose-headings:font-bold prose-headings:text-gray-900
-                prose-h2:text-3xl prose-h2:mt-10 prose-h2:mb-6
-                prose-h3:text-2xl prose-h3:mt-8 prose-h3:mb-4
-                prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-6
-                prose-ul:my-6 prose-li:my-2
-                prose-strong:text-gray-900 prose-strong:font-semibold
-                prose-blockquote:border-l-4 prose-blockquote:border-indigo-600 prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-gray-700
-                prose-a:text-indigo-600 prose-a:no-underline hover:prose-a:underline"
-                            dangerouslySetInnerHTML={{ __html: post.content }}
-                        />
+                        <BlogPreview content={post.content} readOnly={true} />
                     </Card>
                 </div>
 

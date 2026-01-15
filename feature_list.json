@@ -1991,7 +1991,9 @@
         "Media displays",
         "Read-only enforced"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T10:00:00Z",
+      "notes": "Complete read-only blog preview system for client portal. Created reusable BlogPreview component (/src/components/BlogPreview.tsx) with comprehensive HTML rendering, image/table support, and read-only enforcement. Component features: (1) Rich typography with Tailwind prose classes for headings, paragraphs, lists, blockquotes, code, (2) Responsive images with rounded corners and shadows, (3) Styled tables with full borders and proper spacing, (4) Read-only enforcement via useEffect hook that disables form elements, removes contenteditable, prevents image dragging. Updated pages: /app/portal/posts/[postId]/page.tsx and /app/app/posts/[postId]/preview/page.tsx to use BlogPreview component. Enhanced mock data with sample images (Unsplash) and comparison table. All acceptance criteria verified: preview renders correctly, formatting preserved, media (images/tables) displays properly, read-only enforced. Documentation created at docs/feat-088-blog-preview.md."
     },
     {
       "id": "feat-089",

@@ -3,12 +3,12 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { 
-  ArrowLeft, 
-  Eye, 
-  ExternalLink, 
-  Share2, 
-  Copy, 
+import {
+  ArrowLeft,
+  Eye,
+  ExternalLink,
+  Share2,
+  Copy,
   Check,
   Calendar,
   User,
@@ -19,6 +19,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import BlogPreview from '@/components/BlogPreview'
 
 interface BlogPost {
   id: string
@@ -174,10 +175,7 @@ export default function BlogPreviewPage() {
               {/* Content */}
               <CardContent className="p-8">
                 {post.content ? (
-                  <div 
-                    className="prose prose-lg max-w-none"
-                    dangerouslySetInnerHTML={{ __html: post.content }}
-                  />
+                  <BlogPreview content={post.content} readOnly={true} />
                 ) : (
                   <div className="text-center py-12 text-gray-500">
                     <p className="text-lg mb-2">No content generated yet</p>
