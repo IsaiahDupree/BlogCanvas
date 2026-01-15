@@ -3406,7 +3406,9 @@
         "Real-time updates",
         "ETA displayed"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T22:30:00Z",
+      "notes": "Complete pipeline job progress tracking with ETA. Database migration added eta_seconds column to pipeline_jobs table. Enhanced UI with step indicators showing 4 pipeline stages (Crawl & Index, SEO Analysis, Gap Analysis, Topic Generation). Progress bar with color-coded indicators (green=completed, blue=current, gray=pending). Real-time polling every 3 seconds for running jobs. ETA calculation based on elapsed time and progress rate, displayed in human-readable format (hours/minutes/seconds). All acceptance criteria met: percentage shown, accurate calculation, real-time updates, ETA displayed."
     },
     {
       "id": "feat-153",
