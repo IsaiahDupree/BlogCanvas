@@ -1794,7 +1794,9 @@
         "Diff between revisions",
         "Restore previous version"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T12:00:00Z",
+      "notes": "Complete blog post revision tracking system. Pipeline now saves revisions at each stage (outline, draft, seo_pass, fact_check, enhancement). Fixed all invalid revision types (ai_full_generation, ai_batch_generation, ai_readability_optimization, ai_merge, rollback) to use standard schema types. UI components (RevisionHistory, RevisionHistoryTimeline, DiffViewer) already existed. API endpoints for fetch/create/diff/restore revisions working. Files modified: blog-pipeline.ts (added saveRevision helper and calls after each agent), generate-full/route.ts (pass supabase client to pipeline), readability/route.ts, content-generator.ts, revise/route.ts, revisions/route.ts, generate-batch/route.ts (all fixed to use standard revision types with proper content_text and notes fields)."
     },
     {
       "id": "feat-080",

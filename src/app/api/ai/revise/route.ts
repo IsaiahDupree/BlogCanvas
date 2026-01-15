@@ -81,17 +81,16 @@ export async function POST(request: NextRequest) {
         .eq('id', blogPostId);
 
       // Save revision history
+      // Map revision types to standard types
+      const standardRevisionType = revisionType === 'seo' ? 'seo_pass' : 'human_edit';
+
       await supabase.from('blog_post_revisions').insert({
         blog_post_id: blogPostId,
-        revision_type: `ai_${revisionType}_revision`,
-        content: result.data.revisedContent,
-        created_by: 'system',
-        metadata: {
-          improvementScore: result.data.improvementScore,
-          changes: result.data.changes,
-          suggestionsCount: result.data.suggestions.length,
-          summary: result.data.summary
-        }
+        revision_type: standardRevisionType,
+        content: { text: result.data.revisedContent },
+        content_text: result.data.revisedContent,
+        created_by_type: 'system',
+        notes: `${revisionType} revision - ${result.data.summary || 'Content optimization'}`
       });
     }
 

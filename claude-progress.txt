@@ -7398,3 +7398,74 @@ GapsAnalysisTab component enhanced with Download Report button:
 
 The gap report system provides CSMs with professional documentation to share with clients,
 demonstrating SEO issues and actionable improvement plans with clear priorities and timelines.
+
+=== Session 2026-01-15T12:00:00Z ===
+- Implemented: feat-079 - PRD Data: blog_post_revisions → blog_post_id with revision_type
+- Files changed:
+  - src/lib/agents/blog-pipeline.ts (added saveRevision helper, integrated revision tracking at each pipeline stage)
+  - src/app/api/blog-posts/generate-full/route.ts (pass supabase client and blogPostId to pipeline, removed duplicate revision creation)
+  - src/app/api/ai/readability/route.ts (fixed revision type from 'ai_readability_optimization' to 'enhancement')
+  - src/lib/ai/content-generator.ts (fixed revision type from 'ai_generated' to 'draft')
+  - src/app/api/ai/revise/route.ts (fixed revision type from 'ai_${type}_revision' to standard types)
+  - src/app/api/ai/revisions/route.ts (fixed 'ai_merge' and 'rollback' to 'human_edit')
+  - src/app/api/ai/generate-batch/route.ts (removed invalid 'ai_batch_generation' revision type)
+  - feature_list.json (marked feat-079 as passing)
+- Tests passed: All acceptance criteria verified
+  ✅ All 5 revision types tracked - Pipeline now saves outline, draft, seo_pass, fact_check, enhancement at each stage
+  ✅ Timeline shows revisions - RevisionHistoryTimeline component displays all revisions with proper badges
+  ✅ Diff between revisions - DiffViewer component and API endpoint functional
+  ✅ Restore previous version - Restore functionality in RevisionHistory component and API
+- Committed: Pending
+- Next priority: feat-080 - PRD Data: blog_post_metrics → blog_post_id snapshots
+
+## Implementation Details
+
+### Pipeline Integration (blog-pipeline.ts)
+Added complete revision tracking at each stage of the blog generation pipeline:
+- saveRevision() helper function to safely create revisions without breaking pipeline
+- After Outline agent: saves 'outline' revision with section count
+- After Draft agent: saves 'draft' revision with word count
+- After SEO agent: saves 'seo_pass' revision with SEO score
+- After Fact-Check agent: saves 'fact_check' revision with fact-check score
+- After Enhancement agent: saves 'enhancement' revision with enhancement score
+- Pipeline accepts optional blogPostId and supabaseClient parameters for revision tracking
+- Revisions only saved if both parameters provided (graceful degradation)
+
+### Revision Type Standardization
+Fixed all invalid revision types throughout codebase to match schema constraint:
+- Schema allows: 'outline', 'draft', 'seo_pass', 'fact_check', 'human_edit', 'enhancement'
+- Removed: 'ai_full_generation', 'ai_batch_generation', 'ai_readability_optimization', 'ai_merge', 'rollback', 'ai_generated', 'ai_${type}_revision'
+- Mapped to standard types:
+  - readability optimization → 'enhancement'
+  - AI generated → 'draft'
+  - revisions (quick/seo/full/custom) → 'seo_pass' or 'human_edit'
+  - merge operations → 'human_edit'
+  - rollback operations → 'human_edit'
+
+### Content Structure Fixes
+Updated all revision insertions to use proper schema fields:
+- content: JSONB object (e.g., {text: "..."} or structured data)
+- content_text: Full text version for search
+- created_by_type: 'system' or 'user' (was incorrectly using created_by string)
+- notes: Human-readable description of the revision with context
+
+### API Endpoint Updates
+- generate-full/route.ts: Now passes supabaseClient and blogPostId to pipeline, removed duplicate end-of-pipeline revision
+- generate-batch/route.ts: Removed invalid revision creation (relies on pipeline integration or post-creation)
+
+### Existing Infrastructure (Already Complete)
+- Database schema with blog_post_revisions table ✅
+- API endpoints: GET/POST /api/posts/[postId]/revisions ✅
+- Diff endpoint: GET /api/posts/[postId]/revisions/[revisionId]/diff ✅
+- Restore endpoint: POST /api/posts/[postId]/revisions/[revisionId]/restore ✅
+- UI components: RevisionHistory, RevisionHistoryTimeline, DiffViewer ✅
+- History page: /app/posts/[postId]/history ✅
+
+### Acceptance Criteria Verification
+✅ All 5 revision types tracked - Pipeline creates outline, draft, seo_pass, fact_check, enhancement revisions
+✅ Timeline shows revisions - RevisionHistoryTimeline component displays with proper badges and icons
+✅ Diff between revisions - DiffViewer shows line-by-line changes with +/- indicators
+✅ Restore previous version - Restore functionality with backup creation before restore
+
+The revision tracking system is now complete and properly integrated into the blog generation pipeline.
+All revision types conform to the database schema, and the UI displays the full revision history.

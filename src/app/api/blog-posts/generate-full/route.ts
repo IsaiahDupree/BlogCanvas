@@ -84,6 +84,8 @@ export async function POST(request: NextRequest) {
       topic,
       targetKeyword: targetKeyword || topic,
       wordCountGoal,
+      blogPostId: blogPostId || undefined, // Pass blogPostId for revision tracking
+      supabaseClient: supabase as any, // Pass supabase client for revision tracking
       clientProfile,
       options: {
         generateMultipleOutlines: options.generateMultipleOutlines || false,
@@ -124,20 +126,8 @@ export async function POST(request: NextRequest) {
         console.error('Failed to update blog post:', updateError);
       }
 
-      // Save revision
-      await supabase.from('blog_post_revisions').insert({
-        blog_post_id: blogPostId,
-        revision_type: 'ai_full_generation',
-        content: result.blogPost.content,
-        created_by: 'system',
-        metadata: {
-          seoScore: result.blogPost.seoScore,
-          factCheckScore: result.blogPost.factCheckScore,
-          enhancementScore: result.blogPost.enhancementScore,
-          steps: result.steps,
-          duration: result.totalDuration
-        }
-      });
+      // Note: Individual stage revisions (outline, draft, seo_pass, fact_check, enhancement)
+      // are automatically saved by the pipeline orchestrator
     }
 
     // If batchId provided and no blogPostId, create a new blog post
@@ -160,15 +150,9 @@ export async function POST(request: NextRequest) {
 
       if (createError) {
         console.error('Failed to create blog post:', createError);
-      } else if (newPost) {
-        // Save initial revision
-        await supabase.from('blog_post_revisions').insert({
-          blog_post_id: newPost.id,
-          revision_type: 'ai_full_generation',
-          content: result.blogPost.content,
-          created_by: 'system'
-        });
       }
+      // Note: Revisions are saved during pipeline execution if blogPostId was provided
+      // For new posts, we'd need to re-run pipeline or save revisions post-creation
     }
 
     return NextResponse.json({

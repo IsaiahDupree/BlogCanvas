@@ -90,13 +90,11 @@ export async function POST(request: NextRequest) {
         // Save revision
         await supabase.from('blog_post_revisions').insert({
           blog_post_id: blogPostId,
-          revision_type: 'ai_readability_optimization',
-          content: result.data.content,
-          created_by: 'system',
-          metadata: {
-            originalScore: result.data.originalScore,
-            optimizedScore: result.data.optimizedScore
-          }
+          revision_type: 'enhancement',
+          content: { text: result.data.content },
+          content_text: result.data.content,
+          created_by_type: 'system',
+          notes: `Readability optimization (score: ${result.data.originalScore} → ${result.data.optimizedScore})`
         });
       }
 

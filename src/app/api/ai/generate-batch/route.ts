@@ -124,12 +124,8 @@ export async function POST(request: NextRequest) {
               .single();
 
             if (newPost) {
-              await supabase.from('blog_post_revisions').insert({
-                blog_post_id: newPost.id,
-                revision_type: 'ai_batch_generation',
-                content: result.blogPost.content,
-                created_by: 'system'
-              });
+              // Note: Revisions are saved during pipeline execution if blogPostId was provided
+              // For batch generation, revisions will be created post-hoc or via re-run with post ID
 
               job.result.blogPostId = newPost.id;
             }

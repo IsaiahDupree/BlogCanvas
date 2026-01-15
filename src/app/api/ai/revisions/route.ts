@@ -265,13 +265,11 @@ export async function POST(request: NextRequest) {
 
       await supabase.from('blog_post_revisions').insert({
         blog_post_id: blogPostId,
-        revision_type: 'ai_merge',
-        content: result.data?.mergedContent,
-        created_by: 'system',
-        metadata: {
-          mergedFrom: revisionIds,
-          changesIncorporated: result.data?.changesIncorporated
-        }
+        revision_type: 'human_edit',
+        content: { text: result.data?.mergedContent },
+        content_text: result.data?.mergedContent,
+        created_by_type: 'system',
+        notes: `Merged revisions: ${revisionIds.join(', ')} - ${result.data?.changesIncorporated || 'Changes incorporated'}`
       });
 
       return NextResponse.json({
@@ -343,13 +341,11 @@ export async function POST(request: NextRequest) {
 
       await supabase.from('blog_post_revisions').insert({
         blog_post_id: blogPostId,
-        revision_type: 'rollback',
-        content: result.data?.rolledBackContent,
-        created_by: 'system',
-        metadata: {
-          rolledBackTo: targetVersionId,
-          preservedElements: result.data?.preservedElements
-        }
+        revision_type: 'human_edit',
+        content: { text: result.data?.rolledBackContent },
+        content_text: result.data?.rolledBackContent,
+        created_by_type: 'system',
+        notes: `Rollback to version ${targetVersionId} - Preserved elements: ${result.data?.preservedElements || 'none'}`
       });
 
       return NextResponse.json({

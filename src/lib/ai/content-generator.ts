@@ -396,8 +396,10 @@ export async function saveGeneratedContent(
         .from('blog_post_revisions')
         .insert({
             blog_post_id: postId,
-            revision_type: 'ai_generated',
-            content,
-            created_at: new Date().toISOString()
+            revision_type: 'draft',
+            content: { text: content },
+            content_text: content,
+            created_by_type: 'system',
+            notes: 'AI-generated draft content'
         });
 }

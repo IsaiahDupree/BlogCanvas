@@ -13,11 +13,15 @@ import { runSEOAgent, SEOAgentInput } from './seo';
 import { runFactCheckAgent, FactCheckAgentInput, FactCheckResult as FCResult } from './fact-check';
 import { runEnhancementAgent, EnhancementAgentInput, EnhancementResult } from './enhancement';
 import { runVoiceToneAgent, VoiceToneAgentInput } from './voice-tone';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 export interface BlogGenerationInput {
   topic: string;
   targetKeyword: string;
   wordCountGoal: number;
+  // Optional: For tracking revisions at each pipeline stage
+  blogPostId?: string;
+  supabaseClient?: SupabaseClient;
   clientProfile: {
     // Basic Info
     clientName?: string;
@@ -97,6 +101,36 @@ export interface PipelineProgress {
 }
 
 export type ProgressCallback = (progress: PipelineProgress) => void;
+
+/**
+ * Helper function to save a revision at a pipeline stage
+ */
+async function saveRevision(
+  supabaseClient: SupabaseClient | undefined,
+  blogPostId: string | undefined,
+  revisionType: 'outline' | 'draft' | 'seo_pass' | 'fact_check' | 'enhancement',
+  content: any,
+  notes?: string
+): Promise<void> {
+  if (!supabaseClient || !blogPostId) {
+    // Skip revision saving if not configured
+    return;
+  }
+
+  try {
+    await supabaseClient.from('blog_post_revisions').insert({
+      blog_post_id: blogPostId,
+      revision_type: revisionType,
+      content: typeof content === 'string' ? { text: content } : content,
+      content_text: typeof content === 'string' ? content : JSON.stringify(content),
+      created_by_type: 'system',
+      notes: notes || `Auto-generated ${revisionType} revision from pipeline`
+    });
+  } catch (error) {
+    console.error(`Failed to save ${revisionType} revision:`, error);
+    // Don't throw - revision saving is optional and shouldn't break the pipeline
+  }
+}
 
 /**
  * Run the complete blog generation pipeline
@@ -192,6 +226,16 @@ export async function runBlogGenerationPipeline(
       }
       outline = outlineResult.data!;
     }
+
+    // Save outline revision
+    await saveRevision(
+      input.supabaseClient,
+      input.blogPostId,
+      'outline',
+      outline,
+      `Generated outline with ${outline.sections.length} sections`
+    );
+
     updateProgress(1, 'completed');
 
     // Step 3: Draft (section by section)
@@ -227,6 +271,16 @@ export async function runBlogGenerationPipeline(
     }
 
     fullDraftContent = combineSections(sectionContents);
+
+    // Save draft revision
+    await saveRevision(
+      input.supabaseClient,
+      input.blogPostId,
+      'draft',
+      fullDraftContent,
+      `Generated draft with ${fullDraftContent.split(/\s+/).length} words`
+    );
+
     updateProgress(2, 'completed');
 
     // Step 4: SEO Optimization
@@ -241,6 +295,15 @@ export async function runBlogGenerationPipeline(
     const seoResult = await runSEOAgent(provider, seoInput);
     if (seoResult.success) {
       seoMetadata = seoResult.data!;
+
+      // Save SEO pass revision
+      await saveRevision(
+        input.supabaseClient,
+        input.blogPostId,
+        'seo_pass',
+        seoMetadata,
+        `SEO optimization completed with score ${calculateSEOScore(seoMetadata)}`
+      );
     }
     updateProgress(3, 'completed');
 
@@ -256,6 +319,15 @@ export async function runBlogGenerationPipeline(
       const factCheckResult = await runFactCheckAgent(provider, factCheckInput);
       if (factCheckResult.success) {
         factCheck = factCheckResult.data!;
+
+        // Save fact-check revision
+        await saveRevision(
+          input.supabaseClient,
+          input.blogPostId,
+          'fact_check',
+          factCheck,
+          `Fact-check completed with score ${factCheck.factCheckScore}`
+        );
       }
       updateProgress(4, 'completed');
     } else {
@@ -276,6 +348,15 @@ export async function runBlogGenerationPipeline(
       const enhancementResult = await runEnhancementAgent(provider, enhancementInput);
       if (enhancementResult.success) {
         enhancements = enhancementResult.data!;
+
+        // Save enhancement revision
+        await saveRevision(
+          input.supabaseClient,
+          input.blogPostId,
+          'enhancement',
+          enhancements,
+          `Enhancement completed with score ${enhancements.overallScore}`
+        );
       }
       updateProgress(5, 'completed');
     } else {
