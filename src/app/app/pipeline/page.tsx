@@ -507,9 +507,10 @@ export default function PipelinePage() {
       const topicsRes = await fetch('/api/ai/topic-clusters', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           websiteUrl: websiteUrl,
           websiteId: selectedClient || undefined,
+          clientId: selectedClient || undefined, // Pass clientId for brand context
           industry: targetMarket || 'General Business',
           niche: icp || 'Business Services',
           targetAudience: icp || 'Business professionals',

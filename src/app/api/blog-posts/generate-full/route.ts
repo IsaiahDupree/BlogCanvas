@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { runBlogGenerationPipeline, BlogGenerationInput } from '@/lib/agents/blog-pipeline';
+import { getSharedClientContext, formatContextForAI } from '@/lib/brand/shared-context';
 
 export const maxDuration = 300; // 5 minutes for full generation
 
@@ -30,52 +31,58 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Topic is required' }, { status: 400 });
     }
 
-    // Get client profile if clientId provided - FULL BRAND CONTEXT
+    // Get client profile if clientId provided - FULL BRAND CONTEXT via unified service
     let clientProfile: BlogGenerationInput['clientProfile'] = {
       productServiceSummary: 'General business',
       targetAudience: 'Business professionals'
     };
 
-    if (clientId) {
-      const { data: client } = await supabase
-        .from('clients')
-        .select('*, brand_guides(*)')
-        .eq('id', clientId)
-        .single();
+    // Store the full shared context for potential future use
+    let sharedContext = null;
 
-      if (client) {
-        const brandGuide = client.brand_guides?.[0];
+    if (clientId) {
+      try {
+        // Use the unified getSharedClientContext service
+        sharedContext = await getSharedClientContext(clientId);
+
+        // Map the shared context to the clientProfile format expected by the pipeline
         clientProfile = {
           // Basic Info
-          clientName: client.name,
-          industry: client.industry,
-          
+          clientName: sharedContext.clientName,
+
           // Brand Snapshot - Core
-          productServiceSummary: brandGuide?.product_service_summary || client.industry || 'General business',
-          targetAudience: brandGuide?.target_audience || 'Business professionals',
-          positioning: brandGuide?.positioning || '',
-          
+          productServiceSummary: sharedContext.productsServices.length > 0
+            ? sharedContext.productsServices.map((ps: any) => ps.name || ps.description).join(', ')
+            : 'General business',
+          targetAudience: sharedContext.targetAudiences.length > 0
+            ? sharedContext.targetAudiences.map((ta: any) => ta.name || ta.description).join(', ')
+            : 'Business professionals',
+          positioning: sharedContext.brandGuide.tagline || '',
+
           // Tone & Voice
-          brandVoice: brandGuide?.tone_profile?.voice || ['Professional', 'Helpful'],
-          brandTone: brandGuide?.tone_profile?.tone || 'Professional',
-          formalityLevel: brandGuide?.tone_profile?.formality || 5,
-          playfulnessLevel: brandGuide?.tone_profile?.playfulness || 3,
-          
+          brandVoice: sharedContext.voiceAndTone.voiceTraits,
+          brandTone: sharedContext.voiceAndTone.voiceTraits.length > 0
+            ? sharedContext.voiceAndTone.voiceTraits[0]
+            : 'Professional',
+
           // Brand Messaging
-          tagline: brandGuide?.brand_messaging?.tagline,
-          keyMessages: brandGuide?.brand_messaging?.key_messages || [],
-          valuePropositions: brandGuide?.brand_messaging?.value_props || [],
-          
-          // Competitive Context
-          competitors: brandGuide?.competitors?.map((c: any) => c.name) || [],
-          keyDifferentiators: brandGuide?.key_differentiators || [],
-          
+          tagline: sharedContext.brandGuide.tagline || undefined,
+          keyMessages: [], // TODO: Extract from messaging hierarchy
+          valuePropositions: sharedContext.valuePropositions,
+
+          // Competitive Context - Using donts as differentiators proxy
+          competitors: [],
+          keyDifferentiators: sharedContext.valuePropositions,
+
           // Content Guidelines
-          keywordsToInclude: brandGuide?.content_guidelines?.keywords_include || [],
-          keywordsToAvoid: brandGuide?.content_guidelines?.keywords_avoid || [],
-          topicsToAvoid: brandGuide?.content_guidelines?.topics_avoid || [],
-          styleNotes: brandGuide?.content_guidelines?.style_notes
+          keywordsToInclude: sharedContext.stylesToKeep.preferredPatterns,
+          keywordsToAvoid: sharedContext.stylesToAvoid.wordPatterns,
+          topicsToAvoid: sharedContext.donts,
+          styleNotes: formatContextForAI(sharedContext)
         };
+      } catch (error) {
+        console.error('Failed to fetch shared client context:', error);
+        // Fall back to defaults if context fetch fails
       }
     }
 

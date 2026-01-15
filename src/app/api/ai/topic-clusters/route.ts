@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { runTopicClusterAgent, generateSEOForecast, TopicClusterInput } from '@/lib/agents/topic-cluster';
+import { getSharedClientContext, formatContextForAI } from '@/lib/brand/shared-context';
 
 export const maxDuration = 120;
 
@@ -24,12 +25,13 @@ export async function POST(request: NextRequest) {
       currentSeoScore,
       targetSeoScore,
       businessGoals,
-      generateForecast = true
+      generateForecast = true,
+      clientId // NEW: Accept clientId to pull brand context
     } = body;
 
     if (!industry || !niche) {
-      return NextResponse.json({ 
-        error: 'Industry and niche are required' 
+      return NextResponse.json({
+        error: 'Industry and niche are required'
       }, { status: 400 });
     }
 
@@ -40,9 +42,38 @@ export async function POST(request: NextRequest) {
         .from('blog_posts')
         .select('target_keyword')
         .eq('website_id', websiteId);
-      
+
       if (posts) {
         currentTopics = posts.map(p => p.target_keyword).filter(Boolean);
+      }
+    }
+
+    // Get brand context if clientId provided
+    let brandContext = null;
+    let enhancedTargetAudience = targetAudience || 'Business professionals';
+    let enhancedBusinessGoals = businessGoals;
+
+    if (clientId) {
+      try {
+        brandContext = await getSharedClientContext(clientId);
+
+        // Enhance target audience from brand context
+        if (brandContext.targetAudiences.length > 0) {
+          enhancedTargetAudience = brandContext.targetAudiences
+            .map((ta: any) => ta.name || ta.description)
+            .join(', ');
+        }
+
+        // Enhance business goals with value propositions
+        if (brandContext.valuePropositions.length > 0) {
+          const valueProps = brandContext.valuePropositions.join('; ');
+          enhancedBusinessGoals = enhancedBusinessGoals
+            ? `${enhancedBusinessGoals}. Value propositions: ${valueProps}`
+            : `Value propositions: ${valueProps}`;
+        }
+      } catch (error) {
+        console.error('Failed to fetch brand context for topic generation:', error);
+        // Continue with provided values if context fetch fails
       }
     }
 
@@ -51,11 +82,11 @@ export async function POST(request: NextRequest) {
       industry,
       niche,
       currentTopics,
-      targetAudience: targetAudience || 'Business professionals',
+      targetAudience: enhancedTargetAudience,
       competitorUrls,
       currentSeoScore: currentSeoScore || 50,
       targetSeoScore: targetSeoScore || 80,
-      businessGoals
+      businessGoals: enhancedBusinessGoals
     };
 
     // Generate topic clusters

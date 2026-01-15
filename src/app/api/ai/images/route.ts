@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { runImagePromptAgent, generateImageWithDALLE, generateBlogImages } from '@/lib/agents/image-generator';
+import { getSharedClientContext } from '@/lib/brand/shared-context';
 
 export const maxDuration = 120;
 
@@ -27,8 +28,54 @@ export async function POST(request: NextRequest) {
       quality = 'standard',
       generateHero = true,
       generateSocial = true,
-      inlineCount = 2
+      inlineCount = 2,
+      clientId // NEW: Accept clientId to pull brand context
     } = body;
+
+    // Get brand context if clientId provided
+    let brandContext = null;
+    let enhancedImageStyle = imageStyle;
+    let enhancedBrandColors = brandColors;
+    let enhancedTargetAudience = targetAudience;
+    let bannedElements: string[] = [];
+    let imageSpecs = { size, quality };
+
+    if (clientId) {
+      try {
+        brandContext = await getSharedClientContext(clientId);
+
+        // Use image guidelines from brand context
+        const imgGuidelines = brandContext.imageGuidelines;
+
+        // Apply AI generation settings
+        if (imgGuidelines.aiGenerationSettings) {
+          enhancedImageStyle = imgGuidelines.aiGenerationSettings.style || imageStyle;
+          bannedElements = imgGuidelines.aiGenerationSettings.bannedElements || [];
+        }
+
+        // Apply target audience from brand context
+        if (brandContext.targetAudiences.length > 0) {
+          enhancedTargetAudience = brandContext.targetAudiences
+            .map((ta: any) => ta.name || ta.description)
+            .join(', ');
+        }
+
+        // Apply featured image specs
+        if (imgGuidelines.featuredImageSpecs) {
+          const { minWidth, minHeight, preferredFormat } = imgGuidelines.featuredImageSpecs;
+          // Map aspect ratio to DALL-E size format
+          const aspectRatio = imgGuidelines.featuredImageSpecs.aspectRatio;
+          if (aspectRatio === '16:9') {
+            imageSpecs.size = '1792x1024';
+          } else if (aspectRatio === '1:1') {
+            imageSpecs.size = '1024x1024';
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch brand context for image generation:', error);
+        // Continue with provided values if context fetch fails
+      }
+    }
 
     // Generate image prompts only
     if (action === 'prompts') {
@@ -41,9 +88,9 @@ export async function POST(request: NextRequest) {
       const result = await runImagePromptAgent({
         topic,
         contentSummary,
-        brandColors,
-        imageStyle,
-        targetAudience,
+        brandColors: enhancedBrandColors,
+        imageStyle: enhancedImageStyle,
+        targetAudience: enhancedTargetAudience,
         imageCount
       });
 
@@ -73,7 +120,7 @@ export async function POST(request: NextRequest) {
         }, { status: 400 });
       }
 
-      const result = await generateImageWithDALLE(prompt, size, quality);
+      const result = await generateImageWithDALLE(prompt, imageSpecs.size as any, imageSpecs.quality as any);
 
       if (!result.success) {
         return NextResponse.json({ 
@@ -100,7 +147,7 @@ export async function POST(request: NextRequest) {
         generateHero,
         generateSocial,
         inlineCount,
-        quality
+        quality: imageSpecs.quality as any
       });
 
       if (!result.success) {
