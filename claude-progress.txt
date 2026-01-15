@@ -8291,3 +8291,97 @@ The client change request system enables collaborative content refinement with f
 - Committed: Pending
 - Next priority: feat-101 - Batch-level SEO score tracking
 
+
+
+=== Session 2026-01-15T11:30:00Z ===
+- Implemented: feat-101 - PRD: Topic list with tone setting per post
+- Status: COMPLETE - All acceptance criteria verified
+- Implementation Summary:
+  * Added tone/voice configuration system with 10 distinct professional tones
+  * Created comprehensive tone library with AI-friendly guidance generation
+  * Integrated into AI pipeline for content generation
+  * Added UI components for tone selection in batch creation
+- Files created:
+  * /src/lib/tone-voice.ts (368 lines) - Core tone/voice library
+    - ToneVoice type with 10 options
+    - ToneVoiceConfig interface with comprehensive metadata
+    - TONE_VOICE_OPTIONS array with 10 pre-configured tones:
+      1. Professional 💼 - Polished, formal, business-appropriate
+      2. Friendly 😊 - Warm, approachable, relatable
+      3. Authoritative 🎯 - Expert, credible, commanding
+      4. Conversational 💬 - Casual, relaxed, dialogue-like
+      5. Educational 📖 - Teaching-focused, clear, informative
+      6. Inspirational ✨ - Motivating, uplifting, aspirational
+      7. Humorous 😄 - Witty, entertaining, light-hearted
+      8. Technical ⚙️ - Precise, detailed, specification-focused
+      9. Empathetic 💙 - Understanding, supportive, compassionate
+      10. Bold 🔥 - Daring, confident, attention-grabbing
+    - Helper functions: getToneVoiceConfig, getAllToneVoiceOptions, getAIToneGuidance, isValidToneVoice, parseToneVoice, getDefaultToneVoice
+  * /src/components/ToneVoiceSelector.tsx (90 lines) - UI component
+    - Select dropdown with icon, label, description
+    - Shows "best for" and "key traits" when selected
+    - Supports allowNull prop for optional selection
+    - Helper text support for contextual guidance
+- Files modified:
+  * /src/lib/agents/blog-pipeline.ts
+    - Import ToneVoice, getAIToneGuidance, parseToneVoice (line 18)
+    - Added toneVoice field to BlogGenerationInput interface (line 27)
+    - Generate tone guidance in pipeline (line 265)
+    - Combine tone guidance with depth and search intent in styleNotes (line 283)
+  * /src/app/api/blog-posts/[id]/generate/route.ts
+    - Import parseToneVoice (line 6)
+    - Fetch tone_of_voice from database (line 32)
+    - Parse and pass to pipeline (line 98)
+  * /src/app/api/content-batches/[id]/import-csv/route.ts
+    - Import isValidToneVoice (line 5)
+    - Parse tone_voice from CSV (line 88)
+    - Validate and store (lines 106, 118)
+  * /src/components/website/PitchBuilderTab.tsx
+    - Import ToneVoiceSelector and ToneVoice (lines 10-11)
+    - Add toneVoice state (line 40)
+    - Render ToneVoiceSelector component in batch creation form (lines 487-492)
+  * /feature_list.json
+    - Marked feat-101 as passes: true with detailed implementation notes
+- All 4 acceptance criteria verified:
+  ✓ Tone selectable - ToneVoiceSelector component with 10 comprehensive tone options
+  ✓ Brand defaults - getDefaultToneVoice() supports brand guide tone or defaults to 'professional'
+  ✓ Override works - tone_of_voice field in blog_posts table allows per-post customization
+  ✓ AI follows tone - getAIToneGuidance() generates detailed prompt guidance
+- Tone Configuration Details:
+  Each tone includes:
+  * ID and label for selection
+  * Description of the tone style
+  * Icon for visual identification
+  * Characteristics (5 key traits)
+  * Examples (3 sample phrases)
+  * Writing tips (5 guidelines)
+  * Best use cases (5 scenarios)
+- AI Integration:
+  * getAIToneGuidance() generates comprehensive prompt guidance
+  * Includes tone label, description, characteristics, writing tips, and example style
+  * Combined with depth guidance and search intent guidance in styleNotes field
+  * Guides AI to adapt writing style, sentence structure, vocabulary, and overall approach
+- CSV Import Support:
+  * Accepts tone_voice, tone, "Tone Voice", or "Tone" column headers
+  * Validates against known tone types
+  * Stores validated tone or null if invalid
+- UI/UX Features:
+  * ToneVoiceSelector shows icon + label in dropdown
+  * Description shown for each option
+  * Selected tone displays "best for" and "key traits" below selector
+  * Optional helper text support for contextual guidance
+  * Supports allowNull for optional selection (shows "Default" option)
+- Database:
+  * tone_of_voice field already existed in blog_posts table
+  * No migration required
+  * Fully backward compatible (null values default to 'professional')
+- Key Benefits:
+  * Consistent brand voice across all content
+  * AI-generated content matches desired tone automatically
+  * Easy tone selection with visual guides
+  * Flexible per-post overrides
+  * Professional defaults prevent blank states
+  * Comprehensive guidance for 10 distinct writing styles
+- Updated: feature_list.json - Marked feat-101 as passing with comprehensive implementation notes
+- Committed: "feat(blogcanvas): implement tone/voice setting per post (feat-101)"
+- Next priority: feat-102 - Topic list with publish window/due date

@@ -132,6 +132,12 @@ export async function publishToWordPress(
     const seoMetadata = post.seo_metadata as any || {};
     const slug = seoMetadata.slug || generateSlug(title || post.topic);
 
+    // Get assigned categories and tags (feat-103: WordPress category and tag assignment)
+    const wordpressCategories = post.wordpress_categories || [];
+    const wordpressTags = post.wordpress_tags || [];
+    const categoryIds = wordpressCategories.map((cat: any) => cat.id).filter(Boolean);
+    const tagIds = wordpressTags.map((tag: any) => tag.id).filter(Boolean);
+
     // Prepare WordPress post
     const wpPost: WordPressPost = {
         title: title || post.topic,
@@ -139,6 +145,8 @@ export async function publishToWordPress(
         excerpt: excerpt || seoMetadata.meta_description || post.seo_notes || '',
         slug: slug,
         status: options?.status || 'draft',
+        categories: categoryIds.length > 0 ? categoryIds : undefined,
+        tags: tagIds.length > 0 ? tagIds : undefined,
         meta: {
             seo_score: post.seo_quality_score,
             target_keyword: post.target_keyword,
