@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { runBlogGenerationPipeline, BlogGenerationInput } from '@/lib/agents/blog-pipeline';
 import { getSharedClientContext, formatContextForAI } from '@/lib/brand/shared-context';
+import { validateBrandContext, applyDefaults } from '@/lib/brand/context-validator';
 
 export const maxDuration = 300; // 5 minutes for full generation
 
@@ -44,6 +45,20 @@ export async function POST(request: NextRequest) {
       try {
         // Use the unified getSharedClientContext service
         sharedContext = await getSharedClientContext(clientId);
+
+        // feat-173: Validate brand context and apply defaults if needed
+        const validation = validateBrandContext(sharedContext);
+        console.log('Brand context validation:', {
+          completeness: validation.completeness,
+          canProceed: validation.canProceed,
+          issueCount: validation.issues.length
+        });
+
+        // Apply defaults for missing fields to ensure quality content
+        if (!validation.isValid && Object.keys(validation.suggestions).length > 0) {
+          console.log('Applying default values for missing fields:', validation.missingFields);
+          sharedContext = applyDefaults(sharedContext!, validation.suggestions);
+        }
 
         // Map the shared context to the clientProfile format expected by the pipeline
         clientProfile = {

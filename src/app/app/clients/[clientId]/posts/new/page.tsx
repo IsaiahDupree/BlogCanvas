@@ -34,6 +34,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select'
+import { ContextValidationWarning } from '@/components/brand/ContextValidationWarning'
 
 interface Client {
     id: string
@@ -389,6 +390,13 @@ export default function NewClientPostPage({ params }: { params: Promise<{ client
                                 </div>
                             </CardContent>
                         </Card>
+
+                        {/* Context Validation Warning - feat-173 */}
+                        <ContextValidationWarning
+                            clientId={clientId}
+                            showDetails={true}
+                            allowOverride={true}
+                        />
 
                         {/* Generate Button */}
                         <Button 
