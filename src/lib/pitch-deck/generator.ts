@@ -10,13 +10,13 @@ export interface PitchDeckData {
   clientName: string;
   clientWebsite: string;
   contactName?: string;
-  
+
   // Baseline metrics
   currentSeoScore: number;
   targetSeoScore: number;
   pagesIndexed: number;
   currentTopicCoverage: number; // percentage
-  
+
   // Gap analysis
   topicGaps: {
     cluster: string;
@@ -25,22 +25,28 @@ export interface PitchDeckData {
     estimatedTraffic: number;
     priority: 'high' | 'medium' | 'low';
   }[];
-  
+
   // Proposal
   recommendedPosts: number;
   timelineMonths: number;
   postsPerMonth: number;
-  
+  proposedTopics?: string[]; // List of topic titles for the package
+
+  // Pricing
+  pricingTier?: string;
+  monthlyPrice?: number;
+  totalPrice?: number;
+
   // Projections
   projectedTrafficIncrease: number; // percentage
   projectedKeywordRankings: number;
-  
+
   // Vendor info
   vendorName: string;
   vendorLogo?: string;
   csmName: string;
   csmEmail: string;
-  
+
   // Date
   generatedDate: string;
 }
@@ -83,27 +89,31 @@ export class PitchDeckGenerator {
   generate(data: PitchDeckData): Blob {
     // Slide 1: Title
     this.createTitleSlide(data);
-    
+
     // Slide 2: Current State
     this.doc.addPage();
     this.createCurrentStateSlide(data);
-    
+
     // Slide 3: Topic Gaps
     this.doc.addPage();
     this.createGapAnalysisSlide(data);
-    
+
     // Slide 4: Our Proposal
     this.doc.addPage();
     this.createProposalSlide(data);
-    
-    // Slide 5: Expected Results
+
+    // Slide 5: Blog Package Details (NEW)
+    this.doc.addPage();
+    this.createPackageDetailsSlide(data);
+
+    // Slide 6: Expected Results
     this.doc.addPage();
     this.createResultsSlide(data);
-    
-    // Slide 6: Next Steps
+
+    // Slide 7: Next Steps
     this.doc.addPage();
     this.createNextStepsSlide(data);
-    
+
     return this.doc.output('blob');
   }
 
@@ -378,29 +388,194 @@ export class PitchDeckGenerator {
     // Card background
     this.doc.setFillColor(255, 255, 255);
     this.doc.roundedRect(x, y, width, 180, 10, 10, 'F');
-    
+
     // Border
     this.doc.setDrawColor(color);
     this.doc.setLineWidth(3);
     this.doc.roundedRect(x, y, width, 180, 10, 10, 'S');
-    
+
     // Value
     this.doc.setTextColor(color);
     this.doc.setFontSize(48);
     this.doc.setFont('helvetica', 'bold');
     this.doc.text(value, x + width / 2, y + 70, { align: 'center' });
-    
+
     // Label
     this.doc.setTextColor(31, 41, 55);
     this.doc.setFontSize(16);
     this.doc.text(label, x + width / 2, y + 100, { align: 'center' });
-    
+
     // Description
     this.doc.setTextColor(107, 114, 128);
     this.doc.setFontSize(10);
     this.doc.setFont('helvetica', 'normal');
     const lines = this.doc.splitTextToSize(description, width - 20);
     this.doc.text(lines, x + width / 2, y + 130, { align: 'center' });
+  }
+
+  private createPackageDetailsSlide(data: PitchDeckData) {
+    this.drawSlideHeader('Blog Package Details');
+
+    const startY = 140;
+    const colWidth = (this.pageWidth - this.margin * 3) / 2;
+
+    // Left column - Topic list
+    this.doc.setFillColor(249, 250, 251);
+    this.doc.roundedRect(this.margin, startY, colWidth, 340, 10, 10, 'F');
+
+    this.doc.setTextColor(31, 41, 55);
+    this.doc.setFontSize(18);
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.text('Proposed Blog Topics', this.margin + 20, startY + 30);
+
+    this.doc.setFontSize(11);
+    this.doc.setTextColor(107, 114, 128);
+    this.doc.text(`${data.recommendedPosts} SEO-optimized articles`, this.margin + 20, startY + 50);
+
+    // Topic list (show up to 12 topics)
+    const topics = data.proposedTopics || data.topicGaps.map(g => g.cluster).slice(0, 12);
+    const displayTopics = topics.slice(0, 12);
+
+    let topicY = startY + 75;
+    displayTopics.forEach((topic, index) => {
+      // Topic number badge
+      this.doc.setFillColor(79, 70, 229);
+      this.doc.circle(this.margin + 30, topicY + 5, 8, 'F');
+
+      this.doc.setTextColor(255, 255, 255);
+      this.doc.setFontSize(9);
+      this.doc.setFont('helvetica', 'bold');
+      this.doc.text(`${index + 1}`, this.margin + 30, topicY + 8, { align: 'center' });
+
+      // Topic title
+      this.doc.setTextColor(31, 41, 55);
+      this.doc.setFontSize(10);
+      this.doc.setFont('helvetica', 'normal');
+      const truncated = topic.length > 50 ? topic.substring(0, 50) + '...' : topic;
+      this.doc.text(truncated, this.margin + 45, topicY + 8);
+
+      topicY += 20;
+    });
+
+    if (data.recommendedPosts > displayTopics.length) {
+      this.doc.setTextColor(107, 114, 128);
+      this.doc.setFontSize(10);
+      this.doc.setFont('helvetica', 'italic');
+      this.doc.text(`+ ${data.recommendedPosts - displayTopics.length} more topics`, this.margin + 45, topicY + 5);
+    }
+
+    // Right column - Package summary & pricing
+    const rightX = this.margin * 2 + colWidth;
+    this.doc.setFillColor(249, 250, 251);
+    this.doc.roundedRect(rightX, startY, colWidth, 340, 10, 10, 'F');
+
+    this.doc.setTextColor(31, 41, 55);
+    this.doc.setFontSize(18);
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.text('Package Summary', rightX + 20, startY + 30);
+
+    // Package details
+    const details = [
+      { label: 'Total Blog Posts', value: `${data.recommendedPosts} articles` },
+      { label: 'Timeline', value: `${data.timelineMonths} months` },
+      { label: 'Cadence', value: `${data.postsPerMonth} posts/month` },
+      { label: 'Target SEO Score', value: `${data.currentSeoScore} → ${data.targetSeoScore}` }
+    ];
+
+    let detailY = startY + 65;
+    details.forEach((detail) => {
+      this.doc.setFontSize(11);
+      this.doc.setFont('helvetica', 'bold');
+      this.doc.setTextColor(79, 70, 229);
+      this.doc.text(detail.label, rightX + 20, detailY);
+
+      this.doc.setFont('helvetica', 'normal');
+      this.doc.setTextColor(31, 41, 55);
+      this.doc.text(detail.value, rightX + colWidth - 20, detailY, { align: 'right' });
+
+      detailY += 30;
+    });
+
+    // Pricing section
+    if (data.pricingTier || data.monthlyPrice || data.totalPrice) {
+      detailY += 20;
+
+      // Divider line
+      this.doc.setDrawColor(200, 200, 200);
+      this.doc.setLineWidth(1);
+      this.doc.line(rightX + 20, detailY, rightX + colWidth - 20, detailY);
+
+      detailY += 30;
+
+      this.doc.setTextColor(31, 41, 55);
+      this.doc.setFontSize(16);
+      this.doc.setFont('helvetica', 'bold');
+      this.doc.text('Investment', rightX + 20, detailY);
+
+      detailY += 30;
+
+      if (data.pricingTier) {
+        this.doc.setFontSize(12);
+        this.doc.setFont('helvetica', 'bold');
+        this.doc.setTextColor(79, 70, 229);
+        this.doc.text(data.pricingTier, rightX + 20, detailY);
+        detailY += 25;
+      }
+
+      if (data.monthlyPrice) {
+        this.doc.setFontSize(11);
+        this.doc.setFont('helvetica', 'normal');
+        this.doc.setTextColor(31, 41, 55);
+        this.doc.text('Monthly:', rightX + 20, detailY);
+
+        this.doc.setFont('helvetica', 'bold');
+        this.doc.setTextColor(16, 185, 129);
+        this.doc.text(`$${data.monthlyPrice.toLocaleString()}/mo`, rightX + colWidth - 20, detailY, { align: 'right' });
+        detailY += 25;
+      }
+
+      if (data.totalPrice) {
+        this.doc.setFontSize(11);
+        this.doc.setFont('helvetica', 'normal');
+        this.doc.setTextColor(31, 41, 55);
+        this.doc.text('Total Investment:', rightX + 20, detailY);
+
+        this.doc.setFont('helvetica', 'bold');
+        this.doc.setFontSize(14);
+        this.doc.setTextColor(79, 70, 229);
+        this.doc.text(`$${data.totalPrice.toLocaleString()}`, rightX + colWidth - 20, detailY, { align: 'right' });
+      }
+    }
+
+    // What's included
+    const includedY = startY + 260;
+    this.doc.setFillColor(79, 70, 229, 0.05);
+    this.doc.roundedRect(rightX, includedY, colWidth, 80, 10, 10, 'F');
+
+    this.doc.setTextColor(31, 41, 55);
+    this.doc.setFontSize(12);
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.text('What\'s Included:', rightX + 20, includedY + 20);
+
+    const included = [
+      'AI-powered research & outlines',
+      'Expert writing & fact-checking',
+      'SEO optimization & scoring',
+      'Direct WordPress publishing'
+    ];
+
+    let includedItemY = includedY + 40;
+    this.doc.setFontSize(10);
+    this.doc.setFont('helvetica', 'normal');
+    included.forEach((item) => {
+      this.doc.setTextColor(16, 185, 129);
+      this.doc.text('✓', rightX + 20, includedItemY);
+
+      this.doc.setTextColor(31, 41, 55);
+      this.doc.text(item, rightX + 35, includedItemY);
+
+      includedItemY += 15;
+    });
   }
 
   private createResultsSlide(data: PitchDeckData) {
@@ -576,7 +751,26 @@ export function generatePitchDeckData(
   
   const recommendedPosts = Math.max(gaps.length, Math.ceil((targetScore - currentScore) * 1.5));
   const postsPerMonth = Math.ceil(recommendedPosts / timelineMonths);
-  
+
+  // Calculate pricing based on post count and timeline
+  // Pricing tiers: Basic ($500/post), Standard ($400/post), Premium ($350/post for 20+)
+  let pricePerPost = 500;
+  let pricingTier = 'Basic Package';
+
+  if (recommendedPosts >= 20) {
+    pricePerPost = 350;
+    pricingTier = 'Premium Package';
+  } else if (recommendedPosts >= 10) {
+    pricePerPost = 400;
+    pricingTier = 'Standard Package';
+  }
+
+  const totalPrice = recommendedPosts * pricePerPost;
+  const monthlyPrice = Math.round(totalPrice / timelineMonths);
+
+  // Generate proposed topics list from gaps
+  const proposedTopics = gaps.map(g => g.cluster);
+
   return {
     clientName: client.name,
     clientWebsite: client.website_url || '',
@@ -588,15 +782,19 @@ export function generatePitchDeckData(
     recommendedPosts,
     timelineMonths,
     postsPerMonth,
+    proposedTopics,
+    pricingTier,
+    monthlyPrice,
+    totalPrice,
     projectedTrafficIncrease: Math.round((targetScore - currentScore) * 2.5),
     projectedKeywordRankings: Math.round(recommendedPosts * 0.7),
     vendorName: vendorInfo.name,
     csmName: vendorInfo.csmName,
     csmEmail: vendorInfo.csmEmail,
-    generatedDate: new Date().toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    generatedDate: new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     })
   };
 }

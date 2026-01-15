@@ -8103,3 +8103,31 @@ The client change request system enables collaborative content refinement with f
   * Ready to present or email to clients
 - Updated: feature_list.json - Marked feat-096 as passing with detailed implementation notes
 - Next priority: feat-097 - PRD: Pitch deck with proposed blog package details
+
+=== Session 2026-01-15T16:00:00Z ===
+- Implemented: feat-097 - PRD: Pitch deck with proposed blog package details
+- Files modified:
+  * /src/lib/pitch-deck/generator.ts - Added package details slide, pricing logic
+    - Updated PitchDeckData interface with proposedTopics, pricingTier, monthlyPrice, totalPrice
+    - Added createPackageDetailsSlide() method (165 lines) with two-column layout
+    - Extended generate() from 6 to 7 slides
+    - Enhanced generatePitchDeckData() with automatic pricing calculation
+- Files created:
+  * /docs/feat-097-package-details.md - Complete implementation documentation
+- Implementation details:
+  * NEW Slide 5: "Blog Package Details" with two columns
+  * Left column: Topic list (up to 12 topics with numbered badges)
+  * Right column: Package summary + pricing + what's included
+  * Automatic pricing tiers: Basic ($500/post), Standard ($400/post for 10+), Premium ($350/post for 20+)
+  * Monthly and total pricing calculated and displayed
+  * Topics list from proposedTopics or falls back to topicGaps
+  * Professional design with indigo badges, color-coded prices
+- Tests passed: All 4 acceptance criteria verified:
+  ✅ Post count shown - Slides 4 & 5
+  ✅ Timeline clear - Slide 5 with cadence details
+  ✅ Topics listed - Slide 5 with numbered list (12 visible + remainder count)
+  ✅ Price visible - Slide 5 with tier, monthly ($X/mo), and total investment
+- Updated: feature_list.json - Marked feat-097 as passing
+- Committed: Pending
+- Next priority: feat-098 - PRD: Pitch deck expected outcome ranges
+
