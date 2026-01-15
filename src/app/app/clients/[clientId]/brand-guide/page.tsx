@@ -133,6 +133,8 @@ export default function BrandGuideEditorPage() {
         context: '',
         engagement_score: undefined as number | undefined
     })
+    const [isLearning, setIsLearning] = useState(false)
+    const [learningMessage, setLearningMessage] = useState('')
     const [engagementMetrics, setEngagementMetrics] = useState({
         avg_time_on_page: undefined as number | undefined,
         avg_engagement_rate: undefined as number | undefined,
@@ -383,6 +385,46 @@ export default function BrandGuideEditorPage() {
 
     const removePreferredPattern = (index: number) => {
         setPreferredPatterns(preferredPatterns.filter((_, i) => i !== index))
+    }
+
+    const learnStylesFromTopPosts = async () => {
+        setIsLearning(true)
+        setLearningMessage('')
+
+        try {
+            const response = await fetch('/api/brand/learn-styles', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    clientId,
+                    minPosts: 5,
+                    engagementThreshold: 60,
+                    autoUpdate: true
+                })
+            })
+
+            const data = await response.json()
+
+            if (data.success) {
+                if (data.learnedStyles && data.learnedStyles.length > 0) {
+                    setLearningMessage(`✓ Learned ${data.learnedStyles.length} patterns from top posts!`)
+
+                    // Reload brand guide to show updated patterns
+                    setTimeout(() => {
+                        fetchBrandGuide()
+                    }, 1000)
+                } else {
+                    setLearningMessage(data.message || 'No new patterns found. Need more high-performing posts.')
+                }
+            } else {
+                setLearningMessage(`Error: ${data.error}`)
+            }
+        } catch (error) {
+            console.error('Error learning styles:', error)
+            setLearningMessage('Failed to analyze posts. Please try again.')
+        } finally {
+            setIsLearning(false)
+        }
     }
 
     const addSuccessfulExample = () => {
@@ -862,7 +904,37 @@ export default function BrandGuideEditorPage() {
                                         Writing patterns, phrases, and styles that perform well for this client
                                     </p>
                                 </div>
+                                <Button
+                                    onClick={learnStylesFromTopPosts}
+                                    disabled={isLearning}
+                                    variant="outline"
+                                    className="bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-200 hover:from-purple-100 hover:to-indigo-100"
+                                >
+                                    {isLearning ? (
+                                        <>
+                                            <Sparkles className="w-4 h-4 mr-2 animate-spin" />
+                                            Analyzing...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Sparkles className="w-4 h-4 mr-2" />
+                                            Auto-Learn from Top Posts
+                                        </>
+                                    )}
+                                </Button>
                             </div>
+
+                            {learningMessage && (
+                                <div className={`mb-4 p-3 rounded-lg text-sm ${
+                                    learningMessage.startsWith('✓')
+                                        ? 'bg-green-50 text-green-700 border border-green-200'
+                                        : learningMessage.startsWith('Error')
+                                        ? 'bg-red-50 text-red-700 border border-red-200'
+                                        : 'bg-blue-50 text-blue-700 border border-blue-200'
+                                }`}>
+                                    {learningMessage}
+                                </div>
+                            )}
 
                             <div className="space-y-4">
                                 {/* Add New Pattern */}

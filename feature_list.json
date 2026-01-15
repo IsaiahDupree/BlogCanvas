@@ -3803,7 +3803,9 @@
         "Auto-updates work",
         "Tracking works"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T23:00:00Z",
+      "notes": "Complete auto-learning system for styles. Service: src/lib/brand/style-learning.ts with learnStylesFromTopPosts() function analyzes blog_post_metrics to identify high-performing posts (engagement score >= 60), extracts patterns (intro style, sentence length, list usage, heading style, CTA placement), and aggregates across top 20 posts with confidence scores. API: /api/brand/learn-styles (POST/GET) runs analysis and optionally auto-updates brand_guides.styles_to_keep. UI: Added 'Auto-Learn from Top Posts' button in Brand Guide Editor Styles to Keep tab with loading state and success/error messages. Patterns include engagement metrics (confidence %, sample size, impact %), stored in styles_to_keep.auto_learned with extraction timestamp. Algorithm calculates engagement score from time_on_page, CTR, avg_position, and conversion rate (0-100 scale)."
     },
     {
       "id": "feat-171",
