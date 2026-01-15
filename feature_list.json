@@ -3010,7 +3010,9 @@
         "Download works",
         "Stored correctly"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T18:30:00Z",
+      "notes": "Complete PDF pitch endpoint implementation. New API endpoint at /api/websites/[id]/pitch/pdf with POST (generate PDF) and GET (options) methods. Uses existing PitchDeckGenerator class for professional PDF generation with jsPDF. Accepts targetScore and timelineMonths parameters. Returns base64-encoded PDF with metadata. Stores reports in database. All 4 acceptance criteria verified: parameters accepted with defaults, PDF generated using proven PitchDeckGenerator, downloadable via base64 encoding, stored in reports table. File: src/app/api/websites/[id]/pitch/pdf/route.ts (218 lines). Server compiles and runs successfully."
     },
     {
       "id": "feat-135",
