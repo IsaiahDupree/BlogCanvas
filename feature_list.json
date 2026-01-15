@@ -3428,7 +3428,9 @@
         "Diffs highlighted",
         "Trends shown"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T14:45:00Z",
+      "notes": "Complete job comparison feature implemented in Pipeline page. UI features: (1) Checkboxes on completed jobs in history tab for selecting 2 jobs to compare, (2) 'Compare Jobs (N/2)' button appears when jobs selected, disabled until exactly 2 selected. Comparison modal displays: (1) Side-by-side job headers with URL, date, and client, (2) Key metrics comparison cards for SEO Score, Pages Indexed, Content Gaps, Topics Generated, (3) Diff highlighting with color-coded changes (green for improvements, red for declines), (4) Trend indicators using TrendingUp/TrendingDown icons, (5) Percentage change calculations for all metrics, (6) 'No change' state with neutral indicator, (7) Analysis summary section with human-readable change descriptions, (8) Special handling for 'higherIsBetter' vs 'lowerIsBetter' metrics (Content Gaps marked as improvement when decreasing). All acceptance criteria verified: Selection works (checkboxes limit to 2 jobs), Comparison renders (full modal with all metrics), Diffs highlighted (color-coded with +/- values), Trends shown (icons and percentage changes)."
     },
     {
       "id": "feat-154",

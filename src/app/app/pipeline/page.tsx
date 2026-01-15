@@ -34,7 +34,11 @@ import {
   BookOpen,
   MessageSquare,
   Ban,
-  Check
+  Check,
+  ArrowLeftRight,
+  TrendingUp as TrendingUpIcon,
+  TrendingDown,
+  Minus
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -215,6 +219,10 @@ export default function PipelinePage() {
   // Brand context
   const [brandContext, setBrandContext] = useState<BrandContext | null>(null)
   const [loadingContext, setLoadingContext] = useState(false)
+
+  // Job comparison
+  const [selectedJobsForComparison, setSelectedJobsForComparison] = useState<Set<string>>(new Set())
+  const [showComparisonModal, setShowComparisonModal] = useState(false)
 
   useEffect(() => {
     fetchInitialData()
@@ -1050,6 +1058,36 @@ Your CSM Team`
     })
   }
 
+  const toggleJobSelection = (jobId: string) => {
+    setSelectedJobsForComparison(prev => {
+      const next = new Set(prev)
+      if (next.has(jobId)) {
+        next.delete(jobId)
+      } else {
+        // Only allow selecting 2 jobs at a time
+        if (next.size >= 2) {
+          return prev
+        }
+        next.add(jobId)
+      }
+      return next
+    })
+  }
+
+  const openComparison = () => {
+    if (selectedJobsForComparison.size === 2) {
+      setShowComparisonModal(true)
+    }
+  }
+
+  const getComparisonJobs = () => {
+    const jobIds = Array.from(selectedJobsForComparison)
+    return {
+      job1: recentJobs.find(j => j.id === jobIds[0]),
+      job2: recentJobs.find(j => j.id === jobIds[1])
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6 flex items-center justify-center">
@@ -1113,22 +1151,50 @@ Your CSM Team`
           /* Job History Tab */
           <Card className="border-0 shadow-xl bg-white/80 backdrop-blur">
             <CardHeader className="border-b border-slate-100">
-              <CardTitle className="flex items-center gap-2 text-slate-800">
-                <Clock className="w-5 h-5 text-indigo-600" />
-                Recent Pipeline Jobs
-              </CardTitle>
-              <CardDescription>View and manage your previous website analyses</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-slate-800">
+                    <Clock className="w-5 h-5 text-indigo-600" />
+                    Recent Pipeline Jobs
+                  </CardTitle>
+                  <CardDescription>View and manage your previous website analyses</CardDescription>
+                </div>
+                {selectedJobsForComparison.size > 0 && (
+                  <Button
+                    onClick={openComparison}
+                    disabled={selectedJobsForComparison.size !== 2}
+                    className={`${
+                      selectedJobsForComparison.size === 2
+                        ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700'
+                        : 'bg-slate-300'
+                    }`}
+                  >
+                    <ArrowLeftRight className="w-4 h-4 mr-2" />
+                    Compare Jobs ({selectedJobsForComparison.size}/2)
+                  </Button>
+                )}
+              </div>
             </CardHeader>
             <CardContent className="p-0">
               {recentJobs.length > 0 ? (
                 <div className="divide-y divide-slate-100">
                   {recentJobs.map((job) => (
-                    <div 
-                      key={job.id} 
-                      className="p-5 hover:bg-slate-50/50 transition-colors cursor-pointer"
+                    <div
+                      key={job.id}
+                      className="p-5 hover:bg-slate-50/50 transition-colors"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4 flex-1">
+                          {job.status === 'completed' && (
+                            <input
+                              type="checkbox"
+                              checked={selectedJobsForComparison.has(job.id)}
+                              onChange={() => toggleJobSelection(job.id)}
+                              disabled={!selectedJobsForComparison.has(job.id) && selectedJobsForComparison.size >= 2}
+                              className="w-5 h-5 rounded border-slate-300 text-purple-600 focus:ring-purple-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                              title="Select for comparison"
+                            />
+                          )}
                           <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
                             job.status === 'completed' ? 'bg-emerald-100' :
                             job.status === 'running' ? 'bg-blue-100' :
@@ -2156,6 +2222,222 @@ Your CSM Team`
           </div>
         </div>
       )}
+
+      {/* Job Comparison Modal */}
+      {showComparisonModal && (() => {
+        const { job1, job2 } = getComparisonJobs()
+        if (!job1 || !job2) return null
+
+        const getMetricChange = (val1: number | undefined, val2: number | undefined) => {
+          if (val1 === undefined || val2 === undefined) return null
+          const diff = val2 - val1
+          const percentChange = val1 !== 0 ? ((diff / val1) * 100).toFixed(1) : null
+          return { diff, percentChange, isPositive: diff > 0, isNegative: diff < 0 }
+        }
+
+        const renderMetricComparison = (
+          label: string,
+          val1: number | undefined,
+          val2: number | undefined,
+          higherIsBetter: boolean = true
+        ) => {
+          const change = getMetricChange(val1, val2)
+          const v1 = val1 ?? 0
+          const v2 = val2 ?? 0
+
+          return (
+            <div className="bg-white rounded-xl p-4 border-2 border-slate-100">
+              <div className="text-sm text-slate-500 mb-3 font-medium">{label}</div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="text-xs text-slate-400 mb-1">Run 1</div>
+                  <div className="text-2xl font-bold text-slate-700">{v1}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-slate-400 mb-1">Run 2</div>
+                  <div className="text-2xl font-bold text-slate-700">{v2}</div>
+                </div>
+              </div>
+              {change && change.diff !== 0 && (
+                <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-center gap-2">
+                  {higherIsBetter ? (
+                    change.isPositive ? (
+                      <TrendingUpIcon className="w-4 h-4 text-emerald-600" />
+                    ) : (
+                      <TrendingDown className="w-4 h-4 text-red-600" />
+                    )
+                  ) : (
+                    change.isPositive ? (
+                      <TrendingDown className="w-4 h-4 text-red-600" />
+                    ) : (
+                      <TrendingUpIcon className="w-4 h-4 text-emerald-600" />
+                    )
+                  )}
+                  <span className={`text-sm font-semibold ${
+                    (higherIsBetter && change.isPositive) || (!higherIsBetter && change.isNegative)
+                      ? 'text-emerald-600'
+                      : 'text-red-600'
+                  }`}>
+                    {change.isPositive ? '+' : ''}{change.diff}
+                    {change.percentChange && ` (${change.isPositive ? '+' : ''}${change.percentChange}%)`}
+                  </span>
+                </div>
+              )}
+              {change && change.diff === 0 && (
+                <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-center gap-2">
+                  <Minus className="w-4 h-4 text-slate-400" />
+                  <span className="text-sm text-slate-500">No change</span>
+                </div>
+              )}
+            </div>
+          )
+        }
+
+        return (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+            <div className="bg-gradient-to-br from-slate-50 to-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden">
+              {/* Header */}
+              <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                      <ArrowLeftRight className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold">Job Comparison</h2>
+                      <p className="text-purple-100 text-sm">Side-by-side analysis of pipeline runs</p>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={() => {
+                      setShowComparisonModal(false)
+                      setSelectedJobsForComparison(new Set())
+                    }}
+                    variant="ghost"
+                    className="text-white hover:bg-white/20"
+                  >
+                    <X className="w-5 h-5" />
+                  </Button>
+                </div>
+
+                {/* Job Headers */}
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                  <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+                    <div className="text-purple-100 text-xs mb-1">Run 1</div>
+                    <div className="font-semibold truncate">{job1.website_url}</div>
+                    <div className="text-purple-100 text-sm mt-1">{formatDate(job1.created_at)}</div>
+                    {job1.clients && (
+                      <div className="text-purple-100 text-sm mt-1">Client: {job1.clients.name}</div>
+                    )}
+                  </div>
+                  <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+                    <div className="text-purple-100 text-xs mb-1">Run 2</div>
+                    <div className="font-semibold truncate">{job2.website_url}</div>
+                    <div className="text-purple-100 text-sm mt-1">{formatDate(job2.created_at)}</div>
+                    {job2.clients && (
+                      <div className="text-purple-100 text-sm mt-1">Client: {job2.clients.name}</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="p-6 overflow-y-auto max-h-[calc(90vh-250px)]">
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                      <BarChart3 className="w-5 h-5 text-indigo-600" />
+                      Key Metrics Comparison
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {renderMetricComparison('SEO Score', job1.seo_score, job2.seo_score, true)}
+                      {renderMetricComparison('Pages Indexed', job1.pages_indexed, job2.pages_indexed, true)}
+                      {renderMetricComparison('Content Gaps', job1.content_gaps, job2.content_gaps, false)}
+                      {renderMetricComparison('Topics Generated', job1.topics_generated, job2.topics_generated, true)}
+                    </div>
+                  </div>
+
+                  {(job1.blogs_created || job2.blogs_created) && (
+                    <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-4 border-2 border-emerald-200">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-sm font-semibold text-emerald-900 mb-1">Blogs Created</div>
+                          <div className="text-xs text-emerald-700">Total blog posts generated from each run</div>
+                        </div>
+                        <div className="flex items-center gap-6">
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-emerald-700">{job1.blogs_created || 0}</div>
+                            <div className="text-xs text-emerald-600">Run 1</div>
+                          </div>
+                          <ArrowRight className="w-5 h-5 text-emerald-400" />
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-emerald-700">{job2.blogs_created || 0}</div>
+                            <div className="text-xs text-emerald-600">Run 2</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Summary */}
+                  <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4 border-2 border-indigo-200">
+                    <h4 className="font-semibold text-indigo-900 text-sm mb-2">Analysis Summary</h4>
+                    <div className="text-sm text-indigo-700 space-y-1">
+                      {(() => {
+                        const seoChange = getMetricChange(job1.seo_score, job2.seo_score)
+                        const gapsChange = getMetricChange(job1.content_gaps, job2.content_gaps)
+                        const topicsChange = getMetricChange(job1.topics_generated, job2.topics_generated)
+
+                        return (
+                          <>
+                            {seoChange && seoChange.diff !== 0 && (
+                              <p>
+                                • SEO score {seoChange.isPositive ? 'improved' : 'decreased'} by{' '}
+                                <strong>{Math.abs(seoChange.diff)} points</strong>
+                                {seoChange.percentChange && ` (${Math.abs(parseFloat(seoChange.percentChange))}%)`}
+                              </p>
+                            )}
+                            {gapsChange && gapsChange.diff !== 0 && (
+                              <p>
+                                • Content gaps {gapsChange.isPositive ? 'increased' : 'decreased'} by{' '}
+                                <strong>{Math.abs(gapsChange.diff)}</strong>
+                              </p>
+                            )}
+                            {topicsChange && topicsChange.diff !== 0 && (
+                              <p>
+                                • Topics generated {topicsChange.isPositive ? 'increased' : 'decreased'} by{' '}
+                                <strong>{Math.abs(topicsChange.diff)}</strong>
+                              </p>
+                            )}
+                            {(!seoChange || seoChange.diff === 0) &&
+                             (!gapsChange || gapsChange.diff === 0) &&
+                             (!topicsChange || topicsChange.diff === 0) && (
+                              <p>• No significant changes detected between runs</p>
+                            )}
+                          </>
+                        )
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-6 border-t border-slate-200 bg-slate-50">
+                <Button
+                  onClick={() => {
+                    setShowComparisonModal(false)
+                    setSelectedJobsForComparison(new Set())
+                  }}
+                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                >
+                  Close Comparison
+                </Button>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }
