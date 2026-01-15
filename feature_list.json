@@ -2497,7 +2497,9 @@
         "Status updates",
         "Count per column"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T11:30:00Z",
+      "notes": "Kanban board updated to match PRD workflow with exactly 5 columns: Draft (ai_drafting), Review (editor_review), Ready for Client (client_review), Changes Requested (changes_requested), and Approved (approved + published). Includes drag-and-drop between columns, status updates via API, and column counts. Grid layout changed from 6 to 5 columns. Action buttons updated to match new workflow. Backward compatible with legacy statuses."
     },
     {
       "id": "feat-112",

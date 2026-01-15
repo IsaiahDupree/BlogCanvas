@@ -11,7 +11,7 @@ import { ReviewAnalyticsDashboard } from '@/components/dashboard/ReviewAnalytics
 interface Post {
     id: string
     topic: string
-    status: 'planned' | 'generating' | 'draft' | 'in_review' | 'approved' | 'published' | 'failed'
+    status: 'planned' | 'generating' | 'ai_drafting' | 'editor_review' | 'client_review' | 'changes_requested' | 'approved' | 'published' | 'failed'
     seo_quality_score: number | null
     target_keyword: string | null
     content_batch_id: string
@@ -25,13 +25,14 @@ interface KanbanColumn {
     color: string
 }
 
+// PRD Workflow: ai_drafting → editor_review → client_review → approved → published
+// With changes_requested as a return state from client_review
 const COLUMNS: KanbanColumn[] = [
-    { id: 'draft', title: 'Draft', status: ['draft', 'generating', 'idea', 'researching', 'outlining', 'drafting'], color: 'bg-gray-100' },
-    { id: 'editing', title: 'Editing', status: ['editing', 'needs_human_input'], color: 'bg-yellow-100' },
-    { id: 'review', title: 'In Review', status: ['ready_for_review', 'in_review'], color: 'bg-blue-100' },
-    { id: 'client', title: 'Client Review', status: ['client_review'], color: 'bg-orange-100' },
-    { id: 'approved', title: 'Approved', status: ['approved'], color: 'bg-green-100' },
-    { id: 'published', title: 'Published', status: ['published', 'scheduled'], color: 'bg-purple-100' }
+    { id: 'draft', title: 'Draft', status: ['ai_drafting', 'generating', 'planned', 'idea', 'researching', 'outlining', 'drafting'], color: 'bg-gray-100' },
+    { id: 'review', title: 'Review', status: ['editor_review', 'in_review', 'ready_for_review'], color: 'bg-blue-100' },
+    { id: 'client', title: 'Ready for Client', status: ['client_review'], color: 'bg-orange-100' },
+    { id: 'changes', title: 'Changes Requested', status: ['changes_requested', 'needs_human_input'], color: 'bg-yellow-100' },
+    { id: 'approved', title: 'Approved', status: ['approved', 'published', 'scheduled'], color: 'bg-green-100' }
 ]
 
 export default function ReviewBoardPage() {
@@ -111,13 +112,12 @@ export default function ReviewBoardPage() {
 
     const mapColumnToStatus = (columnId: string): string => {
         switch (columnId) {
-            case 'draft': return 'draft'
-            case 'editing': return 'editing'
-            case 'review': return 'ready_for_review'
+            case 'draft': return 'ai_drafting'
+            case 'review': return 'editor_review'
             case 'client': return 'client_review'
+            case 'changes': return 'changes_requested'
             case 'approved': return 'approved'
-            case 'published': return 'published'
-            default: return 'draft'
+            default: return 'ai_drafting'
         }
     }
 
@@ -193,7 +193,7 @@ export default function ReviewBoardPage() {
 
                 {/* Kanban Board */}
                 {view === 'kanban' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
                     {COLUMNS.map(column => {
                         const columnPosts = getPostsByStatus(column.status)
                         const isDragOver = dragOverColumn === column.id
@@ -263,25 +263,44 @@ export default function ReviewBoardPage() {
 
                                                     {/* Action Buttons */}
                                                     <div className="flex gap-2 pt-2 border-t">
-                                                        {post.status === 'draft' && (
+                                                        {post.status === 'ai_drafting' && (
                                                             <Button
                                                                 size="sm"
                                                                 variant="outline"
                                                                 className="w-full text-xs"
-                                                                onClick={() => updatePostStatus(post.id, 'in_review')}
+                                                                onClick={() => updatePostStatus(post.id, 'editor_review')}
                                                             >
                                                                 → Review
                                                             </Button>
                                                         )}
-                                                        {post.status === 'in_review' && (
+                                                        {post.status === 'editor_review' && (
                                                             <>
                                                                 <Button
                                                                     size="sm"
                                                                     variant="outline"
                                                                     className="flex-1 text-xs"
-                                                                    onClick={() => updatePostStatus(post.id, 'draft')}
+                                                                    onClick={() => updatePostStatus(post.id, 'ai_drafting')}
                                                                 >
                                                                     ← Revise
+                                                                </Button>
+                                                                <Button
+                                                                    size="sm"
+                                                                    className="flex-1 text-xs bg-orange-600 text-white"
+                                                                    onClick={() => updatePostStatus(post.id, 'client_review')}
+                                                                >
+                                                                    → Client
+                                                                </Button>
+                                                            </>
+                                                        )}
+                                                        {post.status === 'client_review' && (
+                                                            <>
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="outline"
+                                                                    className="flex-1 text-xs"
+                                                                    onClick={() => updatePostStatus(post.id, 'changes_requested')}
+                                                                >
+                                                                    ✏️ Changes
                                                                 </Button>
                                                                 <Button
                                                                     size="sm"
@@ -291,6 +310,16 @@ export default function ReviewBoardPage() {
                                                                     ✓ Approve
                                                                 </Button>
                                                             </>
+                                                        )}
+                                                        {post.status === 'changes_requested' && (
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                className="w-full text-xs"
+                                                                onClick={() => updatePostStatus(post.id, 'ai_drafting')}
+                                                            >
+                                                                ← Back to Draft
+                                                            </Button>
                                                         )}
                                                         {post.status === 'approved' && (
                                                             <Link href={`/app/posts/${post.id}/publish`} className="w-full">
