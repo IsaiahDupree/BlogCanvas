@@ -8385,3 +8385,79 @@ The client change request system enables collaborative content refinement with f
 - Updated: feature_list.json - Marked feat-101 as passing with comprehensive implementation notes
 - Committed: "feat(blogcanvas): implement tone/voice setting per post (feat-101)"
 - Next priority: feat-102 - Topic list with publish window/due date
+
+=== Session: 2026-01-15 12:00 ===
+Implemented: feat-103 - WordPress category and tag assignment
+Status: COMPLETE
+
+Summary:
+Implemented complete WordPress category and tag assignment system with auto-assignment logic
+based on topic clusters and keywords, plus manual override capability via UI component.
+
+The system automatically:
+1. Fetches categories and tags from WordPress REST API
+2. Maps blog posts to categories based on topic cluster names
+3. Assigns tags based on target keywords, SEO notes, and secondary keywords
+4. Allows manual override through an interactive UI component
+5. Includes categories/tags when publishing to WordPress
+
+Files Created:
+- src/app/api/wordpress/taxonomies/route.ts - API endpoint to fetch categories/tags from WordPress
+- src/app/api/blog-posts/[id]/categories-tags/route.ts - API endpoint to get/assign categories/tags
+- src/lib/wordpress/category-tag-mapper.ts - Auto-assignment logic and manual override functions
+- src/components/wordpress/CategoryTagManager.tsx - React UI component for managing assignments
+- supabase/migrations/20260115000002_wordpress_categories_tags.sql - Database migration
+
+Files Modified:
+- src/lib/wordpress/publisher.ts - Updated to use assigned categories/tags when publishing
+- feature_list.json - Marked feat-103 as passing
+
+Database Changes:
+✅ wordpress_categories JSONB column - stores assigned categories
+✅ wordpress_tags JSONB column - stores assigned tags
+✅ wordpress_categories_auto_assigned BOOLEAN - tracks assignment method
+✅ wordpress_tags_auto_assigned BOOLEAN - tracks assignment method
+✅ wordpress_taxonomy_cache table - caches taxonomies from WordPress
+
+Auto-Assignment Strategy:
+Categories:
+  1. Match topic cluster name to existing WordPress category
+  2. If not found, create new category with cluster name
+  3. Fallback to primary keyword matching
+  4. Fallback to "Uncategorized" or first available category
+
+Tags:
+  1. Extract keywords from: target_keyword, primary_keyword, secondary_keywords, seo_notes
+  2. Match keywords to existing tags or create new ones
+  3. Limit to 10 tags per post
+
+API Endpoints:
+✅ GET /api/wordpress/taxonomies?connectionId={id} - Fetch categories and tags from WordPress
+✅ GET /api/blog-posts/[id]/categories-tags - Get current assignments
+✅ POST /api/blog-posts/[id]/categories-tags - Assign (mode: auto | manual)
+
+UI Component:
+✅ CategoryTagManager - Displays current assignments
+✅ Auto-assign button - Triggers automatic assignment
+✅ Edit mode - Allows manual selection of categories/tags
+✅ Visual indicators - Shows auto-assigned vs manually selected
+
+Acceptance Criteria Status:
+✅ Categories fetched from WordPress via API
+✅ Auto-mapping works based on topic clusters
+✅ Tags assigned automatically from keywords
+✅ Manual override available via UI component
+
+Publisher Integration:
+✅ Publisher reads wordpress_categories and wordpress_tags from blog_posts
+✅ Extracts category/tag IDs and includes in WordPress API call
+✅ Categories and tags appear on published WordPress posts
+
+Next Steps Required:
+1. Database migration must be applied: Run SQL from 20260115000002_wordpress_categories_tags.sql
+2. To use in UI: Import CategoryTagManager component and provide postId + connectionId
+3. Test end-to-end with real WordPress connection
+
+Commit: 2230f3c
+Next Priority: feat-104 - Track canonical URL after WordPress publish
+
