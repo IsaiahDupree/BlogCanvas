@@ -7232,3 +7232,74 @@ WebsiteManager component features:
 ✅ Target market tracking - Dedicated target_market column with UI
 ✅ Platform auto-detection - Database function checks URL patterns and HTML
 ✅ URL validation - Database constraint + API validation reject invalid URLs
+
+
+=== Session 2026-01-18T00:00:00Z ===
+- Implemented: feat-070 - PRD Stage 2: Existing blog performance analysis
+- Files changed:
+  - supabase/migrations/20260118000001_existing_blog_analysis.sql (new - database schema)
+  - src/lib/agents/seo-audit.ts (enhanced with blog detection and analysis)
+  - src/app/api/ai/website-audit/route.ts (updated to save blog performance data)
+  - src/app/api/websites/[id]/blog-performance/route.ts (new - API endpoint)
+  - src/components/website/BlogPerformanceTab.tsx (new - UI component)
+  - src/app/app/websites/[id]/page.tsx (integrated BlogPerformanceTab)
+  - feature_list.json (marked feat-070 as passing)
+- Tests passed: All acceptance criteria verified
+  ✅ Existing blogs detected - isBlogPostUrl() detects blog posts via URL patterns
+  ✅ Performance metrics captured - analyzeBlogPost() captures SEO score, word count, meta, images, links
+  ✅ Benchmarks compared - generateBlogPerformanceSummary() compares against industry averages
+  ✅ Gaps identified - Summary includes gaps array identifying specific issues
+- Committed: (pending)
+- Next priority: feat-073 - PRD Stage 3: Output gap report document
+
+## Implementation Details
+
+### Database Migration (20260118000001)
+Added blog analysis fields to seo_audits table:
+- blog_posts_detected INTEGER - Count of blog posts found
+- blog_posts_analyzed JSONB - Array of blog post analysis objects
+- blog_performance_summary JSONB - Summary statistics and benchmarks
+- Helper functions: is_blog_post_url(), calculate_blog_performance_score()
+
+### SEO Audit Agent Enhancements
+New functions in src/lib/agents/seo-audit.ts:
+- isBlogPostUrl(url) - Detects blog posts via URL patterns (/blog/, /post/, /articles/, date-based, etc.)
+- analyzeBlogPost(page) - Analyzes blog post SEO metrics
+- generateBlogPerformanceSummary(blogPosts, industry) - Creates performance summary with:
+  - Average scores and word counts
+  - Top 5 performers and bottom 5 performers
+  - Content quality metrics (meta, images, headings)
+  - Identified gaps and recommendations
+  - Industry benchmarks
+
+### API Integration
+Enhanced /api/ai/website-audit endpoint to:
+- Detect blog posts during crawl
+- Analyze blog post performance
+- Save blog analysis data to seo_audits table
+
+New /api/websites/[id]/blog-performance endpoint:
+- Retrieves latest blog performance analysis
+- Returns blog posts detected, analyzed, and summary statistics
+
+### UI Component
+BlogPerformanceTab component features:
+- Summary cards showing blog count, avg score, avg word count, quality metrics
+- Content gaps & recommendations section
+- Top performing blog posts list
+- Posts needing improvement with issues breakdown
+- Benchmark comparisons (industry avg, recommended word count)
+- Real-time data loading with loading states
+- External links to blog post URLs
+
+### Integration
+- Added "Blog Performance" tab to website detail page
+- Shows after "Overview" tab for easy access
+- Auto-refreshes when audit is run
+- Shows helpful message when no blog posts detected
+
+### Acceptance Criteria Verification
+✅ Existing blogs detected - URL pattern matching identifies blog posts
+✅ Performance metrics captured - SEO scores, word counts, meta, images, links, headings tracked
+✅ Benchmarks compared - Industry averages (75 score, 1500 words) used for comparison
+✅ Gaps identified - Automatic gap detection for short posts, missing meta, missing images, few headings

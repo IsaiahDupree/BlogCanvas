@@ -117,12 +117,16 @@ export async function POST(request: NextRequest) {
           baseline_score: auditResult.data!.overallScore,
           pages_indexed: crawlData.pagesCrawled,
           audit_date: new Date().toISOString(),
-          raw_metrics_json: {
+          raw_metrics: {
             grades: auditResult.data!.grades,
             scores: auditResult.data!.scores,
             issues: auditResult.data!.issues,
             topPriorities: auditResult.data!.topPriorities
-          }
+          },
+          // FEAT-070: Blog performance analysis
+          blog_posts_detected: auditResult.data!.blogPostsDetected || 0,
+          blog_posts_analyzed: auditResult.data!.blogPostsAnalyzed || [],
+          blog_performance_summary: auditResult.data!.blogPerformanceSummary || {}
         });
       }
 
@@ -188,12 +192,16 @@ export async function POST(request: NextRequest) {
           baseline_score: auditResult.data.overallScore,
           pages_indexed: crawlData.pagesCrawled,
           audit_date: new Date().toISOString(),
-          raw_metrics_json: {
+          raw_metrics: {
             grades: auditResult.data.grades,
             scores: auditResult.data.scores,
             issues: auditResult.data.issues,
             contentGaps: gapResult.data?.contentGaps?.slice(0, 10)
-          }
+          },
+          // FEAT-070: Blog performance analysis
+          blog_posts_detected: auditResult.data.blogPostsDetected || 0,
+          blog_posts_analyzed: auditResult.data.blogPostsAnalyzed || [],
+          blog_performance_summary: auditResult.data.blogPerformanceSummary || {}
         });
 
         // Save topic clusters from gaps

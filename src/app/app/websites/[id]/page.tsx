@@ -15,6 +15,7 @@ import { AnalyticsTab } from '@/components/website/AnalyticsTab'
 import { CompetitorComparisonTab } from '@/components/website/CompetitorComparisonTab'
 import { KeywordGapsTab } from '@/components/website/KeywordGapsTab'
 import { CheckBackConfigTab } from '@/components/website/CheckBackConfigTab'
+import { BlogPerformanceTab } from '@/components/website/BlogPerformanceTab'
 
 export default function WebsiteDetailPage() {
     const params = useParams()
@@ -284,6 +285,7 @@ export default function WebsiteDetailPage() {
                 <Tabs defaultValue="overview" className="space-y-6">
                     <TabsList>
                         <TabsTrigger value="overview">Overview</TabsTrigger>
+                        <TabsTrigger value="blog-performance">Blog Performance</TabsTrigger>
                         <TabsTrigger value="analytics">Analytics</TabsTrigger>
                         <TabsTrigger value="check-backs">Check-Backs</TabsTrigger>
                         <TabsTrigger value="competitors">Competitors</TabsTrigger>
@@ -358,6 +360,10 @@ export default function WebsiteDetailPage() {
                                 </div>
                             </CardContent>
                         </Card>
+                    </TabsContent>
+
+                    <TabsContent value="blog-performance">
+                        <BlogPerformanceTab websiteId={params.id as string} />
                     </TabsContent>
 
                     <TabsContent value="analytics">

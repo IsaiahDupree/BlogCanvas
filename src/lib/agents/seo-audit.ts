@@ -27,6 +27,36 @@ export interface PageSEOScore {
   issues: string[];
 }
 
+export interface BlogPostAnalysis {
+  url: string;
+  title: string | null;
+  wordCount: number;
+  seoScore: number;
+  publishedDate: string | null;
+  issues: string[];
+  hasH1: boolean;
+  hasMetaDescription: boolean;
+  h2Count: number;
+  internalLinks: number;
+  externalLinks: number;
+  hasImages: boolean;
+}
+
+export interface BlogPerformanceSummary {
+  totalBlogPosts: number;
+  avgScore: number;
+  avgWordCount: number;
+  postsWithMeta: number;
+  postsWithImages: number;
+  topPerformers: BlogPostAnalysis[];
+  poorPerformers: BlogPostAnalysis[];
+  gaps: string[];
+  benchmarks: {
+    avgIndustryScore: number;
+    recommendedWordCount: number;
+  };
+}
+
 export interface SEOAuditResult {
   websiteUrl: string;
   overallScore: number;
@@ -49,12 +79,116 @@ export interface SEOAuditResult {
   longTermImprovements: string[];
   competitivePosition: string;
   estimatedTrafficPotential: number;
+  // Blog performance analysis (feat-070)
+  blogPostsDetected: number;
+  blogPostsAnalyzed: BlogPostAnalysis[];
+  blogPerformanceSummary: BlogPerformanceSummary | null;
 }
 
 export interface SEOAuditInput {
   crawlResult: CrawlResult;
   industry?: string;
   targetKeywords?: string[];
+}
+
+/**
+ * Detect if a URL is a blog post
+ */
+export function isBlogPostUrl(url: string): boolean {
+  const blogPatterns = [
+    /\/blog\//i,
+    /\/post\//i,
+    /\/posts\//i,
+    /\/article\//i,
+    /\/articles\//i,
+    /\/news\//i,
+    /\/\d{4}\/\d{2}\//,  // Date-based URLs like /2024/01/
+    /\/p\//,             // Medium-style
+    /\/insights\//i,
+    /\/resources\/blog\//i,
+  ];
+
+  return blogPatterns.some(pattern => pattern.test(url));
+}
+
+/**
+ * Analyze a blog post page
+ */
+export function analyzeBlogPost(page: PageData): BlogPostAnalysis {
+  const pageScore = calculatePageSEOScore(page);
+  const h2Count = page.headings.filter(h => h.level === 2).length;
+
+  return {
+    url: page.url,
+    title: page.title || null,
+    wordCount: page.wordCount,
+    seoScore: pageScore.score,
+    publishedDate: null, // Could be extracted from metadata in future
+    issues: pageScore.issues,
+    hasH1: !!page.h1,
+    hasMetaDescription: !!page.metaDescription,
+    h2Count,
+    internalLinks: page.internalLinks.length,
+    externalLinks: page.externalLinks.length,
+    hasImages: page.images.length > 0,
+  };
+}
+
+/**
+ * Generate blog performance summary with benchmarks
+ */
+export function generateBlogPerformanceSummary(
+  blogPosts: BlogPostAnalysis[],
+  industry?: string
+): BlogPerformanceSummary | null {
+  if (blogPosts.length === 0) {
+    return null;
+  }
+
+  const avgScore = blogPosts.reduce((sum, post) => sum + post.seoScore, 0) / blogPosts.length;
+  const avgWordCount = blogPosts.reduce((sum, post) => sum + post.wordCount, 0) / blogPosts.length;
+  const postsWithMeta = blogPosts.filter(p => p.hasMetaDescription).length;
+  const postsWithImages = blogPosts.filter(p => p.hasImages).length;
+
+  // Sort by score to find top/poor performers
+  const sortedByScore = [...blogPosts].sort((a, b) => b.seoScore - a.seoScore);
+  const topPerformers = sortedByScore.slice(0, Math.min(5, blogPosts.length));
+  const poorPerformers = sortedByScore.slice(-Math.min(5, blogPosts.length)).reverse();
+
+  // Identify gaps
+  const gaps: string[] = [];
+  if (avgWordCount < 1000) {
+    gaps.push('Blog posts are too short (avg ' + Math.round(avgWordCount) + ' words). Aim for 1500+ words.');
+  }
+  if (postsWithMeta < blogPosts.length * 0.5) {
+    gaps.push('Less than 50% of blog posts have meta descriptions');
+  }
+  if (postsWithImages < blogPosts.length * 0.7) {
+    gaps.push('Less than 70% of blog posts have images');
+  }
+  const postsWithFewH2 = blogPosts.filter(p => p.h2Count < 3).length;
+  if (postsWithFewH2 > blogPosts.length * 0.5) {
+    gaps.push('Many blog posts lack proper subheadings (H2)');
+  }
+
+  // Industry benchmarks (simplified - could be enhanced with real data)
+  const avgIndustryScore = 75; // Generic benchmark
+  const recommendedWordCount = industry === 'technology' ? 1800 : 1500;
+
+  return {
+    totalBlogPosts: blogPosts.length,
+    avgScore: Math.round(avgScore),
+    avgWordCount: Math.round(avgWordCount),
+    postsWithMeta,
+    postsWithImages,
+    topPerformers,
+    poorPerformers,
+    gaps,
+    benchmarks: {
+      avgIndustryScore,
+      recommendedWordCount,
+    },
+  };
 }
 
 /**
@@ -174,6 +308,11 @@ export async function runSEOAudit(
     const pageScores = input.crawlResult.pages.map(calculatePageSEOScore);
     const avgScore = pageScores.reduce((sum, p) => sum + p.score, 0) / pageScores.length;
 
+    // FEAT-070: Detect and analyze blog posts
+    const blogPages = input.crawlResult.pages.filter(page => isBlogPostUrl(page.url));
+    const blogPostsAnalyzed = blogPages.map(analyzeBlogPost);
+    const blogPerformanceSummary = generateBlogPerformanceSummary(blogPostsAnalyzed, input.industry);
+
     // Collect all issues
     const allIssues: SEOIssue[] = [];
 
@@ -283,7 +422,11 @@ Provide SEO recommendations. Return JSON:
         quickWins: aiAnalysis.quickWins || [],
         longTermImprovements: aiAnalysis.longTermImprovements || [],
         competitivePosition: aiAnalysis.competitivePosition || '',
-        estimatedTrafficPotential: aiAnalysis.estimatedTrafficPotential || 0
+        estimatedTrafficPotential: aiAnalysis.estimatedTrafficPotential || 0,
+        // FEAT-070: Blog performance analysis
+        blogPostsDetected: blogPostsAnalyzed.length,
+        blogPostsAnalyzed: blogPostsAnalyzed,
+        blogPerformanceSummary: blogPerformanceSummary
       }
     };
   } catch (error: any) {
