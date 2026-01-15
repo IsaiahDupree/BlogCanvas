@@ -7924,3 +7924,45 @@ The client change request system enables collaborative content refinement with f
   * PRD-compliant content structure
 - Committed: "feat(blogcanvas): implement draft agent with intro/teaser/body/conclusion structure (feat-092)"
 - Next priority: feat-093 - Next unimplemented PRD feature
+
+=== Session 2026-01-15T19:00:00Z ===
+- Implemented: feat-093 - PRD Agent: SEO with internal link hints
+- Files modified:
+  * /src/lib/agents/types.ts - Added InternalLinkHint interface to SEOMetadata
+    - anchorText: Exact phrase to link
+    - suggestedTargetKeyword: Existing post to link to
+    - placement: Section/paragraph for link
+    - reasoning: Why link makes sense
+  * /src/lib/agents/seo.ts - Enhanced SEO agent with internal linking analysis
+    - Added existingContent parameter to SEOAgentInput
+    - Enhanced prompt to suggest 3-5 internal link opportunities
+    - AI analyzes content for natural linking opportunities
+    - Optimized anchor text for target keywords
+    - Best practices: descriptive anchors, contextual relevance, natural distribution
+  * /src/lib/agents/blog-pipeline.ts - Integrated existing content fetch (lines 289-344)
+    - Fetches up to 20 published posts from same website
+    - Passes to SEO agent when available
+    - Saves link hints in blog_post_revisions (seo_pass)
+    - Gracefully handles fetch errors
+  * /feature_list.json - Marked feat-093 as passing
+- Files created:
+  * /docs/feat-093-seo-internal-links.md - Complete implementation documentation
+- Tests passed: All 4 acceptance criteria verified:
+  ✓ Links suggested: 3-5 internal link opportunities with anchor text and target keywords
+  ✓ Anchor text optimized: Descriptive, natural, keyword-focused (not "click here")
+  ✓ Placement logical: Each hint includes section/paragraph context
+  ✓ Stored in SEO pass: Saved to blog_post_revisions as part of SEO metadata
+- Implementation approach:
+  * Enhanced existing SEO agent (not separate agent)
+  * Optional parameter - works with or without existing content
+  * Database query to fetch existing published posts
+  * AI-powered analysis for contextual relevance
+  * Transparent integration - no API changes needed
+- Key benefits:
+  * Improved SEO through strategic internal linking
+  * Better site structure and PageRank distribution
+  * Enhanced user experience with content discovery
+  * Automated optimization - no manual analysis
+  * Contextual AI understanding of content relationships
+- Committed: "feat(blogcanvas): implement SEO agent with internal link hints (feat-093)"
+- Next priority: feat-094 or next unimplemented high-priority PRD feature
