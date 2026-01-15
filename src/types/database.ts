@@ -58,6 +58,59 @@ export type Database = {
           },
         ]
       }
+      agent_outputs: {
+        Row: {
+          agent_name: string
+          agent_version: string | null
+          blog_post_id: string | null
+          created_at: string | null
+          duration_ms: number | null
+          error_message: string | null
+          id: string
+          input: Json | null
+          model_used: string | null
+          output: Json | null
+          status: string | null
+          token_count: number | null
+        }
+        Insert: {
+          agent_name: string
+          agent_version?: string | null
+          blog_post_id?: string | null
+          created_at?: string | null
+          duration_ms?: number | null
+          error_message?: string | null
+          id?: string
+          input?: Json | null
+          model_used?: string | null
+          output?: Json | null
+          status?: string | null
+          token_count?: number | null
+        }
+        Update: {
+          agent_name?: string
+          agent_version?: string | null
+          blog_post_id?: string | null
+          created_at?: string | null
+          duration_ms?: number | null
+          error_message?: string | null
+          id?: string
+          input?: Json | null
+          model_used?: string | null
+          output?: Json | null
+          status?: string | null
+          token_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_outputs_blog_post_id_fkey"
+            columns: ["blog_post_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blog_post_metrics: {
         Row: {
           avg_position: number | null

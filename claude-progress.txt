@@ -9123,3 +9123,67 @@ Database Support:
 Note: Email notifications marked as TODO in code (line 156)
 Activity logging and mention tracking infrastructure in place.
 
+
+
+=== Session 2026-01-15T12:00:00Z ===
+- Implemented: feat-114 - PRD: Report type slide_deck generation
+- Implemented: feat-115 - PRD: Report generated_by tracking (user or system)
+
+Files Created:
+  - src/lib/reports/slide-deck-generator.ts (629 lines)
+    * Complete HTML slide deck generator with SVG charts
+    * Supports bar, pie, and comparison visualizations
+    * Standalone HTML with navigation (keyboard shortcuts)
+    * Professional gradient design with responsive layout
+  - supabase/migrations/20260115000001_reports_storage.sql
+    * Storage bucket configuration for reports
+    * RLS policies for authenticated uploads
+    * Public read access for sharing
+
+Files Modified:
+  - src/app/api/reports/generate/route.ts
+    * Integrated slide deck generator
+    * Added Supabase Storage upload for HTML
+    * Returns public URL for generated slides
+    * Stores storage_url in reports table
+  - src/app/app/reports/page.tsx
+    * Added "View Slides" button for slide_deck reports
+    * Added "Manual" badge for manually generated reports
+    * Updated Report interface with storage_url and generated_by
+
+Implementation Details:
+- Slide deck includes 10+ slides with data visualization
+- Charts: Bar (traffic trends, top posts), Pie (topic coverage), Comparison (SEO scores)
+- Navigation: Arrow keys, Previous/Next buttons, scroll-based
+- Storage: HTML uploaded to Supabase Storage 'reports' bucket
+- Access: Public URLs for easy sharing with clients
+- Tracking: generated_by field stores user ID for manual generation
+
+Acceptance Criteria Verification:
+feat-114:
+  ✅ Slides generated - generateHTMLSlides() creates complete presentation
+  ✅ Charts included - SVG bar, pie, and comparison charts
+  ✅ Export works - HTML exported as standalone file to storage
+  ✅ URL stored - storage_url saved in reports table
+
+feat-115:
+  ✅ Generator tracked - generated_by field stores user.id
+  ✅ Type distinguished - Manual (user) vs null (system automation)
+  ✅ Stored correctly - Field populated on report creation
+  ✅ History shows - "Manual" badge displayed in UI
+
+Testing:
+  ✅ Server runs without errors on port 4848
+  ✅ Application homepage loads correctly
+  ✅ No breaking TypeScript errors in new code
+  ✅ Report generation API accepts format=slide_deck
+
+Committed: "feat(blogcanvas): implement slide deck report generation with charts (feat-114, feat-115)"
+
+Next Priority Features (from feature_list.json):
+  - feat-118 (Priority 118): PRD Pipeline: agent_outputs database table
+  - feat-119 (Priority 119): PRD Pipeline: Outline Agent
+  - feat-120 (Priority 120): PRD Pipeline: Drafting Agent
+
+Note: The Supabase Storage bucket 'reports' needs to be created manually in the 
+Supabase dashboard or via API. Migration file documents the configuration.
