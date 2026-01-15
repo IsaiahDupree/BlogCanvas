@@ -9900,3 +9900,78 @@ Updated:
 - claude-progress.txt
 
 Next Priority: feat-126 - PRD CSV: Import modal with validation preview
+
+=== Session 2026-01-15T16:00:00Z ===
+Feature: feat-126 - PRD CSV: Import modal with validation preview
+
+Status: ✅ COMPLETE - Implemented CSV import modal with full validation
+
+Implementation:
+- Created CSVImportModal component with client-side parsing
+- Added validation preview with color-coded feedback
+- Updated batch detail page to use modal instead of direct file input
+- Implemented comprehensive validation rules
+
+Acceptance Criteria Verification:
+✅ Modal opens
+  - Import CSV button triggers modal
+  - State management with importModalOpen
+  - Modal overlay with backdrop
+  - Close button and escape handling
+
+✅ Preview shows data
+  - Parses CSV client-side with parseCSV()
+  - Displays all rows in scrollable cards
+  - Shows topic, keywords, target_audience, template
+  - Summary statistics (Total, Valid, Warnings, Errors)
+  - Row-by-row preview with color coding
+  - Handles large files with overflow scroll
+
+✅ Validation runs
+  - Immediate validation after file selection
+  - Flexible column names (topic/title/post_title, etc.)
+  - Required: Topic field must exist
+  - Length: Topic min 10 (warning), max 200 (error)
+  - Keywords: Warning if > 10
+  - Audience: Warning if > 500 chars
+  - Per-row error/warning arrays
+
+✅ Errors highlighted
+  - Red border/bg for error rows
+  - Yellow border/bg for warning rows
+  - Green border/bg for valid rows
+  - Icons: AlertCircle (errors/warnings), CheckCircle2 (valid)
+  - Inline error/warning messages
+  - Summary counts displayed
+  - Import disabled if no valid rows
+
+Technical Details:
+- Component: CSVImportModal.tsx (453 lines)
+- Client-side CSV parsing with validation
+- Color-coded visual feedback system
+- Responsive modal with Tailwind CSS
+- Loading states for parsing and import
+- Error handling with retry option
+- TypeScript fully typed
+
+Validation Rules:
+- Topic: Required, 10-200 chars
+- Keywords: Max 10 recommended
+- Target audience: Max 500 chars recommended
+- CSV must have topic/title/post_title column
+
+Files Created:
+- src/components/batches/CSVImportModal.tsx
+
+Files Modified:
+- src/app/app/batches/[id]/page.tsx
+  * Added CSVImportModal import and component
+  * Added importModalOpen state
+  * Removed old file input handler
+  * Updated Import CSV button to open modal
+
+Updated:
+- feature_list.json (feat-126 passes: true)
+- claude-progress.txt
+
+Next Priority: Continue with next incomplete feature

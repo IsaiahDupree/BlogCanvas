@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import ImageGenerationDialog from '@/components/images/ImageGenerationDialog'
 import SchedulePublishDialog from '@/components/publishing/SchedulePublishDialog'
 import ProjectedSEOScore from '@/components/analytics/ProjectedSEOScore'
+import CSVImportModal from '@/components/batches/CSVImportModal'
 
 export default function BatchDetailPage() {
     const params = useParams()
@@ -18,9 +19,8 @@ export default function BatchDetailPage() {
     const [posts, setPosts] = useState<any[]>([])
     const [generating, setGenerating] = useState(false)
     const [loading, setLoading] = useState(true)
-    const [importing, setImporting] = useState(false)
-    const [importFile, setImportFile] = useState<File | null>(null)
     const [publishing, setPublishing] = useState(false)
+    const [importModalOpen, setImportModalOpen] = useState(false)
     const [imageDialogOpen, setImageDialogOpen] = useState(false)
     const [selectedPostForImages, setSelectedPostForImages] = useState<{ id: string; topic: string } | null>(null)
     const [overdueStats, setOverdueStats] = useState<any>(null)
@@ -187,45 +187,8 @@ export default function BatchDetailPage() {
         return null
     }
 
-    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
-        if (file) {
-            setImportFile(file)
-            handleImportCSV(file)
-        }
-    }
-
-    const handleImportCSV = async (file: File) => {
-        setImporting(true)
-        try {
-            const formData = new FormData()
-            formData.append('file', file)
-
-            const response = await fetch(`/api/content-batches/${params.id}/import-csv`, {
-                method: 'POST',
-                body: formData
-            })
-
-            const data = await response.json()
-            if (data.success) {
-                alert(`Successfully imported ${data.imported} posts${data.errors ? ` (${data.errors.length} errors)` : ''}`)
-                if (data.errors && data.errors.length > 0) {
-                    console.error('Import errors:', data.errors)
-                }
-                await fetchBatchDetails()
-            } else {
-                alert(`Import failed: ${data.error}`)
-            }
-        } catch (error) {
-            console.error('Import error:', error)
-            alert('Failed to import CSV file')
-        } finally {
-            setImporting(false)
-            setImportFile(null)
-            // Reset file input
-            const input = document.querySelector('input[type="file"]') as HTMLInputElement
-            if (input) input.value = ''
-        }
+    const handleImportComplete = async () => {
+        await fetchBatchDetails()
     }
 
     const handleExportCSV = async () => {
@@ -321,24 +284,14 @@ export default function BatchDetailPage() {
                                 <Download className="w-4 h-4" />
                                 Export CSV
                             </Button>
-                            <label className="cursor-pointer">
-                                <Button
-                                    variant="outline"
-                                    className="flex items-center gap-2"
-                                    asChild
-                                >
-                                    <span>
-                                        <Upload className="w-4 h-4" />
-                                        Import CSV
-                                    </span>
-                                </Button>
-                                <input
-                                    type="file"
-                                    accept=".csv"
-                                    className="hidden"
-                                    onChange={handleFileSelect}
-                                />
-                            </label>
+                            <Button
+                                onClick={() => setImportModalOpen(true)}
+                                variant="outline"
+                                className="flex items-center gap-2"
+                            >
+                                <Upload className="w-4 h-4" />
+                                Import CSV
+                            </Button>
                             <Button
                                 onClick={startGeneration}
                                 disabled={generating || completedPosts === totalPosts}
@@ -719,6 +672,14 @@ export default function BatchDetailPage() {
                     }}
                 />
             )}
+
+            {/* CSV Import Modal */}
+            <CSVImportModal
+                isOpen={importModalOpen}
+                onClose={() => setImportModalOpen(false)}
+                batchId={params.id as string}
+                onImportComplete={handleImportComplete}
+            />
         </div>
     )
 }
