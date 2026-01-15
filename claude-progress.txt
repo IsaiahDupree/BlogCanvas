@@ -12211,3 +12211,116 @@ Note: Database migration 20260124000001_brand_guides_style_enhancements.sql alre
 applied, so the styles_to_avoid column exists and is ready to use. Other tabs (Styles
 to Keep, Image Guidelines, Title Guidelines) show placeholder content and can be
 implemented in future features.
+
+
+=== Session 2026-01-15T[Current] ===
+
+Feature Implemented: feat-159 - PRD Brand: Styles to Keep UI with good/bad voice examples
+
+Implementation Summary:
+This feature implements a comprehensive "Styles to Keep" UI in the brand guide editor,
+allowing users to define preferred writing patterns, good/bad voice examples with engagement
+metrics to guide AI content generation toward successful styles.
+
+Frontend Implementation (src/app/app/clients/[clientId]/brand-guide/page.tsx):
+- Added TypeScript interface for StylesToKeep with proper structure
+- Added state management for:
+  * preferredPatterns: string[] - List of preferred writing patterns
+  * successfulExamples: Array with text, voice_type (good/bad), context, engagement_score
+  * engagementMetrics: avg_time_on_page, avg_engagement_rate, top_performing_style
+- Added helper functions:
+  * addPreferredPattern() / removePreferredPattern()
+  * addSuccessfulExample() / removeSuccessfulExample()
+- Updated load logic to populate styles_to_keep data from API
+- Updated save logic to include styles_to_keep in PATCH request
+- Added new icons: TrendingUp, ThumbsUp, ThumbsDown, Check
+
+UI Sections Implemented (Styles to Keep Tab):
+
+1. Preferred Patterns Section:
+   - Input field with "Enter" key support for adding patterns
+   - Green badges display for patterns with remove buttons
+   - Empty state message
+   - Examples: "Start with actionable insights", "Use data-driven examples"
+
+2. Good vs Bad Voice Examples Section:
+   - Toggle buttons to select "Good Example" or "Bad Example"
+   - Color-coded UI (green for good, red for bad)
+   - Multi-field form:
+     * Text textarea for the example content
+     * Context input for usage scenario
+     * Optional engagement score (0-100)
+   - Display cards with:
+     * Green/red badges indicating voice type
+     * Quoted example text
+     * Context description
+     * Optional engagement score badge
+   - Remove button per example
+
+3. Engagement Metrics Section:
+   - Average Time on Page input (seconds)
+   - Average Engagement Rate input (percentage)
+   - Top Performing Style text input
+   - Live "Active Metrics" summary card showing configured values
+   - Conditional rendering based on whether metrics are set
+
+4. Content Generation Guidelines Preview:
+   - Green-themed preview card
+   - Summary showing:
+     * Count of preferred patterns
+     * Count of good vs bad examples
+   - "AI Will:" section explaining enforcement:
+     * Emulate patterns from good examples
+     * Avoid styles from bad examples
+     * Target specified engagement rate
+     * Follow preferred writing patterns
+
+Data Flow:
+1. Load: GET /api/clients/[clientId]/brand-guide fetches styles_to_keep
+2. Edit: Local state updates in React
+3. Save: PATCH /api/clients/[clientId]/brand-guide with styles_to_keep object
+4. Persist: Updates brand_guides.styles_to_keep JSONB column
+
+API Integration:
+- No API changes needed - existing endpoint already handles JSONB fields
+- API accepts styles_to_keep in PATCH body
+- Database column already exists from migration 20260124000001
+
+Acceptance Criteria Validation:
+✅ Patterns editable: Add/remove preferred patterns with input and badges
+✅ Examples shown: Display good/bad voice examples with context and scores
+✅ Metrics displayed: Show and edit engagement metrics with summary
+✅ Manual add works: All sections have functional add/remove buttons
+
+Testing:
+✅ Dev server running on port 4848
+✅ TypeScript compilation successful (no errors)
+✅ Page loads without errors
+✅ All UI components properly imported and rendered
+✅ State management working correctly
+✅ Data structure matches database schema
+
+Files Changed:
+- src/app/app/clients/[clientId]/brand-guide/page.tsx (MODIFIED)
+  * Added StylesToKeep interface (lines 40-54)
+  * Added state variables for styles_to_keep (lines 84-103)
+  * Added helper functions (lines 229-260)
+  * Updated load logic (lines 132-146)
+  * Updated save logic (lines 171-180, 185-188)
+  * Replaced placeholder tab with full UI (lines 626-953)
+  * Added new Lucide icons to imports
+- feature_list.json (MODIFIED - feat-159 marked as passing)
+- claude-progress.txt (MODIFIED - this session log)
+
+Commit: 36057b6 - "feat(blogcanvas): implement Styles to Keep UI with good/bad voice examples (feat-159)"
+
+Next Priority Features (high):
+- feat-161 (high) - "PRD Brand: Image Guidelines UI editor"
+- feat-163 (high) - "PRD Brand: Title Guidelines UI with format patterns"
+- feat-164 (critical) - "PRD Brand: getSharedClientContext() unified function"
+- feat-165 (critical) - "PRD Brand: GET /api/clients/{id}/context endpoint"
+
+Note: The Styles to Keep feature is fully functional and ready for use. The data
+structure matches the database schema and integrates seamlessly with the existing
+brand guide system. The UI provides clear visual distinction between good and bad
+examples, and the engagement metrics section helps quantify successful patterns.
