@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { DepthLevelSelector } from '@/components/DepthLevelSelector'
 import { DepthLevel } from '@/lib/content-depth'
+import { ToneVoiceSelector } from '@/components/ToneVoiceSelector'
+import { ToneVoice } from '@/lib/tone-voice'
 
 interface ScoreProjection {
     current_score: number
@@ -35,6 +37,7 @@ export function PitchBuilderTab({ websiteId }: { websiteId: string }) {
     const [customMonths, setCustomMonths] = useState<number | null>(null)
     const [batchName, setBatchName] = useState('')
     const [depthLevel, setDepthLevel] = useState<DepthLevel>('standard')
+    const [toneVoice, setToneVoice] = useState<ToneVoice | null>('professional')
     const [creatingBatch, setCreatingBatch] = useState(false)
     const [generatingPitch, setGeneratingPitch] = useState(false)
     const [pitchContent, setPitchContent] = useState<{ format: string; content?: string; html?: string; subject?: string } | null>(null)
@@ -479,6 +482,13 @@ export function PitchBuilderTab({ websiteId }: { websiteId: string }) {
                                 <DepthLevelSelector
                                     value={depthLevel}
                                     onChange={setDepthLevel}
+                                />
+
+                                <ToneVoiceSelector
+                                    value={toneVoice}
+                                    onChange={setToneVoice}
+                                    allowNull={true}
+                                    helperText="Default tone for all posts in this batch (can be overridden per post)"
                                 />
 
                                 <div className="bg-indigo-50 rounded-lg p-4">

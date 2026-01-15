@@ -15,6 +15,7 @@ import { runEnhancementAgent, EnhancementAgentInput, EnhancementResult } from '.
 import { runVoiceToneAgent, VoiceToneAgentInput } from './voice-tone';
 import { getTargetWordCount, getAIPromptGuidance, DepthLevel } from '../content-depth';
 import { SearchIntent, getAIGuidance as getSearchIntentGuidance } from '../search-intent';
+import { ToneVoice, getAIToneGuidance, parseToneVoice } from '../tone-voice';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export interface BlogGenerationInput {
@@ -23,6 +24,7 @@ export interface BlogGenerationInput {
   wordCountGoal: number;
   depthLevel?: DepthLevel; // feat-099: Content depth level
   searchIntent?: SearchIntent; // feat-100: Search intent for content optimization
+  toneVoice?: ToneVoice; // feat-101: Tone and voice setting per post
   // Optional: For tracking revisions at each pipeline stage
   blogPostId?: string;
   supabaseClient?: SupabaseClient;
@@ -259,6 +261,9 @@ export async function runBlogGenerationPipeline(
     // feat-100: Get search intent-specific guidance for prompts
     const searchIntentGuidance = input.searchIntent ? getSearchIntentGuidance(input.searchIntent) : '';
 
+    // feat-101: Get tone/voice-specific guidance for prompts
+    const toneGuidance = input.toneVoice ? getAIToneGuidance(input.toneVoice) : '';
+
     for (const section of outline.sections) {
       const draftInput: DraftAgentInput = {
         section,
@@ -275,7 +280,7 @@ export async function runBlogGenerationPipeline(
           keyMessages: [],
           competitorDifferentiators: [],
           contentDonts: [],
-          styleNotes: [depthGuidance, searchIntentGuidance].filter(Boolean).join('\n\n') || undefined
+          styleNotes: [depthGuidance, searchIntentGuidance, toneGuidance].filter(Boolean).join('\n\n') || undefined
         }
       };
 

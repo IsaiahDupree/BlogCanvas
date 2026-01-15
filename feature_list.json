@@ -2277,7 +2277,9 @@
         "Override works",
         "AI follows tone"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T11:30:00Z",
+      "notes": "Complete tone/voice configuration system with 10 distinct tones. Created /src/lib/tone-voice.ts (368 lines) with comprehensive tone definitions including professional, friendly, authoritative, conversational, educational, inspirational, humorous, technical, empathetic, and bold. Each tone includes characteristics, examples, writing tips, and best use cases. Created ToneVoiceSelector.tsx component with icon, description, best-for display. Updated blog-pipeline.ts to add toneVoice field to BlogGenerationInput and generate AI guidance via getAIToneGuidance(). Modified generate endpoint to parse tone_of_voice and pass to pipeline. Updated import-csv to validate and store tone from CSV. Added ToneVoiceSelector to PitchBuilderTab for batch creation. All acceptance criteria verified: ✓ Tone selectable via ToneVoiceSelector component with 10 options, ✓ Brand defaults work (getDefaultToneVoice falls back to 'professional'), ✓ Override works per-post (tone_of_voice field already in blog_posts table), ✓ AI follows tone (getAIToneGuidance generates detailed prompts combined with depth and search intent in styleNotes). Database field already existed. Fully backward compatible with null values defaulting to professional tone."
     },
     {
       "id": "feat-102",

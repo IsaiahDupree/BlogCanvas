@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { parse } from 'csv-parse/sync';
 import { isValidSearchIntent } from '@/lib/search-intent';
+import { isValidToneVoice } from '@/lib/tone-voice';
 
 /**
  * Import blog posts from CSV file
@@ -84,6 +85,7 @@ export async function POST(
             const priority = parseInt(row.priority || row['Priority'] || '0') || 0;
             const notes = row.notes || row.description || row['Notes'] || row['Description'] || '';
             const searchIntent = row.search_intent || row.intent || row['Search Intent'] || row['Intent'] || '';
+            const toneVoice = row.tone_voice || row.tone || row['Tone Voice'] || row['Tone'] || '';
 
             if (!topic) {
                 errors.push(`Row ${i + 2}: Missing topic/title`);
@@ -100,6 +102,9 @@ export async function POST(
             // Validate and set search intent
             const validIntent = isValidSearchIntent(searchIntent.toLowerCase()) ? searchIntent.toLowerCase() : null;
 
+            // Validate and set tone/voice
+            const validTone = isValidToneVoice(toneVoice.toLowerCase()) ? toneVoice.toLowerCase() : null;
+
             // Create blog post
             const { data: post, error: postError } = await supabaseAdmin
                 .from('blog_posts')
@@ -110,6 +115,7 @@ export async function POST(
                     target_keyword: targetKeyword || null,
                     target_wordcount: targetWordcount,
                     search_intent: validIntent,
+                    tone_of_voice: validTone,
                     status: 'idea',
                     draft: {
                         topic: topic,

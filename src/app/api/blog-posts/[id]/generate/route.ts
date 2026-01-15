@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { BlogGenerationInput } from '@/lib/agents/blog-pipeline';
 import { runPipelineWithQualityGates, PipelineOrchestratorOptions } from '@/lib/agents/pipeline-orchestrator';
 import { parseSearchIntent } from '@/lib/search-intent';
+import { parseToneVoice } from '@/lib/tone-voice';
 
 // POST /api/blog-posts/[id]/generate - Generate content for a single blog post using full AI pipeline
 export async function POST(
@@ -28,6 +29,7 @@ export async function POST(
                 target_keyword,
                 word_count_goal,
                 search_intent,
+                tone_of_voice,
                 client_id,
                 clients (
                     brand_name,
@@ -93,6 +95,7 @@ export async function POST(
                 targetKeyword: post.target_keyword || '',
                 wordCountGoal: post.word_count_goal || 1500,
                 searchIntent: parseSearchIntent(post.search_intent) || undefined,
+                toneVoice: parseToneVoice(post.tone_of_voice) || undefined,
                 clientProfile,
                 options: {
                     usePremiumModel,
