@@ -195,6 +195,16 @@ export function GapsAnalysisTab({ websiteId }: { websiteId: string }) {
                     </Button>
                 </div>
                 <div className="flex gap-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                            window.open(`/api/websites/${websiteId}/gap-report?format=pdf`, '_blank')
+                        }}
+                    >
+                        <Download className="w-4 h-4 mr-2" />
+                        Download Report
+                    </Button>
                     <Button variant="outline" size="sm" onClick={analyzeGaps} disabled={analyzing}>
                         <RefreshCw className={`w-4 h-4 mr-2 ${analyzing ? 'animate-spin' : ''}`} />
                         Re-analyze
