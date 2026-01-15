@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import BlogPreview from '@/components/BlogPreview'
 import { SEOQualityScore } from '@/components/blog/SEOQualityScore'
+import { RevisionTimeline } from '@/components/blog/RevisionTimeline'
 
 interface BlogPost {
   id: string
@@ -265,6 +266,11 @@ export default function BlogPreviewPage() {
               </CardContent>
             </Card>
           </div>
+        </div>
+
+        {/* Agent Pipeline Timeline - Full Width Below */}
+        <div className="mt-8">
+          <RevisionTimeline postId={postId} autoRefresh={true} refreshInterval={15000} />
         </div>
       </div>
     </div>

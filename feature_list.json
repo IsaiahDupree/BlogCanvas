@@ -2717,7 +2717,9 @@
         "Timestamps correct",
         "Preview works"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T20:30:00Z",
+      "notes": "Complete agent pipeline timeline component. Created API endpoint GET /api/blog-posts/[id]/agent-outputs to fetch all agent outputs for a post in chronological order. Built RevisionTimeline UI component (src/components/blog/RevisionTimeline.tsx) with vertical timeline visualization showing each agent execution as an expandable node. Features: timeline line connecting nodes, icon circles with agent-specific icons (outline, draft, seo, fact_check, enhance, orchestrator), status badges (completed/failed/skipped), formatted timestamps (MMM D, HH:MM), execution duration display, model and version info, token count display, error message display for failed executions, expandable output preview with agent-specific formatting (outline shows sections/subheadings, draft shows content excerpt, SEO shows suggestions, generic shows JSON), collapsible input data view, auto-refresh support (configurable interval). Integrated into blog post preview page (src/app/app/posts/[postId]/preview/page.tsx) as full-width section below main content with 15s auto-refresh. All acceptance criteria verified: ✅ Timeline renders with vertical layout and connecting lines, ✅ All agent outputs shown chronologically from agent_outputs table, ✅ Timestamps correctly formatted and displayed, ✅ Preview works with click-to-expand nodes and agent-specific output formatting."
     },
     {
       "id": "feat-122",
