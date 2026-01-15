@@ -1,9 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { TrendingUp, TrendingDown, Minus, Eye, MousePointerClick, Target, BarChart3, Users, Clock, Activity } from 'lucide-react'
+import { TrendingUp, TrendingDown, Minus, Eye, MousePointerClick, Target, BarChart3, Users, Clock, Activity, Download } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 
 interface Metric {
     impressions: number
@@ -47,6 +48,7 @@ export default function PerformanceMetrics({ postId, limit = 30 }: PerformanceMe
     const [data, setData] = useState<MetricsData | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const [exporting, setExporting] = useState(false)
 
     useEffect(() => {
         fetchMetrics()
@@ -69,6 +71,38 @@ export default function PerformanceMetrics({ postId, limit = 30 }: PerformanceMe
             console.error('Metrics fetch error:', err)
         } finally {
             setLoading(false)
+        }
+    }
+
+    const handleExport = async (format: 'csv' | 'json') => {
+        try {
+            setExporting(true)
+            const response = await fetch(`/api/analytics/metrics/${postId}/export?format=${format}&limit=${limit}`)
+
+            if (!response.ok) {
+                throw new Error('Failed to export metrics')
+            }
+
+            // Get filename from Content-Disposition header or use default
+            const contentDisposition = response.headers.get('Content-Disposition')
+            const filenameMatch = contentDisposition?.match(/filename="(.+)"/)
+            const filename = filenameMatch?.[1] || `metrics-${postId}.${format}`
+
+            // Download file
+            const blob = await response.blob()
+            const url = window.URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = filename
+            document.body.appendChild(a)
+            a.click()
+            window.URL.revokeObjectURL(url)
+            document.body.removeChild(a)
+        } catch (err) {
+            console.error('Export error:', err)
+            alert('Failed to export metrics. Please try again.')
+        } finally {
+            setExporting(false)
         }
     }
 
@@ -178,9 +212,33 @@ export default function PerformanceMetrics({ postId, limit = 30 }: PerformanceMe
             {/* Header */}
             <div className="flex items-center justify-between">
                 <h3 className="text-xl font-bold text-gray-900">Performance Metrics</h3>
-                <Badge variant="outline" className="text-xs">
-                    Last updated: {new Date(latestMetric.snapshot_date).toLocaleDateString()}
-                </Badge>
+                <div className="flex items-center gap-3">
+                    <Badge variant="outline" className="text-xs">
+                        Last updated: {new Date(latestMetric.snapshot_date).toLocaleDateString()}
+                    </Badge>
+                    <div className="flex gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleExport('csv')}
+                            disabled={exporting}
+                            className="text-xs"
+                        >
+                            <Download className="w-3 h-3 mr-1" />
+                            Export CSV
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleExport('json')}
+                            disabled={exporting}
+                            className="text-xs"
+                        >
+                            <Download className="w-3 h-3 mr-1" />
+                            Export JSON
+                        </Button>
+                    </div>
+                </div>
             </div>
 
             {/* Metrics Grid */}

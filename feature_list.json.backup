@@ -1816,8 +1816,7 @@
         "Historical trends visible",
         "Export metrics"
       ],
-      "passes": true,
-      "implemented_at": "2026-01-15T08:17:45Z"
+      "passes": false
     },
     {
       "id": "feat-081",

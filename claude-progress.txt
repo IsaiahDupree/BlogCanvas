@@ -7469,3 +7469,70 @@ Updated all revision insertions to use proper schema fields:
 
 The revision tracking system is now complete and properly integrated into the blog generation pipeline.
 All revision types conform to the database schema, and the UI displays the full revision history.
+
+=== Session 2026-01-15T08:17:45Z ===
+- Implemented: feat-080 - PRD Data: blog_post_metrics → blog_post_id snapshots
+- Files changed:
+  - src/app/api/analytics/metrics/[postId]/export/route.ts (NEW - Export API endpoint for CSV and JSON)
+  - src/components/analytics/PerformanceMetrics.tsx (Added export buttons and handleExport function)
+  - scripts/verify-metrics-ui.mjs (NEW - Comprehensive verification script)
+- Tests passed: All acceptance criteria verified via automated verification script
+  ✅ Snapshot dates work - Database has unique constraint on (blog_post_id, snapshot_date)
+  ✅ All metrics captured - impressions, clicks, CTR, avg_position, sessions, conversions, seo_score
+  ✅ Historical trends visible - PerformanceMetrics component with sparklines and trend indicators
+  ✅ Export metrics - CSV and JSON export endpoints with download functionality
+- Committed: Pending
+- Next priority: feat-081 - PRD Data: reports → website_id with period + type
+
+## Implementation Details
+
+### Export API Endpoint (NEW)
+Created `/api/analytics/metrics/[postId]/export/route.ts`:
+- GET endpoint with format parameter (csv or json)
+- CSV export: Converts metrics to CSV format with proper headers
+- JSON export: Structured JSON with post metadata, date range, and metrics array
+- File download: Proper Content-Disposition headers for browser downloads
+- Filename generation: Sanitized post title with date stamp
+- Error handling: Returns 404 if no metrics available, 400 for invalid format
+
+### PerformanceMetrics Component Updates
+Enhanced `src/components/analytics/PerformanceMetrics.tsx`:
+- Added Download icon import from lucide-react
+- Added Button component import
+- Added exporting state for button disable during export
+- Implemented handleExport function:
+  - Fetches from export API with selected format
+  - Extracts filename from Content-Disposition header
+  - Creates blob and triggers browser download
+  - Shows user-friendly error messages
+- Added export button UI:
+  - Two buttons: "Export CSV" and "Export JSON"
+  - Positioned in header next to last updated badge
+  - Disabled during export operation
+  - Small size with download icon
+
+### Existing Infrastructure (Already Complete)
+- Database schema: blog_post_metrics table with all fields ✅
+- Unique constraint: (blog_post_id, snapshot_date) prevents duplicates ✅
+- API endpoint: GET /api/analytics/metrics/[postId] for retrieval ✅
+- Trend calculation: calculateTrend function in metrics API ✅
+- UI component: PerformanceMetrics with sparklines and trends ✅
+- Analytics page: /app/analytics dashboard ✅
+- Metrics collection: analytics-collector.ts with GSC integration ✅
+- Check-back system: Automated metrics collection via scheduled jobs ✅
+
+### Acceptance Criteria Verification
+✅ Snapshot dates work - Database migration includes unique index on (blog_post_id, snapshot_date)
+✅ All metrics captured - Table stores impressions, clicks, ctr, avg_position, sessions, time_on_page, conversions, seo_score, raw_metrics
+✅ Historical trends visible - PerformanceMetrics component displays:
+  - Trend indicators with up/down/stable direction
+  - Mini sparklines showing metric history
+  - Percentage change calculations
+  - Color-coded trend indicators (green=up, red=down, gray=stable)
+✅ Export metrics - Export functionality complete:
+  - CSV format: Headers + comma-separated values with proper date formatting
+  - JSON format: Structured data with post info, date range, and metrics array
+  - Download triggers in browser with proper filenames
+  - Error handling for missing data and invalid formats
+
+The metrics tracking system is now complete with full export capabilities for data analysis and reporting.
