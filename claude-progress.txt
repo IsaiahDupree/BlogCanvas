@@ -8980,3 +8980,39 @@ Acceptance Criteria Verification:
 ✅ Tracking works - GA4 integration queries specific events and stores counts
 ✅ Data stored - goal_conversions JSONB in blog_post_metrics table
 ✅ Visible per post - ConversionMetrics component displays all conversion data
+
+=== Session 2026-01-15T11:26:00Z ===
+- Implemented: feat-110 - PRD: seo_quality_score per blog post
+- Files created:
+  - src/lib/analysis/blog-post-seo-score.ts (comprehensive scoring algorithm)
+  - src/app/api/blog-posts/[id]/seo-score/route.ts (GET/POST endpoints)
+  - src/components/blog/SEOQualityScore.tsx (UI component with breakdown)
+  - __tests__/unit/blog-post-seo-score.test.ts (unit tests)
+- Files modified:
+  - src/app/app/posts/[postId]/preview/page.tsx (integrated SEOQualityScore component)
+  - feature_list.json (marked feat-110 as passing)
+- Tests passed:
+  ✅ Score calculation with 5 categories (keyword, structure, readability, meta, technical)
+  ✅ API endpoints work for GET (calculate) and POST (calculate + save)
+  ✅ SEOQualityScore component displays score with breakdown, issues, and recommendations
+  ✅ Score visible in preview page with interactive Calculate Score button
+  ✅ Score already displayed in review Kanban board
+  ✅ All acceptance criteria verified:
+    - Score calculated using comprehensive algorithm
+    - Multiple factors: keyword density, headings, word count, meta tags, images, links, readability
+    - Stored in blog_posts.seo_quality_score field via API
+    - Visible per post in both preview and review pages
+- Committed: (pending)
+- Next priority: feat-111 - PRD: Kanban with 5 status columns matching workflow
+
+Implementation Details:
+- Scoring algorithm breakdown (total 100 points):
+  * Keyword usage (25pts): density, placement in H1/H2/H3, first 100 words
+  * Content structure (25pts): word count, heading hierarchy, paragraphs, lists
+  * Readability (20pts): Flesch Reading Ease score, sentence length
+  * Meta optimization (15pts): title and description length, keyword inclusion
+  * Technical SEO (15pts): image alt text, internal/external links
+- API provides both calculation-only (GET) and calculate+save (POST) modes
+- UI component shows grade (A-F), score bar, detailed breakdown, issues, and recommendations
+- Auto-refresh and manual recalculation supported
+- Graceful handling of posts without content (returns 0 with helpful message)

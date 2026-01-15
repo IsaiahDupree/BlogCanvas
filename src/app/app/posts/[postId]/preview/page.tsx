@@ -20,6 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import BlogPreview from '@/components/BlogPreview'
+import { SEOQualityScore } from '@/components/blog/SEOQualityScore'
 
 interface BlogPost {
   id: string
@@ -191,35 +192,12 @@ export default function BlogPreviewPage() {
 
           {/* Sidebar - Post Metadata */}
           <div className="space-y-6">
-            {/* SEO Score */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <BarChart3 className="w-5 h-5 text-indigo-600" />
-                  SEO Score
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center">
-                  <div className={`text-5xl font-bold ${
-                    (post.seo_quality_score || 0) >= 80 ? 'text-green-600' :
-                    (post.seo_quality_score || 0) >= 60 ? 'text-yellow-600' : 'text-red-600'
-                  }`}>
-                    {post.seo_quality_score || '—'}
-                  </div>
-                  <p className="text-sm text-gray-500 mt-1">out of 100</p>
-                </div>
-                <div className="mt-4 h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div 
-                    className={`h-full transition-all ${
-                      (post.seo_quality_score || 0) >= 80 ? 'bg-green-500' :
-                      (post.seo_quality_score || 0) >= 60 ? 'bg-yellow-500' : 'bg-red-500'
-                    }`}
-                    style={{ width: `${post.seo_quality_score || 0}%` }}
-                  />
-                </div>
-              </CardContent>
-            </Card>
+            {/* SEO Quality Score */}
+            <SEOQualityScore
+              postId={postId}
+              initialScore={post.seo_quality_score}
+              showDetails={true}
+            />
 
             {/* Target Keyword */}
             {post.target_keyword && (
