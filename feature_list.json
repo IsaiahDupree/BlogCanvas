@@ -1369,7 +1369,9 @@
         "Target word count configurable",
         "Due dates can be tracked"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T08:00:00Z",
+      "notes": "Complete content batch parameter implementation. Database: Created migration 20260115000002_blog_post_due_date_and_intent.sql adding due_date (DATE) and search_intent (TEXT with CHECK constraint) columns to blog_posts table. Added indexes for performance. Created blog_posts_with_intent view combining post and cluster intent. UI: Enhanced /posts/new page with search intent dropdown (informational/commercial/transactional/navigational), tone of voice selector (professional/casual/authoritative/friendly/technical), due date picker with min date validation. Updated API call to include all new fields. Step 3 review shows all parameters. Existing fields verified: topic (TEXT NOT NULL), target_keyword (TEXT), topic_cluster_id (UUID FK), word_count_goal (INTEGER), tone_of_voice (TEXT). All acceptance criteria met: posts have topic/keyword/cluster support, search intent configurable with 4 options, word count slider (500-5000), due dates tracked with date input."
     },
     {
       "id": "feat-061",

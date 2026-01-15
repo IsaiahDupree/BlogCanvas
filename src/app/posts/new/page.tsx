@@ -34,6 +34,9 @@ export default function CreateBlogPostPage() {
   const [selectedClient, setSelectedClient] = useState('')
   const [contentType, setContentType] = useState<'blog' | 'guide' | 'listicle' | 'comparison'>('blog')
   const [wordCount, setWordCount] = useState(1500)
+  const [searchIntent, setSearchIntent] = useState<'informational' | 'commercial' | 'transactional' | 'navigational'>('informational')
+  const [toneOfVoice, setToneOfVoice] = useState('professional')
+  const [dueDate, setDueDate] = useState('')
 
   useEffect(() => {
     const fetchClients = async () => {
@@ -65,6 +68,9 @@ export default function CreateBlogPostPage() {
           client_id: selectedClient || null,
           content_type: contentType,
           target_word_count: wordCount,
+          search_intent: searchIntent,
+          tone_of_voice: toneOfVoice,
+          due_date: dueDate || null,
           status: 'planned'
         })
       })
@@ -231,6 +237,61 @@ export default function CreateBlogPostPage() {
                 </div>
               </div>
 
+              {/* Search Intent */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Search Intent
+                </label>
+                <select
+                  value={searchIntent}
+                  onChange={(e) => setSearchIntent(e.target.value as any)}
+                  className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-600"
+                >
+                  <option value="informational">Informational (How-to, guides, education)</option>
+                  <option value="commercial">Commercial (Reviews, comparisons)</option>
+                  <option value="transactional">Transactional (Buy, purchase)</option>
+                  <option value="navigational">Navigational (Brand/product searches)</option>
+                </select>
+                <p className="text-xs text-muted-foreground mt-1">
+                  The primary intent behind the search query
+                </p>
+              </div>
+
+              {/* Tone of Voice */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Tone of Voice
+                </label>
+                <select
+                  value={toneOfVoice}
+                  onChange={(e) => setToneOfVoice(e.target.value)}
+                  className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-600"
+                >
+                  <option value="professional">Professional</option>
+                  <option value="casual">Casual & Conversational</option>
+                  <option value="authoritative">Authoritative & Expert</option>
+                  <option value="friendly">Friendly & Approachable</option>
+                  <option value="technical">Technical & Detailed</option>
+                </select>
+              </div>
+
+              {/* Due Date */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Due Date (optional)
+                </label>
+                <input
+                  type="date"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                  className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-600"
+                  min={new Date().toISOString().split('T')[0]}
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Target completion date for this post
+                </p>
+              </div>
+
               {/* Client */}
               {clients.length > 0 && (
                 <div>
@@ -288,9 +349,23 @@ export default function CreateBlogPostPage() {
                   <Badge variant="secondary" className="capitalize">{contentType}</Badge>
                 </div>
                 <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Search Intent</span>
+                  <Badge variant="secondary" className="capitalize">{searchIntent}</Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Tone of Voice</span>
+                  <span className="text-sm font-medium capitalize">{toneOfVoice}</span>
+                </div>
+                <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Word Count</span>
                   <span className="text-sm font-medium">{wordCount} words</span>
                 </div>
+                {dueDate && (
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Due Date</span>
+                    <span className="text-sm font-medium">{new Date(dueDate).toLocaleDateString()}</span>
+                  </div>
+                )}
               </div>
 
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
