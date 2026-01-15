@@ -28,12 +28,30 @@ interface ScoreProjection {
 export function PitchBuilderTab({ websiteId }: { websiteId: string }) {
     const [projection, setProjection] = useState<ScoreProjection | null>(null)
     const [loading, setLoading] = useState(false)
+    const [currentScore, setCurrentScore] = useState<number>(62)
     const [targetScore, setTargetScore] = useState(78)
     const [customMonths, setCustomMonths] = useState<number | null>(null)
     const [batchName, setBatchName] = useState('')
     const [creatingBatch, setCreatingBatch] = useState(false)
     const [generatingPitch, setGeneratingPitch] = useState(false)
     const [pitchContent, setPitchContent] = useState<{ format: string; content?: string; html?: string; subject?: string } | null>(null)
+
+    // Fetch current SEO score on mount
+    useEffect(() => {
+        const fetchCurrentScore = async () => {
+            try {
+                const response = await fetch(`/api/websites/${websiteId}`)
+                const data = await response.json()
+                if (data.success && data.website?.latest_audit_score) {
+                    setCurrentScore(data.website.latest_audit_score)
+                    setTargetScore(Math.min(data.website.latest_audit_score + 15, 95))
+                }
+            } catch (error) {
+                console.error('Failed to fetch website data:', error)
+            }
+        }
+        fetchCurrentScore()
+    }, [websiteId])
 
     const calculateProjection = async () => {
         setLoading(true)
@@ -165,20 +183,39 @@ export function PitchBuilderTab({ websiteId }: { websiteId: string }) {
                 <CardContent>
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium mb-2">
-                                Target SEO Score
-                            </label>
+                            <div className="flex justify-between items-center mb-2">
+                                <label className="text-sm font-medium">Target SEO Score (Drag to Set)</label>
+                                <div className="flex items-center gap-2">
+                                    <span className={`text-2xl font-bold ${currentScore >= 80 ? 'text-green-600' : currentScore >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>
+                                        {currentScore}
+                                    </span>
+                                    <ArrowRight className="w-5 h-5 text-gray-400" />
+                                    <span className={`text-2xl font-bold ${targetScore >= 80 ? 'text-green-600' : targetScore >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>
+                                        {targetScore}
+                                    </span>
+                                </div>
+                            </div>
                             <input
-                                type="number"
+                                type="range"
+                                min={Math.max(currentScore + 5, 40)}
+                                max="95"
                                 value={targetScore}
                                 onChange={(e) => setTargetScore(parseInt(e.target.value))}
-                                min="0"
-                                max="100"
-                                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-600"
+                                className="w-full h-3 rounded-lg appearance-none cursor-pointer"
+                                style={{
+                                    background: `linear-gradient(to right,
+                                      #fbbf24 0%,
+                                      #fbbf24 ${((currentScore - 30) / 65) * 100}%,
+                                      #4ade80 ${((currentScore - 30) / 65) * 100}%,
+                                      #4ade80 ${((targetScore - 30) / 65) * 100}%,
+                                      #e5e7eb ${((targetScore - 30) / 65) * 100}%,
+                                      #e5e7eb 100%)`
+                                }}
                             />
-                            <p className="text-xs text-muted-foreground mt-1">
-                                Recommended: 75-85 for most businesses
-                            </p>
+                            <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                                <span>Current: {currentScore}</span>
+                                <span>Target: {targetScore} (+{targetScore - currentScore})</span>
+                            </div>
                         </div>
 
                         <div>
