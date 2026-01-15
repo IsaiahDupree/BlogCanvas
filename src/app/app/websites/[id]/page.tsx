@@ -19,9 +19,13 @@ export default function WebsiteDetailPage() {
     const params = useParams()
     const [website, setWebsite] = useState<any>(null)
     const [loading, setLoading] = useState(true)
+    const [auditing, setAuditing] = useState(false)
+    const [auditError, setAuditError] = useState<string | null>(null)
+    const [topicClusters, setTopicClusters] = useState<any[]>([])
 
     useEffect(() => {
         fetchWebsite()
+        fetchTopicClusters()
     }, [params.id])
 
     const fetchWebsite = async () => {
@@ -35,6 +39,56 @@ export default function WebsiteDetailPage() {
             console.error('Failed to fetch website:', error)
         } finally {
             setLoading(false)
+        }
+    }
+
+    const fetchTopicClusters = async () => {
+        try {
+            const response = await fetch(`/api/websites/${params.id}/topic-clusters`)
+            const data = await response.json()
+            if (data.success) {
+                setTopicClusters(data.clusters || [])
+            }
+        } catch (error) {
+            console.error('Failed to fetch topic clusters:', error)
+        }
+    }
+
+    const runAudit = async () => {
+        if (!website) return
+
+        setAuditing(true)
+        setAuditError(null)
+
+        try {
+            const response = await fetch('/api/ai/website-audit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'full',
+                    websiteUrl: website.url,
+                    websiteId: params.id,
+                    saveResults: true
+                })
+            })
+
+            const data = await response.json()
+
+            if (!data.success) {
+                setAuditError(data.error || 'Audit failed')
+                return
+            }
+
+            // Refresh website data and topic clusters to show updated audit
+            await fetchWebsite()
+            await fetchTopicClusters()
+        } catch (error) {
+            console.error('Failed to run audit:', error)
+            setAuditError('Failed to run audit. Please try again.')
+        } finally {
+            setAuditing(false)
         }
     }
 
@@ -80,6 +134,11 @@ export default function WebsiteDetailPage() {
 
     const audit = website.latestAudit
 
+    // Calculate topic coverage
+    const coveredClusters = topicClusters.filter(c => c.currently_covered).length
+    const totalClusters = topicClusters.length
+    const coveragePercent = totalClusters > 0 ? Math.round((coveredClusters / totalClusters) * 100) : 0
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 p-6">
             <div className="max-w-7xl mx-auto">
@@ -103,16 +162,31 @@ export default function WebsiteDetailPage() {
                                 </a>
                             </div>
                         </div>
-                        <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
-                            <RefreshCw className="w-4 h-4 mr-2" />
-                            Re-analyze
+                        <Button
+                            className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white"
+                            onClick={runAudit}
+                            disabled={auditing}
+                        >
+                            <RefreshCw className={`w-4 h-4 mr-2 ${auditing ? 'animate-spin' : ''}`} />
+                            {auditing ? 'Running Audit...' : 'Run Audit'}
                         </Button>
                     </div>
                 </div>
 
+                {/* Error Display */}
+                {auditError && (
+                    <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+                        <AlertCircle className="w-5 h-5 text-red-600 mt-0.5" />
+                        <div>
+                            <p className="font-semibold text-red-900">Audit Failed</p>
+                            <p className="text-sm text-red-700">{auditError}</p>
+                        </div>
+                    </div>
+                )}
+
                 {/* SEO Score Overview */}
                 {audit && (
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
                         {/* Main Score */}
                         <Card className="md:col-span-2 bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-200">
                             <CardContent className="p-6">
@@ -185,6 +259,20 @@ export default function WebsiteDetailPage() {
                                 <p className="text-lg font-semibold mb-2">Completed</p>
                                 <p className="text-xs text-muted-foreground">
                                     Last analyzed: {new Date(audit.audit_date).toLocaleDateString()}
+                                </p>
+                            </CardContent>
+                        </Card>
+
+                        {/* Topic Coverage */}
+                        <Card>
+                            <CardContent className="p-6">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <TrendingUp className="w-5 h-5 text-purple-600" />
+                                    <p className="text-sm text-muted-foreground">Topic Coverage</p>
+                                </div>
+                                <p className="text-4xl font-bold">{coveragePercent}%</p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    {coveredClusters} of {totalClusters} clusters
                                 </p>
                             </CardContent>
                         </Card>
