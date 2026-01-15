@@ -19,7 +19,9 @@ import {
     BarChart3,
     ThumbsUp,
     ThumbsDown,
-    Check
+    Check,
+    Image as ImageIcon,
+    Palette
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -53,12 +55,31 @@ interface StylesToKeep {
     auto_learned: string[]
 }
 
+interface ImageGuidelines {
+    featured_image_specs: {
+        aspect_ratio: string
+        min_width: number
+        min_height: number
+        preferred_format: string
+    }
+    ai_generation_settings: {
+        provider: string
+        style: string
+        banned_elements: string[]
+    }
+    alt_text_rules: {
+        max_length: number
+        include_keywords: boolean
+        avoid_phrases: string[]
+    }
+}
+
 interface BrandGuide {
     id: string
     client_id: string
     styles_to_avoid: StylesToAvoid
     styles_to_keep: StylesToKeep
-    image_guidelines: any
+    image_guidelines: ImageGuidelines
     title_guidelines: any
 }
 
@@ -102,6 +123,20 @@ export default function BrandGuideEditorPage() {
         top_performing_style: ''
     })
 
+    // Image Guidelines State
+    const [aspectRatio, setAspectRatio] = useState('16:9')
+    const [minWidth, setMinWidth] = useState(1200)
+    const [minHeight, setMinHeight] = useState(630)
+    const [preferredFormat, setPreferredFormat] = useState('jpg')
+    const [aiProvider, setAiProvider] = useState('dalle')
+    const [aiStyle, setAiStyle] = useState('photorealistic')
+    const [bannedElements, setBannedElements] = useState<string[]>([])
+    const [newBannedElement, setNewBannedElement] = useState('')
+    const [altTextMaxLength, setAltTextMaxLength] = useState(125)
+    const [altTextIncludeKeywords, setAltTextIncludeKeywords] = useState(true)
+    const [avoidPhrases, setAvoidPhrases] = useState<string[]>([])
+    const [newAvoidPhrase, setNewAvoidPhrase] = useState('')
+
     // Load brand guide data
     useEffect(() => {
         async function loadBrandGuide() {
@@ -144,6 +179,37 @@ export default function BrandGuideEditorPage() {
                         avg_engagement_rate: stylesToKeep.engagement_metrics?.avg_engagement_rate,
                         top_performing_style: stylesToKeep.engagement_metrics?.top_performing_style || ''
                     })
+
+                    // Load image_guidelines data
+                    const imageGuidelines = data.brandGuide.image_guidelines || {
+                        featured_image_specs: {
+                            aspect_ratio: '16:9',
+                            min_width: 1200,
+                            min_height: 630,
+                            preferred_format: 'jpg'
+                        },
+                        ai_generation_settings: {
+                            provider: 'dalle',
+                            style: 'photorealistic',
+                            banned_elements: []
+                        },
+                        alt_text_rules: {
+                            max_length: 125,
+                            include_keywords: true,
+                            avoid_phrases: ['image of', 'picture of']
+                        }
+                    }
+
+                    setAspectRatio(imageGuidelines.featured_image_specs?.aspect_ratio || '16:9')
+                    setMinWidth(imageGuidelines.featured_image_specs?.min_width || 1200)
+                    setMinHeight(imageGuidelines.featured_image_specs?.min_height || 630)
+                    setPreferredFormat(imageGuidelines.featured_image_specs?.preferred_format || 'jpg')
+                    setAiProvider(imageGuidelines.ai_generation_settings?.provider || 'dalle')
+                    setAiStyle(imageGuidelines.ai_generation_settings?.style || 'photorealistic')
+                    setBannedElements(imageGuidelines.ai_generation_settings?.banned_elements || [])
+                    setAltTextMaxLength(imageGuidelines.alt_text_rules?.max_length || 125)
+                    setAltTextIncludeKeywords(imageGuidelines.alt_text_rules?.include_keywords ?? true)
+                    setAvoidPhrases(imageGuidelines.alt_text_rules?.avoid_phrases || ['image of', 'picture of'])
                 }
             } catch (error) {
                 console.error('Error loading brand guide:', error)
@@ -179,12 +245,32 @@ export default function BrandGuideEditorPage() {
                 auto_learned: []
             }
 
+            const imageGuidelines: ImageGuidelines = {
+                featured_image_specs: {
+                    aspect_ratio: aspectRatio,
+                    min_width: minWidth,
+                    min_height: minHeight,
+                    preferred_format: preferredFormat
+                },
+                ai_generation_settings: {
+                    provider: aiProvider,
+                    style: aiStyle,
+                    banned_elements: bannedElements
+                },
+                alt_text_rules: {
+                    max_length: altTextMaxLength,
+                    include_keywords: altTextIncludeKeywords,
+                    avoid_phrases: avoidPhrases
+                }
+            }
+
             const response = await fetch(`/api/clients/${clientId}/brand-guide`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     styles_to_avoid: stylesToAvoid,
-                    styles_to_keep: stylesToKeep
+                    styles_to_keep: stylesToKeep,
+                    image_guidelines: imageGuidelines
                 })
             })
 
@@ -257,6 +343,29 @@ export default function BrandGuideEditorPage() {
 
     const removeSuccessfulExample = (index: number) => {
         setSuccessfulExamples(successfulExamples.filter((_, i) => i !== index))
+    }
+
+    // Image Guidelines Helper Functions
+    const addBannedElement = () => {
+        if (newBannedElement.trim()) {
+            setBannedElements([...bannedElements, newBannedElement.trim()])
+            setNewBannedElement('')
+        }
+    }
+
+    const removeBannedElement = (index: number) => {
+        setBannedElements(bannedElements.filter((_, i) => i !== index))
+    }
+
+    const addAvoidPhrase = () => {
+        if (newAvoidPhrase.trim()) {
+            setAvoidPhrases([...avoidPhrases, newAvoidPhrase.trim()])
+            setNewAvoidPhrase('')
+        }
+    }
+
+    const removeAvoidPhrase = (index: number) => {
+        setAvoidPhrases(avoidPhrases.filter((_, i) => i !== index))
     }
 
     if (loading) {
@@ -953,9 +1062,329 @@ export default function BrandGuideEditorPage() {
                 )}
 
                 {activeTab === 'images' && (
-                    <Card className="p-8 text-center text-gray-500">
-                        <p>Image Guidelines section coming soon...</p>
-                    </Card>
+                    <div className="space-y-6">
+                        {/* Featured Image Specs */}
+                        <Card className="p-6">
+                            <div className="mb-4">
+                                <h2 className="text-xl font-semibold text-gray-900 mb-1 flex items-center gap-2">
+                                    <ImageIcon className="w-5 h-5 text-indigo-600" />
+                                    Featured Image Specifications
+                                </h2>
+                                <p className="text-sm text-gray-600">
+                                    Define technical requirements for blog featured images
+                                </p>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Aspect Ratio
+                                    </label>
+                                    <select
+                                        value={aspectRatio}
+                                        onChange={(e) => setAspectRatio(e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    >
+                                        <option value="16:9">16:9 (Widescreen)</option>
+                                        <option value="4:3">4:3 (Standard)</option>
+                                        <option value="1:1">1:1 (Square)</option>
+                                        <option value="3:2">3:2 (Classic)</option>
+                                        <option value="2:1">2:1 (Panoramic)</option>
+                                    </select>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Minimum Width (px)
+                                        </label>
+                                        <Input
+                                            type="number"
+                                            value={minWidth}
+                                            onChange={(e) => setMinWidth(parseInt(e.target.value) || 1200)}
+                                            min="100"
+                                            step="50"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Minimum Height (px)
+                                        </label>
+                                        <Input
+                                            type="number"
+                                            value={minHeight}
+                                            onChange={(e) => setMinHeight(parseInt(e.target.value) || 630)}
+                                            min="100"
+                                            step="50"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Preferred Format
+                                    </label>
+                                    <select
+                                        value={preferredFormat}
+                                        onChange={(e) => setPreferredFormat(e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    >
+                                        <option value="jpg">JPG (Best for photos)</option>
+                                        <option value="png">PNG (Best for graphics)</option>
+                                        <option value="webp">WebP (Modern, smaller size)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </Card>
+
+                        {/* AI Generation Settings */}
+                        <Card className="p-6">
+                            <div className="mb-4">
+                                <h2 className="text-xl font-semibold text-gray-900 mb-1 flex items-center gap-2">
+                                    <Palette className="w-5 h-5 text-indigo-600" />
+                                    AI Generation Settings
+                                </h2>
+                                <p className="text-sm text-gray-600">
+                                    Configure how AI generates images for this client
+                                </p>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        AI Provider
+                                    </label>
+                                    <select
+                                        value={aiProvider}
+                                        onChange={(e) => setAiProvider(e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    >
+                                        <option value="dalle">DALL-E (OpenAI)</option>
+                                        <option value="midjourney">Midjourney</option>
+                                        <option value="stable-diffusion">Stable Diffusion</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        AI Style
+                                    </label>
+                                    <select
+                                        value={aiStyle}
+                                        onChange={(e) => setAiStyle(e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    >
+                                        <option value="photorealistic">Photorealistic</option>
+                                        <option value="artistic">Artistic</option>
+                                        <option value="illustration">Illustration</option>
+                                        <option value="minimalist">Minimalist</option>
+                                        <option value="abstract">Abstract</option>
+                                        <option value="corporate">Corporate</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Banned Elements
+                                    </label>
+                                    <p className="text-xs text-gray-500 mb-2">
+                                        Elements that should never appear in generated images
+                                    </p>
+                                    <div className="flex gap-2 mb-3">
+                                        <Input
+                                            placeholder="e.g., 'people', 'text overlays', 'logos'"
+                                            value={newBannedElement}
+                                            onChange={(e) => setNewBannedElement(e.target.value)}
+                                            onKeyPress={(e) => e.key === 'Enter' && addBannedElement()}
+                                            className="flex-1"
+                                        />
+                                        <Button onClick={addBannedElement} variant="outline">
+                                            <Plus className="w-4 h-4 mr-1" />
+                                            Add
+                                        </Button>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                        {bannedElements.length === 0 ? (
+                                            <p className="text-sm text-gray-500 italic">
+                                                No banned elements. Add elements to avoid in images.
+                                            </p>
+                                        ) : (
+                                            bannedElements.map((element, index) => (
+                                                <Badge
+                                                    key={index}
+                                                    variant="secondary"
+                                                    className="px-3 py-1.5 flex items-center gap-2 bg-red-50 text-red-700 border-red-200"
+                                                >
+                                                    {element}
+                                                    <button
+                                                        onClick={() => removeBannedElement(index)}
+                                                        className="hover:text-red-900"
+                                                    >
+                                                        <X className="w-3 h-3" />
+                                                    </button>
+                                                </Badge>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </Card>
+
+                        {/* Alt Text Rules */}
+                        <Card className="p-6">
+                            <div className="mb-4">
+                                <h2 className="text-xl font-semibold text-gray-900 mb-1 flex items-center gap-2">
+                                    <Settings className="w-5 h-5 text-indigo-600" />
+                                    Alt Text Rules
+                                </h2>
+                                <p className="text-sm text-gray-600">
+                                    Guidelines for generating accessible image descriptions
+                                </p>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Maximum Alt Text Length
+                                    </label>
+                                    <div className="flex items-center gap-4">
+                                        <Input
+                                            type="number"
+                                            value={altTextMaxLength}
+                                            onChange={(e) => setAltTextMaxLength(parseInt(e.target.value) || 125)}
+                                            className="w-32"
+                                            min="50"
+                                            max="250"
+                                        />
+                                        <span className="text-sm text-gray-600">characters</span>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+                                    <input
+                                        type="checkbox"
+                                        id="include-keywords"
+                                        checked={altTextIncludeKeywords}
+                                        onChange={(e) => setAltTextIncludeKeywords(e.target.checked)}
+                                        className="w-4 h-4 text-indigo-600 rounded"
+                                    />
+                                    <label htmlFor="include-keywords" className="text-sm font-medium text-gray-700">
+                                        Include target keywords in alt text when relevant
+                                    </label>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Phrases to Avoid in Alt Text
+                                    </label>
+                                    <p className="text-xs text-gray-500 mb-2">
+                                        Redundant phrases that should be excluded
+                                    </p>
+                                    <div className="flex gap-2 mb-3">
+                                        <Input
+                                            placeholder="e.g., 'image of', 'photo showing'"
+                                            value={newAvoidPhrase}
+                                            onChange={(e) => setNewAvoidPhrase(e.target.value)}
+                                            onKeyPress={(e) => e.key === 'Enter' && addAvoidPhrase()}
+                                            className="flex-1"
+                                        />
+                                        <Button onClick={addAvoidPhrase} variant="outline">
+                                            <Plus className="w-4 h-4 mr-1" />
+                                            Add
+                                        </Button>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                        {avoidPhrases.length === 0 ? (
+                                            <p className="text-sm text-gray-500 italic">
+                                                No phrases to avoid. Common ones: "image of", "picture of"
+                                            </p>
+                                        ) : (
+                                            avoidPhrases.map((phrase, index) => (
+                                                <Badge
+                                                    key={index}
+                                                    variant="secondary"
+                                                    className="px-3 py-1.5 flex items-center gap-2 bg-orange-50 text-orange-700 border-orange-200"
+                                                >
+                                                    {phrase}
+                                                    <button
+                                                        onClick={() => removeAvoidPhrase(index)}
+                                                        className="hover:text-orange-900"
+                                                    >
+                                                        <X className="w-3 h-3" />
+                                                    </button>
+                                                </Badge>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </Card>
+
+                        {/* Preview Section */}
+                        <Card className="p-6 bg-indigo-50 border-indigo-200">
+                            <div className="mb-4">
+                                <h3 className="font-semibold text-indigo-900 mb-1 flex items-center gap-2">
+                                    <AlertCircle className="w-5 h-5 text-indigo-600" />
+                                    Image Generation Guidelines Summary
+                                </h3>
+                                <p className="text-sm text-indigo-700 mb-4">
+                                    All AI-generated images will follow these specifications
+                                </p>
+                            </div>
+
+                            <div className="space-y-3">
+                                <div className="bg-white p-4 rounded-lg border border-indigo-200">
+                                    <h4 className="text-sm font-semibold text-gray-900 mb-3">Active Settings:</h4>
+                                    <div className="space-y-2 text-sm">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-gray-600">Dimensions:</span>
+                                            <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                                                {minWidth}×{minHeight}px ({aspectRatio})
+                                            </Badge>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-gray-600">Format:</span>
+                                            <Badge variant="secondary" className="bg-green-100 text-green-700">
+                                                {preferredFormat.toUpperCase()}
+                                            </Badge>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-gray-600">AI Style:</span>
+                                            <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+                                                {aiStyle} ({aiProvider})
+                                            </Badge>
+                                        </div>
+                                        {bannedElements.length > 0 && (
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-gray-600">Banned elements:</span>
+                                                <Badge variant="secondary" className="bg-red-100 text-red-700">
+                                                    {bannedElements.length} items
+                                                </Badge>
+                                            </div>
+                                        )}
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-gray-600">Alt text max:</span>
+                                            <Badge variant="secondary" className="bg-orange-100 text-orange-700">
+                                                {altTextMaxLength} chars
+                                            </Badge>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-white p-4 rounded-lg border border-indigo-200">
+                                    <h4 className="text-sm font-semibold text-gray-900 mb-2">Example:</h4>
+                                    <div className="space-y-2 text-xs text-gray-600">
+                                        <p>✓ Generated images will be {minWidth}×{minHeight}px in {aspectRatio} ratio</p>
+                                        <p>✓ Style: {aiStyle} using {aiProvider}</p>
+                                        {bannedElements.length > 0 && (
+                                            <p>✓ Will avoid: {bannedElements.slice(0, 3).join(', ')}{bannedElements.length > 3 ? '...' : ''}</p>
+                                        )}
+                                        <p>✓ Alt text under {altTextMaxLength} characters{altTextIncludeKeywords ? ' with keywords' : ''}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </Card>
+                    </div>
                 )}
 
                 {activeTab === 'titles' && (
