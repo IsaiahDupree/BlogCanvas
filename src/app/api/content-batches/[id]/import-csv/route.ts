@@ -5,12 +5,13 @@ import { isValidSearchIntent } from '@/lib/search-intent';
 import { isValidToneVoice } from '@/lib/tone-voice';
 
 /**
- * Import blog posts from CSV file
+ * Import blog posts from CSV file with flexible column mapping
  * POST /api/content-batches/[id]/import-csv
- * 
- * Expected CSV format:
- * topic, target_keyword, target_wordcount, topic_cluster, priority, notes
- * "How to Use AI", "AI tools", 1500, "AI Technology", 1, "Focus on practical examples"
+ *
+ * Supports custom column mapping via formData:
+ * - file: CSV file
+ * - column_mapping: JSON string mapping internal fields to CSV columns
+ * - custom_fields: JSON string defining custom fields
  */
 export async function POST(
     request: NextRequest,
@@ -20,12 +21,34 @@ export async function POST(
         const { id } = await params;
         const formData = await request.formData();
         const file = formData.get('file') as File;
+        const columnMappingStr = formData.get('column_mapping') as string;
+        const customFieldsStr = formData.get('custom_fields') as string;
 
         if (!file) {
             return NextResponse.json(
                 { success: false, error: 'No file provided' },
                 { status: 400 }
             );
+        }
+
+        // Parse column mapping and custom fields if provided
+        let columnMapping: Record<string, string> = {};
+        let customFields: Array<{name: string, csvColumn: string, type: string}> = [];
+
+        if (columnMappingStr) {
+            try {
+                columnMapping = JSON.parse(columnMappingStr);
+            } catch (e) {
+                console.error('Invalid column_mapping JSON:', e);
+            }
+        }
+
+        if (customFieldsStr) {
+            try {
+                customFields = JSON.parse(customFieldsStr);
+            } catch (e) {
+                console.error('Invalid custom_fields JSON:', e);
+            }
         }
 
         // Verify batch exists
@@ -72,23 +95,56 @@ export async function POST(
             (clusters || []).map((c: any) => [c.name.toLowerCase(), c.id])
         );
 
+        // Helper function to extract value from CSV row using mapping
+        const getValue = (row: Record<string, string>, internalField: string): string => {
+            // Use custom mapping if available
+            if (columnMapping[internalField]) {
+                return row[columnMapping[internalField]] || '';
+            }
+
+            // Fallback to default column name variations
+            const synonyms: Record<string, string[]> = {
+                'topic': ['topic', 'title', 'Topic', 'Title', 'post_title', 'Post Title'],
+                'target_keyword': ['target_keyword', 'keyword', 'keywords', 'Target Keyword', 'Keyword'],
+                'target_wordcount': ['target_wordcount', 'wordcount', 'Target Wordcount', 'Wordcount', 'word_count'],
+                'topic_cluster': ['topic_cluster', 'cluster', 'Topic Cluster', 'Cluster', 'category'],
+                'priority': ['priority', 'Priority'],
+                'notes': ['notes', 'description', 'Notes', 'Description'],
+                'search_intent': ['search_intent', 'intent', 'Search Intent', 'Intent'],
+                'tone_voice': ['tone_voice', 'tone', 'Tone Voice', 'Tone', 'voice'],
+                'due_date': ['due_date', 'Due Date', 'due date', 'deadline'],
+                'publish_window_start': ['publish_window_start', 'Publish Window Start', 'publish window start'],
+                'publish_window_end': ['publish_window_end', 'Publish Window End', 'publish window end']
+            };
+
+            const possibleColumns = synonyms[internalField] || [internalField];
+            for (const col of possibleColumns) {
+                if (row[col]) return row[col];
+            }
+            return '';
+        };
+
         // Process each row and create blog post
         const createdPosts = [];
         const errors = [];
 
         for (let i = 0; i < records.length; i++) {
             const row: Record<string, string> = records[i];
-            const topic = row.topic || row.title || row['Topic'] || row['Title'];
-            const targetKeyword = row.target_keyword || row.keyword || row['Target Keyword'] || row['Keyword'] || '';
-            const targetWordcount = parseInt(row.target_wordcount || row.wordcount || row['Target Wordcount'] || row['Wordcount'] || '1500') || 1500;
-            const clusterName = row.topic_cluster || row.cluster || row['Topic Cluster'] || row['Cluster'] || '';
-            const priority = parseInt(row.priority || row['Priority'] || '0') || 0;
-            const notes = row.notes || row.description || row['Notes'] || row['Description'] || '';
-            const searchIntent = row.search_intent || row.intent || row['Search Intent'] || row['Intent'] || '';
-            const toneVoice = row.tone_voice || row.tone || row['Tone Voice'] || row['Tone'] || '';
-            const dueDate = row.due_date || row['due date'] || row['Due Date'] || null;
-            const publishWindowStart = row.publish_window_start || row['publish window start'] || row['Publish Window Start'] || null;
-            const publishWindowEnd = row.publish_window_end || row['publish window end'] || row['Publish Window End'] || null;
+
+            // Extract standard fields using flexible mapping
+            const topic = getValue(row, 'topic');
+            const targetKeyword = getValue(row, 'target_keyword');
+            const targetWordcountStr = getValue(row, 'target_wordcount');
+            const targetWordcount = parseInt(targetWordcountStr || '1500') || 1500;
+            const clusterName = getValue(row, 'topic_cluster');
+            const priorityStr = getValue(row, 'priority');
+            const priority = parseInt(priorityStr || '0') || 0;
+            const notes = getValue(row, 'notes');
+            const searchIntent = getValue(row, 'search_intent');
+            const toneVoice = getValue(row, 'tone_voice');
+            const dueDate = getValue(row, 'due_date') || null;
+            const publishWindowStart = getValue(row, 'publish_window_start') || null;
+            const publishWindowEnd = getValue(row, 'publish_window_end') || null;
 
             if (!topic) {
                 errors.push(`Row ${i + 2}: Missing topic/title`);
@@ -108,6 +164,25 @@ export async function POST(
             // Validate and set tone/voice
             const validTone = isValidToneVoice(toneVoice.toLowerCase()) ? toneVoice.toLowerCase() : null;
 
+            // Extract custom fields
+            const customFieldsData: Record<string, any> = {};
+            for (const customField of customFields) {
+                if (customField.csvColumn && row[customField.csvColumn]) {
+                    let value: any = row[customField.csvColumn];
+
+                    // Type conversion
+                    if (customField.type === 'number') {
+                        value = parseFloat(value) || 0;
+                    } else if (customField.type === 'boolean') {
+                        value = value.toLowerCase() === 'true' || value === '1';
+                    } else if (customField.type === 'date') {
+                        value = value; // Keep as string for now
+                    }
+
+                    customFieldsData[customField.name] = value;
+                }
+            }
+
             // Create blog post
             const { data: post, error: postError } = await supabaseAdmin
                 .from('blog_posts')
@@ -126,7 +201,8 @@ export async function POST(
                     draft: {
                         topic: topic,
                         notes: notes,
-                        priority: priority
+                        priority: priority,
+                        custom_fields: customFieldsData
                     } as any
                 })
                 .select()

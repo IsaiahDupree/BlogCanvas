@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import ImageGenerationDialog from '@/components/images/ImageGenerationDialog'
 import SchedulePublishDialog from '@/components/publishing/SchedulePublishDialog'
 import ProjectedSEOScore from '@/components/analytics/ProjectedSEOScore'
-import CSVImportModal from '@/components/batches/CSVImportModal'
+import CSVImportModalV2 from '@/components/batches/CSVImportModalV2'
 
 export default function BatchDetailPage() {
     const params = useParams()
@@ -673,11 +673,12 @@ export default function BatchDetailPage() {
                 />
             )}
 
-            {/* CSV Import Modal */}
-            <CSVImportModal
+            {/* CSV Import Modal with Column Mapping - feat-127 */}
+            <CSVImportModalV2
                 isOpen={importModalOpen}
                 onClose={() => setImportModalOpen(false)}
                 batchId={params.id as string}
+                clientId={batch?.client_id || ''}
                 onImportComplete={handleImportComplete}
             />
         </div>
