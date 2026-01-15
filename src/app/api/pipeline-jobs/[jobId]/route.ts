@@ -59,6 +59,7 @@ export async function PATCH(
             status,
             current_step,
             progress,
+            eta_seconds,
             crawl_result,
             analyze_result,
             gaps_result,
@@ -79,6 +80,7 @@ export async function PATCH(
         if (status !== undefined) updateData.status = status
         if (current_step !== undefined) updateData.current_step = current_step
         if (progress !== undefined) updateData.progress = progress
+        if (eta_seconds !== undefined) updateData.eta_seconds = eta_seconds
         if (crawl_result !== undefined) updateData.crawl_result = crawl_result
         if (analyze_result !== undefined) updateData.analyze_result = analyze_result
         if (gaps_result !== undefined) updateData.gaps_result = gaps_result

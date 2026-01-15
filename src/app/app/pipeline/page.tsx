@@ -51,6 +51,7 @@ interface PipelineJob {
   status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled'
   current_step?: string
   progress: number
+  eta_seconds?: number
   seo_score?: number
   pages_indexed?: number
   content_gaps?: number
@@ -93,6 +94,55 @@ interface AnalysisResult {
   topPerformers: string[]
   underperformers: string[]
   topics: TopicCluster[]
+}
+
+// Helper function to format ETA
+const formatETA = (seconds: number | null | undefined): string => {
+  if (!seconds || seconds <= 0) return 'Calculating...'
+
+  const mins = Math.floor(seconds / 60)
+  const secs = seconds % 60
+
+  if (mins > 60) {
+    const hours = Math.floor(mins / 60)
+    const remainingMins = mins % 60
+    return `${hours}h ${remainingMins}m`
+  }
+
+  if (mins > 0) {
+    return `${mins}m ${secs}s`
+  }
+  return `${secs}s`
+}
+
+// Step definitions for progress visualization
+const PIPELINE_STEPS = [
+  { id: 'crawl', label: 'Crawl & Index', progress: 10 },
+  { id: 'analyze', label: 'SEO Analysis', progress: 35 },
+  { id: 'gaps', label: 'Gap Analysis', progress: 60 },
+  { id: 'topics', label: 'Topic Generation', progress: 85 }
+]
+
+// Get current step info based on progress
+const getCurrentStepInfo = (progress: number, currentStep?: string) => {
+  if (progress === 100) return { label: 'Completed', index: 4 }
+
+  // Find step by current_step name first
+  if (currentStep) {
+    const stepIndex = PIPELINE_STEPS.findIndex(s => s.id === currentStep)
+    if (stepIndex >= 0) {
+      return { label: PIPELINE_STEPS[stepIndex].label, index: stepIndex }
+    }
+  }
+
+  // Otherwise find by progress percentage
+  for (let i = PIPELINE_STEPS.length - 1; i >= 0; i--) {
+    if (progress >= PIPELINE_STEPS[i].progress) {
+      return { label: PIPELINE_STEPS[i].label, index: i }
+    }
+  }
+
+  return { label: 'Initializing', index: -1 }
 }
 
 export default function PipelinePage() {
@@ -138,6 +188,27 @@ export default function PipelinePage() {
   useEffect(() => {
     fetchInitialData()
   }, [])
+
+  // Real-time polling for running jobs
+  useEffect(() => {
+    const hasRunningJobs = recentJobs.some(job => job.status === 'running')
+
+    if (!hasRunningJobs) return
+
+    const pollInterval = setInterval(async () => {
+      try {
+        const response = await fetch('/api/pipeline-jobs?limit=10')
+        const data = await response.json()
+        if (data.jobs) {
+          setRecentJobs(data.jobs)
+        }
+      } catch (error) {
+        console.error('Failed to poll jobs:', error)
+      }
+    }, 3000) // Poll every 3 seconds
+
+    return () => clearInterval(pollInterval)
+  }, [recentJobs])
 
   const fetchInitialData = async () => {
     try {
@@ -306,15 +377,35 @@ export default function PipelinePage() {
 
     // Create job in database
     const jobId = await createJob()
+    const startTime = Date.now()
+
     if (jobId) {
       await updateJob(jobId, { status: 'running', started_at: new Date().toISOString() })
+    }
+
+    // Helper to calculate ETA based on progress and elapsed time
+    const updateETA = async (currentProgress: number) => {
+      if (!jobId || currentProgress <= 0) return
+
+      const elapsedMs = Date.now() - startTime
+      const elapsedSeconds = Math.floor(elapsedMs / 1000)
+      const progressRate = currentProgress / elapsedSeconds // progress per second
+      const remainingProgress = 100 - currentProgress
+      const etaSeconds = progressRate > 0 ? Math.ceil(remainingProgress / progressRate) : null
+
+      if (etaSeconds) {
+        await updateJob(jobId, { eta_seconds: etaSeconds })
+      }
     }
 
     try {
       // Step 1: Crawl website
       setCurrentStep(0)
       updateStep('crawl', 'running')
-      if (jobId) await updateJob(jobId, { current_step: 'crawl', progress: 10 })
+      if (jobId) {
+        await updateJob(jobId, { current_step: 'crawl', progress: 10 })
+        await updateETA(10)
+      }
 
       // Check for cancellation
       if (await checkIfCancelled(jobId)) {
@@ -339,7 +430,10 @@ export default function PipelinePage() {
         throw new Error(crawlData.error || 'Failed to crawl website')
       }
       updateStep('crawl', 'completed', crawlData)
-      if (jobId) await updateJob(jobId, { crawl_result: crawlData, progress: 25 })
+      if (jobId) {
+        await updateJob(jobId, { crawl_result: crawlData, progress: 25 })
+        await updateETA(25)
+      }
 
       // Check for cancellation
       if (await checkIfCancelled(jobId)) {
@@ -349,17 +443,23 @@ export default function PipelinePage() {
       // Step 2: Analyze SEO
       setCurrentStep(1)
       updateStep('analyze', 'running')
-      if (jobId) await updateJob(jobId, { current_step: 'analyze', progress: 35 })
+      if (jobId) {
+        await updateJob(jobId, { current_step: 'analyze', progress: 35 })
+        await updateETA(35)
+      }
       
       const seoScore = crawlData.audit?.baseline_score || crawlData.score || 50
       const pagesIndexed = crawlData.audit?.pages_indexed || crawlData.pages?.length || 0
       updateStep('analyze', 'completed', { seoScore, pagesIndexed })
-      if (jobId) await updateJob(jobId, {
-        analyze_result: { seoScore, pagesIndexed },
-        seo_score: seoScore,
-        pages_indexed: pagesIndexed,
-        progress: 50
-      })
+      if (jobId) {
+        await updateJob(jobId, {
+          analyze_result: { seoScore, pagesIndexed },
+          seo_score: seoScore,
+          pages_indexed: pagesIndexed,
+          progress: 50
+        })
+        await updateETA(50)
+      }
 
       // Check for cancellation
       if (await checkIfCancelled(jobId)) {
@@ -369,7 +469,10 @@ export default function PipelinePage() {
       // Step 3: Content Gap Analysis
       setCurrentStep(2)
       updateStep('gaps', 'running')
-      if (jobId) await updateJob(jobId, { current_step: 'gaps', progress: 60 })
+      if (jobId) {
+        await updateJob(jobId, { current_step: 'gaps', progress: 60 })
+        await updateETA(60)
+      }
       
       const gapsRes = await fetch('/api/ai/content-analysis', {
         method: 'POST',
@@ -383,7 +486,10 @@ export default function PipelinePage() {
       })
       const gapsData = await gapsRes.json()
       updateStep('gaps', 'completed', gapsData)
-      if (jobId) await updateJob(jobId, { gaps_result: gapsData, progress: 75 })
+      if (jobId) {
+        await updateJob(jobId, { gaps_result: gapsData, progress: 75 })
+        await updateETA(75)
+      }
 
       // Check for cancellation
       if (await checkIfCancelled(jobId)) {
@@ -393,7 +499,10 @@ export default function PipelinePage() {
       // Step 4: Generate Topics
       setCurrentStep(3)
       updateStep('topics', 'running')
-      if (jobId) await updateJob(jobId, { current_step: 'topics', progress: 85 })
+      if (jobId) {
+        await updateJob(jobId, { current_step: 'topics', progress: 85 })
+        await updateETA(85)
+      }
       
       const topicsRes = await fetch('/api/ai/topic-clusters', {
         method: 'POST',
@@ -435,12 +544,13 @@ export default function PipelinePage() {
 
       // Update job with final results
       if (jobId) {
-        await updateJob(jobId, { 
+        await updateJob(jobId, {
           status: 'completed',
           topics_result: topicsData,
           content_gaps: finalResult.contentGaps,
           topics_generated: topics.length,
           progress: 100,
+          eta_seconds: null,
           completed_at: new Date().toISOString()
         })
       }
@@ -1046,19 +1156,55 @@ Your CSM Team`
                         </div>
                       </div>
                       {job.status === 'running' && (
-                        <div className="mt-3 ml-16">
+                        <div className="mt-3 ml-16 space-y-3">
+                          {/* Progress Bar */}
                           <div className="flex items-center gap-3">
                             <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
-                              <div 
+                              <div
                                 className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-500"
                                 style={{ width: `${job.progress}%` }}
                               />
                             </div>
                             <span className="text-sm font-medium text-indigo-600">{job.progress}%</span>
                           </div>
-                          <p className="text-xs text-slate-500 mt-1">
-                            Current step: {job.current_step || 'Initializing...'}
-                          </p>
+
+                          {/* Current Step and ETA */}
+                          <div className="flex items-center justify-between">
+                            <p className="text-xs text-slate-600 font-medium">
+                              {getCurrentStepInfo(job.progress, job.current_step).label}
+                            </p>
+                            {job.eta_seconds && (
+                              <div className="flex items-center gap-1 text-xs text-slate-500">
+                                <Clock className="w-3 h-3" />
+                                <span>{formatETA(job.eta_seconds)}</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Step Indicators */}
+                          <div className="flex items-center gap-1">
+                            {PIPELINE_STEPS.map((step, index) => {
+                              const currentStepIndex = getCurrentStepInfo(job.progress, job.current_step).index
+                              const isCompleted = index < currentStepIndex
+                              const isCurrent = index === currentStepIndex
+                              const isPending = index > currentStepIndex
+
+                              return (
+                                <div
+                                  key={step.id}
+                                  className="flex-1 h-1 rounded-full transition-all duration-300"
+                                  style={{
+                                    backgroundColor: isCompleted
+                                      ? '#10b981'
+                                      : isCurrent
+                                        ? '#6366f1'
+                                        : '#e2e8f0'
+                                  }}
+                                  title={step.label}
+                                />
+                              )
+                            })}
+                          </div>
                         </div>
                       )}
                     </div>
