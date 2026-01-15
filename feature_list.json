@@ -1395,7 +1395,9 @@
         "Sign-off includes timestamp",
         "Notes can be added"
       ],
-      "passes": false
+      "passes": true,
+      "implemented_at": "2026-01-15T22:30:00Z",
+      "notes": "Complete editor diff view and sign-off toggle implementation. Diff view already existed via DiffViewer component showing changes between revisions. Added: database migration (20260115220000_editor_sign_off.sql) with editor_signed_off, editor_signed_off_by, editor_signed_off_at, editor_sign_off_notes fields. API endpoint (/api/blog-posts/[id]/editor-sign-off) for POST/GET sign-off operations. EditorSignOffToggle component with notes input, timestamp tracking, and toggle functionality. Updated /app/posts/[postId]/history page to include sign-off toggle above revision history. Updated /app/review Kanban board to show '✓ Editor Approved' badge on signed-off posts and made post titles link to history page for review. All acceptance criteria verified: diff view shows changes between revisions, editor can toggle sign-off with 'Sign Off for Client Review' button, sign-off includes timestamp (editor_signed_off_at), optional notes can be added during sign-off process."
     },
     {
       "id": "feat-062",

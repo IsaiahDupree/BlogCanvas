@@ -4,6 +4,7 @@ import { use } from 'react'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import RevisionHistory from '@/components/revisions/RevisionHistory'
+import EditorSignOffToggle from '@/components/editor/EditorSignOffToggle'
 
 export default function PostHistoryPage({ params }: { params: Promise<{ postId: string }> }) {
   const { postId } = use(params)
@@ -19,6 +20,11 @@ export default function PostHistoryPage({ params }: { params: Promise<{ postId: 
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Post
         </Link>
+      </div>
+
+      {/* Editor Sign-Off Toggle */}
+      <div className="max-w-4xl mx-auto mb-6">
+        <EditorSignOffToggle postId={postId} />
       </div>
 
       {/* Revision History */}

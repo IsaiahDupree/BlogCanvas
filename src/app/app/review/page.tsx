@@ -15,6 +15,7 @@ interface Post {
     seo_quality_score: number | null
     target_keyword: string | null
     content_batch_id: string
+    editor_signed_off: boolean | null
 }
 
 interface KanbanColumn {
@@ -231,9 +232,11 @@ export default function ReviewBoardPage() {
                                                 <div className="space-y-3">
                                                     {/* Topic */}
                                                     <div>
-                                                        <h3 className="font-semibold text-sm line-clamp-2 mb-1">
-                                                            {post.topic}
-                                                        </h3>
+                                                        <Link href={`/app/posts/${post.id}/history`}>
+                                                            <h3 className="font-semibold text-sm line-clamp-2 mb-1 hover:text-indigo-600 transition-colors">
+                                                                {post.topic}
+                                                            </h3>
+                                                        </Link>
                                                         {post.target_keyword && (
                                                             <p className="text-xs text-muted-foreground">
                                                                 🎯 {post.target_keyword}
@@ -249,6 +252,13 @@ export default function ReviewBoardPage() {
                                                                 {post.seo_quality_score}/100
                                                             </span>
                                                         </div>
+                                                    )}
+
+                                                    {/* Editor Sign-Off Badge */}
+                                                    {post.editor_signed_off && (
+                                                        <Badge className="w-full justify-center bg-green-100 text-green-800 border border-green-300">
+                                                            ✓ Editor Approved
+                                                        </Badge>
                                                     )}
 
                                                     {/* Action Buttons */}
