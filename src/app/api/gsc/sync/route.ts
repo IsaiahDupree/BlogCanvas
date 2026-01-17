@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+import { createClient } from '@/lib/supabase/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { querySearchConsole, type GSCConfig } from '@/lib/analytics/google-search-console';
 import { savePostMetrics } from '@/lib/analytics/analytics-collector';
@@ -10,8 +9,7 @@ import { savePostMetrics } from '@/lib/analytics/analytics-collector';
  */
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+    const supabase = await createClient();
 
     const {
       data: { session },

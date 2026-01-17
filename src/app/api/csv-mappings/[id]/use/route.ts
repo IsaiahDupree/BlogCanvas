@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
-import { getCurrentUser } from '@/lib/auth';
+import { createClient } from '@/lib/supabase/server';
 
 /**
  * Mark a mapping as used (updates last_used_at timestamp)
@@ -11,8 +11,9 @@ export async function POST(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const user = await getCurrentUser();
-        if (!user) {
+        const supabase = await createClient();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 

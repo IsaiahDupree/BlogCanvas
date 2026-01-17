@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
-import { getCurrentUser } from '@/lib/auth';
+import { createClient } from '@/lib/supabase/server';
 
 /**
  * Get CSV import mappings for a client
@@ -8,8 +8,9 @@ import { getCurrentUser } from '@/lib/auth';
  */
 export async function GET(request: NextRequest) {
     try {
-        const user = await getCurrentUser();
-        if (!user) {
+        const supabase = await createClient();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
@@ -47,8 +48,9 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
     try {
-        const user = await getCurrentUser();
-        if (!user) {
+        const supabase = await createClient();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
