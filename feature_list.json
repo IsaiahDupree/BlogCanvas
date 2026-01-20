@@ -3,7 +3,7 @@
   "description": "Vendor-branded landing pages + checkout + client portal + scheduling + analytics",
   "version": "1.0",
   "totalFeatures": 116,
-  "completedFeatures": 79,
+  "completedFeatures": 83,
   "phases": {
     "phase1_mvp": "Core platform functionality",
     "phase2_scale": "Advanced features and integrations",
@@ -1306,7 +1306,7 @@
       "priority": "P0",
       "phase": 5,
       "effort": "8h",
-      "passes": false,
+      "passes": true,
       "category": "selfservice",
       "files": [
         "src/app/client/dashboard/page.tsx"
@@ -1320,7 +1320,7 @@
       "priority": "P1",
       "phase": 5,
       "effort": "4h",
-      "passes": false,
+      "passes": true,
       "category": "selfservice",
       "files": [
         "src/app/client/profile/page.tsx"
@@ -1336,7 +1336,7 @@
       "priority": "P0",
       "phase": 5,
       "effort": "4h",
-      "passes": false,
+      "passes": true,
       "category": "selfservice",
       "files": [
         "src/app/client/requests/new/page.tsx"
@@ -1352,7 +1352,7 @@
       "priority": "P1",
       "phase": 5,
       "effort": "4h",
-      "passes": false,
+      "passes": true,
       "category": "selfservice",
       "files": [
         "src/app/client/invoices/page.tsx"
