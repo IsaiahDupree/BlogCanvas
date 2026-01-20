@@ -3,7 +3,7 @@
   "description": "Vendor-branded landing pages + checkout + client portal + scheduling + analytics",
   "version": "1.0",
   "totalFeatures": 116,
-  "completedFeatures": 83,
+  "completedFeatures": 88,
   "phases": {
     "phase1_mvp": "Core platform functionality",
     "phase2_scale": "Advanced features and integrations",
@@ -1368,7 +1368,7 @@
       "priority": "P0",
       "phase": 6,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "referral",
       "files": [
         "supabase/migrations/referrals.sql"
@@ -1382,7 +1382,7 @@
       "priority": "P0",
       "phase": 6,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "referral",
       "files": [
         "src/lib/referrals/generate.ts"
@@ -1398,7 +1398,7 @@
       "priority": "P0",
       "phase": 6,
       "effort": "4h",
-      "passes": false,
+      "passes": true,
       "category": "referral",
       "files": [
         "src/lib/referrals/track.ts"
@@ -1414,7 +1414,7 @@
       "priority": "P1",
       "phase": 6,
       "effort": "6h",
-      "passes": false,
+      "passes": true,
       "category": "referral",
       "files": [
         "src/app/affiliate/dashboard/page.tsx"
@@ -1430,7 +1430,7 @@
       "priority": "P1",
       "phase": 6,
       "effort": "4h",
-      "passes": false,
+      "passes": true,
       "category": "referral",
       "files": [
         "src/app/admin/payouts/page.tsx"
