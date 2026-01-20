@@ -1,15 +1,25 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import createIntlMiddleware from 'next-intl/middleware';
+import { locales, defaultLocale } from './i18n';
+
+// Create i18n middleware
+const intlMiddleware = createIntlMiddleware({
+  locales,
+  defaultLocale,
+  localePrefix: 'as-needed', // Don't add locale prefix for default locale
+});
 
 /**
  * Middleware to handle:
- * 1. Request correlation ID generation
- * 2. Supabase auth session refresh
- * 3. CORS headers
- * 4. Security headers
- * 5. Route protection
- * 6. Request logging
+ * 1. Internationalization (i18n)
+ * 2. Request correlation ID generation
+ * 3. Supabase auth session refresh
+ * 4. CORS headers
+ * 5. Security headers
+ * 6. Route protection
+ * 7. Request logging
  */
 export async function middleware(request: NextRequest) {
     const startTime = Date.now();
@@ -79,6 +89,17 @@ export async function middleware(request: NextRequest) {
 
     // Refresh auth session
     await supabase.auth.getUser();
+
+    // Handle i18n routing for non-API routes
+    if (!request.nextUrl.pathname.startsWith('/api')) {
+        const intlResponse = intlMiddleware(request);
+        if (intlResponse) {
+            // Merge headers from intl response
+            intlResponse.headers.forEach((value, key) => {
+                response.headers.set(key, value);
+            });
+        }
+    }
 
     // Handle @vendor URLs - rewrite /@handle to /handle
     const pathname = request.nextUrl.pathname;
