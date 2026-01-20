@@ -3,7 +3,7 @@
   "description": "Vendor-branded landing pages + checkout + client portal + scheduling + analytics",
   "version": "1.0",
   "totalFeatures": 116,
-  "completedFeatures": 104,
+  "completedFeatures": 108,
   "phases": {
     "phase1_mvp": "Core platform functionality",
     "phase2_scale": "Advanced features and integrations",
@@ -1831,10 +1831,11 @@
       "priority": "P1",
       "phase": 13,
       "effort": "6h",
-      "passes": false,
+      "passes": true,
       "category": "templates",
       "files": [
-        "src/lib/templates/offer-pages.ts"
+        "src/lib/templates/offer-pages.ts",
+        "src/lib/templates/page-templates.ts"
       ],
       "dependencies": []
     },
@@ -1845,7 +1846,7 @@
       "priority": "P1",
       "phase": 13,
       "effort": "4h",
-      "passes": false,
+      "passes": true,
       "category": "templates",
       "files": [
         "src/lib/templates/onboarding.ts"
@@ -1859,7 +1860,7 @@
       "priority": "P1",
       "phase": 13,
       "effort": "4h",
-      "passes": false,
+      "passes": true,
       "category": "templates",
       "files": [
         "src/lib/templates/emails.ts"
@@ -1873,7 +1874,7 @@
       "priority": "P2",
       "phase": 13,
       "effort": "3h",
-      "passes": false,
+      "passes": true,
       "category": "templates",
       "files": [
         "src/lib/templates/clone.ts"
@@ -1943,5 +1944,5 @@
       "dependencies": []
     }
   ],
-  "lastUpdated": "2026-01-20T04:51:41.811Z"
+  "lastUpdated": "2026-01-20T04:55:22.907Z"
 }
