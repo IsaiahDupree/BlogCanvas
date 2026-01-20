@@ -80,6 +80,15 @@ export async function middleware(request: NextRequest) {
     // Refresh auth session
     await supabase.auth.getUser();
 
+    // Handle @vendor URLs - rewrite /@handle to /handle
+    const pathname = request.nextUrl.pathname;
+    if (pathname.startsWith('/@')) {
+        const newPath = pathname.slice(1); // Remove the @ prefix, keep the /
+        const url = request.nextUrl.clone();
+        url.pathname = newPath;
+        return NextResponse.rewrite(url);
+    }
+
     // Allow auth callback route
     if (request.nextUrl.pathname.startsWith('/auth/callback')) {
         return response;
@@ -233,5 +242,6 @@ export const config = {
         '/app/:path*',
         '/auth/callback',
         '/auth/client',
+        '/@:path*',
     ],
 };

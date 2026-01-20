@@ -3,7 +3,7 @@
   "description": "Vendor-branded landing pages + checkout + client portal + scheduling + analytics",
   "version": "1.0",
   "totalFeatures": 116,
-  "completedFeatures": 75,
+  "completedFeatures": 79,
   "phases": {
     "phase1_mvp": "Core platform functionality",
     "phase2_scale": "Advanced features and integrations",
@@ -1240,10 +1240,14 @@
       "priority": "P0",
       "phase": 4,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "whitelabel",
       "files": [
-        "supabase/migrations/custom_domains.sql"
+        "supabase/migrations/20260120000001_custom_domains.sql",
+        "src/types/custom-domain.ts",
+        "src/lib/db/custom-domains.ts",
+        "src/app/api/vendor/domains/route.ts",
+        "src/app/api/vendor/domains/[domainId]/route.ts"
       ],
       "dependencies": []
     },
@@ -1254,10 +1258,11 @@
       "priority": "P0",
       "phase": 4,
       "effort": "4h",
-      "passes": false,
+      "passes": true,
       "category": "whitelabel",
       "files": [
-        "src/lib/domains/verify.ts"
+        "src/lib/domains/verify.ts",
+        "src/app/api/vendor/domains/[domainId]/verify/route.ts"
       ],
       "dependencies": [
         "WL-001"
@@ -1270,10 +1275,11 @@
       "priority": "P0",
       "phase": 4,
       "effort": "6h",
-      "passes": false,
+      "passes": true,
       "category": "whitelabel",
       "files": [
-        "src/lib/domains/ssl.ts"
+        "src/lib/domains/ssl.ts",
+        "src/app/api/vendor/domains/[domainId]/ssl/route.ts"
       ],
       "dependencies": [
         "WL-002"
@@ -1286,7 +1292,7 @@
       "priority": "P1",
       "phase": 4,
       "effort": "4h",
-      "passes": false,
+      "passes": true,
       "category": "whitelabel",
       "files": [
         "src/lib/branding/whitelabel.ts"

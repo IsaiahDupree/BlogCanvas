@@ -1,8 +1,13 @@
 -- Row Level Security for new tables
 -- Enable RLS and create policies for website scraper and brand guide tables
 
--- Websites: Users can access websites for their clients
-ALTER TABLE websites ENABLE ROW LEVEL SECURITY;
+-- Websites: Users can access websites for their clients (if table exists)
+DO $$
+BEGIN
+  IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'websites') THEN
+    ALTER TABLE websites ENABLE ROW LEVEL SECURITY;
+  END IF;
+END $$;
 
 CREATE POLICY "Users can view websites for their clients"
   ON websites FOR SELECT

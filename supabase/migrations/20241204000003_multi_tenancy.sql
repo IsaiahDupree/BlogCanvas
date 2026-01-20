@@ -16,37 +16,49 @@ CREATE INDEX IF NOT EXISTS idx_profiles_role ON profiles(role);
 CREATE INDEX IF NOT EXISTS idx_profiles_client ON profiles(client_id);
 
 -- Clients (brands/companies using the service)
-CREATE TABLE IF NOT EXISTS clients (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  slug TEXT UNIQUE NOT NULL, -- URL-friendly identifier
-  website_url TEXT,
-  contact_email TEXT,
-  status TEXT DEFAULT 'onboarding' CHECK (status IN ('onboarding', 'active', 'paused', 'churned')),
-  
-  -- Brand profile data
-  product_service_summary TEXT,
-  target_audience TEXT,
-  positioning TEXT,
-  tone_of_voice JSONB, -- Sliders, preferences
-  brand_profile JSONB, -- Structured data (phrases, stories)
-  story_bank JSONB, -- Array of stories
-  
-  -- Settings
-  notification_settings JSONB,
-  
-  -- CMS connection
-  cms_type TEXT, -- 'wordpress', 'webflow', etc.
-  cms_base_url TEXT,
-  cms_credentials JSONB, -- Encrypted
-  cms_status TEXT DEFAULT 'not_configured' CHECK (cms_status IN ('not_configured', 'connected', 'error')),
-  
-  -- Metadata
-  onboarded_via TEXT, -- 'site_scan', 'manual_intake'
-  onboarded_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
+-- Note: clients table already exists from initial schema, so we add missing columns
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS slug TEXT;
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS contact_email TEXT;
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'onboarding';
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS tone_of_voice JSONB;
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS brand_profile JSONB;
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS story_bank JSONB;
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS notification_settings JSONB;
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS cms_type TEXT;
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS cms_base_url TEXT;
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS cms_credentials JSONB;
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS cms_status TEXT DEFAULT 'not_configured';
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS onboarded_via TEXT;
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS onboarded_at TIMESTAMPTZ;
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+
+-- Add constraints after columns exist
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'clients_status_check'
+  ) THEN
+    ALTER TABLE clients ADD CONSTRAINT clients_status_check
+      CHECK (status IN ('onboarding', 'active', 'paused', 'churned'));
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'clients_cms_status_check'
+  ) THEN
+    ALTER TABLE clients ADD CONSTRAINT clients_cms_status_check
+      CHECK (cms_status IN ('not_configured', 'connected', 'error'));
+  END IF;
+END $$;
+
+-- Add unique constraint on slug if not exists
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'clients_slug_key'
+  ) THEN
+    ALTER TABLE clients ADD CONSTRAINT clients_slug_key UNIQUE (slug);
+  END IF;
+END $$;
 
 CREATE INDEX IF NOT EXISTS idx_clients_status ON clients(status);
 CREATE INDEX IF NOT EXISTS idx_clients_slug ON clients(slug);
