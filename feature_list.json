@@ -3,7 +3,7 @@
   "description": "Vendor-branded landing pages + checkout + client portal + scheduling + analytics",
   "version": "1.0",
   "totalFeatures": 116,
-  "completedFeatures": 100,
+  "completedFeatures": 103,
   "phases": {
     "phase1_mvp": "Core platform functionality",
     "phase2_scale": "Advanced features and integrations",
@@ -1759,10 +1759,13 @@
       "priority": "P0",
       "phase": 12,
       "effort": "6h",
-      "passes": false,
+      "passes": true,
       "category": "security",
       "files": [
-        "src/lib/audit/logger.ts"
+        "src/lib/audit-logger.ts",
+        "supabase/migrations/20260113000003_audit_logging.sql",
+        "src/app/api/audit-logs/route.ts",
+        "src/app/app/audit-logs/page.tsx"
       ],
       "dependencies": []
     },
@@ -1773,10 +1776,13 @@
       "priority": "P1",
       "phase": 12,
       "effort": "4h",
-      "passes": false,
+      "passes": true,
       "category": "security",
       "files": [
-        "src/lib/security/ip-filter.ts"
+        "src/lib/security/ip-filter.ts",
+        "supabase/migrations/20260120000002_ip_allowlist.sql",
+        "src/app/api/vendor/ip-allowlist/route.ts",
+        "src/app/api/vendor/ip-allowlist/[ruleId]/route.ts"
       ],
       "dependencies": []
     },
@@ -1801,10 +1807,11 @@
       "priority": "P1",
       "phase": 12,
       "effort": "4h",
-      "passes": false,
+      "passes": true,
       "category": "security",
       "files": [
-        "src/app/vendor/security/page.tsx"
+        "src/app/vendor/security/page.tsx",
+        "src/app/api/vendor/security/metrics/route.ts"
       ],
       "dependencies": [
         "SEC-001"
@@ -1929,5 +1936,5 @@
       "dependencies": []
     }
   ],
-  "lastUpdated": "2026-01-20T04:24:50.846Z"
+  "lastUpdated": "2026-01-20T04:31:28.000Z"
 }
