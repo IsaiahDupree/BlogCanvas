@@ -3,7 +3,7 @@
   "description": "Vendor-branded landing pages + checkout + client portal + scheduling + analytics",
   "version": "1.0",
   "totalFeatures": 116,
-  "completedFeatures": 74,
+  "completedFeatures": 75,
   "phases": {
     "phase1_mvp": "Core platform functionality",
     "phase2_scale": "Advanced features and integrations",
@@ -1217,10 +1217,17 @@
       "priority": "P2",
       "phase": 3,
       "effort": "4h",
-      "passes": false,
+      "passes": true,
       "category": "mobile",
       "files": [
-        "src/lib/notifications/push.ts"
+        "src/lib/notifications/push.ts",
+        "src/app/api/push/subscribe/route.ts",
+        "src/app/api/push/unsubscribe/route.ts",
+        "src/app/api/push/vapid-key/route.ts",
+        "src/app/api/notifications/preferences/route.ts",
+        "src/components/notifications/PushNotificationPrompt.tsx",
+        "src/components/notifications/NotificationSettings.tsx",
+        "supabase/migrations/20260119000002_push_notifications.sql"
       ],
       "dependencies": [
         "PWA-002"
@@ -1916,5 +1923,5 @@
       "dependencies": []
     }
   ],
-  "lastUpdated": "2026-01-20T02:56:38.383Z"
+  "lastUpdated": "2026-01-20T03:06:18.000Z"
 }
