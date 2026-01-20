@@ -3,7 +3,7 @@
   "description": "Vendor-branded landing pages + checkout + client portal + scheduling + analytics",
   "version": "1.0",
   "totalFeatures": 116,
-  "completedFeatures": 103,
+  "completedFeatures": 104,
   "phases": {
     "phase1_mvp": "Core platform functionality",
     "phase2_scale": "Advanced features and integrations",
@@ -1793,10 +1793,17 @@
       "priority": "P0",
       "phase": 12,
       "effort": "8h",
-      "passes": false,
+      "passes": true,
       "category": "security",
       "files": [
-        "src/lib/auth/sso.ts"
+        "src/lib/auth/sso.ts",
+        "src/app/api/vendor/sso/route.ts",
+        "src/app/api/vendor/sso/[id]/route.ts",
+        "src/app/api/vendor/sso/[id]/test/route.ts",
+        "src/app/api/auth/sso/login/route.ts",
+        "src/app/vendor/settings/sso/page.tsx",
+        "src/types/sso.ts",
+        "supabase/migrations/20260126000001_sso_connections.sql"
       ],
       "dependencies": []
     },
@@ -1936,5 +1943,5 @@
       "dependencies": []
     }
   ],
-  "lastUpdated": "2026-01-20T04:31:28.000Z"
+  "lastUpdated": "2026-01-20T04:51:41.811Z"
 }
