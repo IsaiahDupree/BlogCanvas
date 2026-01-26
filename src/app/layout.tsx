@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { RegisterServiceWorker } from "./register-sw";
+import { MetaPixel } from "@/components/tracking/MetaPixel";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,11 +37,14 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const fbPixelId = process.env.NEXT_PUBLIC_FB_PIXEL_ID;
+
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        {fbPixelId && <MetaPixel pixelId={fbPixelId} />}
         <RegisterServiceWorker />
         {children}
       </body>

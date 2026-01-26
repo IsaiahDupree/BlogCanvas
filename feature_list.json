@@ -2,8 +2,8 @@
   "project": "BlogCanvas Vendor Offer Platform",
   "description": "Vendor-branded landing pages + checkout + client portal + scheduling + analytics",
   "version": "1.0",
-  "totalFeatures": 116,
-  "completedFeatures": 116,
+  "totalFeatures": 136,
+  "completedFeatures": 136,
   "phases": {
     "phase1_mvp": "Core platform functionality",
     "phase2_scale": "Advanced features and integrations",
@@ -945,7 +945,7 @@
     {
       "id": "DASH-003",
       "name": "Vendor Pipeline View",
-      "description": "Pipeline view (Prospect \u2192 Booked \u2192 Paid \u2192 Active \u2192 Completed)",
+      "description": "Pipeline view (Prospect → Booked → Paid → Active → Completed)",
       "priority": "P1",
       "phase": 1,
       "effort": "4h",
@@ -1085,7 +1085,7 @@
     {
       "id": "TRACK-006",
       "name": "Funnel Analytics View",
-      "description": "Vendor dashboard funnel view (views \u2192 clicks \u2192 checkout \u2192 purchase)",
+      "description": "Vendor dashboard funnel view (views → clicks → checkout → purchase)",
       "priority": "P0",
       "phase": 1,
       "effort": "4h",
@@ -1949,7 +1949,7 @@
       "description": "Install Facebook Pixel script in app layout",
       "category": "meta-pixel",
       "priority": "P1",
-      "passes": false
+      "passes": true
     },
     {
       "id": "META-002",
@@ -1957,7 +1957,7 @@
       "description": "Track all page views with Meta Pixel",
       "category": "meta-pixel",
       "priority": "P1",
-      "passes": false
+      "passes": true
     },
     {
       "id": "META-003",
@@ -1965,7 +1965,7 @@
       "description": "Map app events to Meta standard events (Purchase, Lead, etc.)",
       "category": "meta-pixel",
       "priority": "P1",
-      "passes": false
+      "passes": true
     },
     {
       "id": "META-004",
@@ -1973,7 +1973,7 @@
       "description": "Implement Conversions API for server-side event tracking",
       "category": "meta-pixel",
       "priority": "P1",
-      "passes": false
+      "passes": true
     },
     {
       "id": "META-005",
@@ -1981,7 +1981,7 @@
       "description": "Use event_id to deduplicate browser and server events",
       "category": "meta-pixel",
       "priority": "P1",
-      "passes": false
+      "passes": true
     },
     {
       "id": "META-006",
@@ -1989,7 +1989,7 @@
       "description": "Hash email/phone with SHA256 for CAPI user matching",
       "category": "meta-pixel",
       "priority": "P1",
-      "passes": false
+      "passes": true
     },
     {
       "id": "META-007",
@@ -1997,7 +1997,7 @@
       "description": "Configure custom audiences based on user behavior",
       "category": "meta-pixel",
       "priority": "P2",
-      "passes": false
+      "passes": true
     },
     {
       "id": "META-008",
@@ -2005,7 +2005,7 @@
       "description": "Set up conversion optimization for key events",
       "category": "meta-pixel",
       "priority": "P2",
-      "passes": false
+      "passes": true
     },
     {
       "id": "GDP-001",
@@ -2013,7 +2013,7 @@
       "description": "Create person, identity_link, event, email_message, email_event, subscription, deal, person_features, segment tables",
       "category": "growth-data-plane",
       "priority": "P0",
-      "passes": false
+      "passes": true
     },
     {
       "id": "GDP-002",
@@ -2021,7 +2021,7 @@
       "description": "Canonical person table with identity links for posthog, stripe, meta",
       "category": "growth-data-plane",
       "priority": "P0",
-      "passes": false
+      "passes": true
     },
     {
       "id": "GDP-003",
@@ -2029,7 +2029,7 @@
       "description": "Normalized events from web/app/email/stripe/booking/meta sources",
       "category": "growth-data-plane",
       "priority": "P0",
-      "passes": false
+      "passes": true
     },
     {
       "id": "GDP-004",
@@ -2037,7 +2037,7 @@
       "description": "Verify Svix signature, store email events, map tags to person_id",
       "category": "growth-data-plane",
       "priority": "P0",
-      "passes": false
+      "passes": true
     },
     {
       "id": "GDP-005",
@@ -2045,15 +2045,15 @@
       "description": "Track delivered/opened/clicked/bounced events from Resend webhooks",
       "category": "growth-data-plane",
       "priority": "P0",
-      "passes": false
+      "passes": true
     },
     {
       "id": "GDP-006",
       "name": "Click Redirect Tracker",
-      "description": "Attribution spine: email \u2192 click \u2192 session \u2192 conversion with first-party cookie",
+      "description": "Attribution spine: email → click → session → conversion with first-party cookie",
       "category": "growth-data-plane",
       "priority": "P1",
-      "passes": false
+      "passes": true
     },
     {
       "id": "GDP-007",
@@ -2061,7 +2061,7 @@
       "description": "Handle subscription events, map stripe_customer_id to person_id",
       "category": "growth-data-plane",
       "priority": "P1",
-      "passes": false
+      "passes": true
     },
     {
       "id": "GDP-008",
@@ -2069,7 +2069,7 @@
       "description": "Upsert subscription status, plan, MRR from Stripe events",
       "category": "growth-data-plane",
       "priority": "P1",
-      "passes": false
+      "passes": true
     },
     {
       "id": "GDP-009",
@@ -2077,7 +2077,7 @@
       "description": "Call posthog.identify(personId) on login/signup",
       "category": "growth-data-plane",
       "priority": "P1",
-      "passes": false
+      "passes": true
     },
     {
       "id": "GDP-010",
@@ -2085,7 +2085,7 @@
       "description": "Fire Pixel eventID matching CAPI event_id for deduplication",
       "category": "growth-data-plane",
       "priority": "P1",
-      "passes": false
+      "passes": true
     },
     {
       "id": "GDP-011",
@@ -2093,7 +2093,7 @@
       "description": "Compute active_days, core_actions, pricing_views, email_opens from events",
       "category": "growth-data-plane",
       "priority": "P1",
-      "passes": false
+      "passes": true
     },
     {
       "id": "GDP-012",
@@ -2101,8 +2101,8 @@
       "description": "Evaluate segment membership and trigger automations (Resend, Meta, outbound)",
       "category": "growth-data-plane",
       "priority": "P1",
-      "passes": false
+      "passes": true
     }
   ],
-  "lastUpdated": "2026-01-20T05:45:00.000Z"
+  "lastUpdated": "2026-01-26T14:44:30.591Z"
 }
