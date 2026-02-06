@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { randomBytes } from 'crypto'
+import { sendEmail } from '@/lib/email/resend'
+import { generateContentShowcaseEmail } from '@/lib/email/templates/content-showcase'
 
 export async function POST(
     request: NextRequest,
@@ -115,7 +117,34 @@ export async function POST(
 
             await supabase.from('notifications').insert(notifications)
 
-            // TODO: Send email notifications (integrate with email service)
+            // Send email notifications to client users
+            const { data: vendor } = await supabase
+                .from('vendors')
+                .select('name, email')
+                .eq('id', profile.vendor_id)
+                .single()
+
+            const vendorName = vendor?.name || 'Your Vendor'
+            const approvalUrl = `${process.env.NEXT_PUBLIC_APP_URL}/portal/approvals/${id}`
+            const portalUrl = `${process.env.NEXT_PUBLIC_APP_URL}/portal/${client_id}`
+
+            // Send email to each client user
+            for (const clientUser of clientUsers) {
+                const emailHtml = generateContentShowcaseEmail({
+                    vendorName,
+                    clientName: clientUser.full_name || 'there',
+                    contentTitle: blogPost.title,
+                    vendorMessage: message,
+                    approvalUrl,
+                    portalUrl
+                })
+
+                await sendEmail({
+                    to: clientUser.email,
+                    subject: `New content ready for review: "${blogPost.title}"`,
+                    html: emailHtml
+                })
+            }
         }
 
         return NextResponse.json({ 

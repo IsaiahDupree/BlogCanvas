@@ -1,4 +1,6 @@
 import { supabaseAdmin } from '@/lib/supabase'
+import { fetchGA4PageMetrics } from './google-analytics'
+import { fetchSearchConsoleMetrics } from './search-console'
 
 /**
  * Get check-back configuration for a website
@@ -69,8 +71,8 @@ export async function scheduleCheckBacks(
 }
 
 /**
- * Fetch metrics for a post (Google Analytics, Search Console)
- * This would integrate with actual analytics APIs
+ * Fetch metrics for a post from Google Analytics and Search Console
+ * Integrates with real Google APIs
  */
 export async function fetchPostMetrics(
     postId: string,
@@ -85,17 +87,38 @@ export async function fetchPostMetrics(
     clicks?: number
     avg_position?: number
 }> {
-    // TODO: Integrate with Google Analytics and Search Console APIs
-    // For now, return mock data
-    return {
-        pageviews: Math.floor(Math.random() * 1000),
-        unique_visitors: Math.floor(Math.random() * 500),
-        avg_time_on_page: Math.floor(Math.random() * 300),
-        bounce_rate: Math.random() * 0.8,
-        organic_traffic: Math.floor(Math.random() * 300),
-        impressions: Math.floor(Math.random() * 5000),
-        clicks: Math.floor(Math.random() * 200),
-        avg_position: Math.random() * 50 + 10
+    try {
+        // Fetch GA4 metrics and Search Console metrics in parallel
+        const [gaMetrics, scMetrics] = await Promise.all([
+            fetchGA4PageMetrics(postUrl, '7daysAgo', 'today'),
+            fetchSearchConsoleMetrics(postUrl, '7daysAgo', 'today')
+        ])
+
+        // Combine metrics from both sources
+        return {
+            pageviews: gaMetrics.pageviews,
+            unique_visitors: gaMetrics.unique_visitors,
+            avg_time_on_page: gaMetrics.avg_time_on_page,
+            bounce_rate: gaMetrics.bounce_rate,
+            organic_traffic: scMetrics.organic_traffic,
+            impressions: scMetrics.impressions,
+            clicks: scMetrics.clicks,
+            avg_position: scMetrics.avg_position
+        }
+    } catch (error) {
+        console.error('Error fetching post metrics:', error)
+
+        // Return zeros if API calls fail
+        return {
+            pageviews: 0,
+            unique_visitors: 0,
+            avg_time_on_page: 0,
+            bounce_rate: 0,
+            organic_traffic: 0,
+            impressions: 0,
+            clicks: 0,
+            avg_position: 0
+        }
     }
 }
 

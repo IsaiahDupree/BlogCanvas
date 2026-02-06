@@ -2,8 +2,8 @@
   "project": "BlogCanvas Vendor Offer Platform",
   "description": "Vendor-branded landing pages + checkout + client portal + scheduling + analytics",
   "version": "1.0",
-  "totalFeatures": 136,
-  "completedFeatures": 136,
+  "totalFeatures": 139,
+  "completedFeatures": 139,
   "phases": {
     "phase1_mvp": "Core platform functionality",
     "phase2_scale": "Advanced features and integrations",
@@ -945,7 +945,7 @@
     {
       "id": "DASH-003",
       "name": "Vendor Pipeline View",
-      "description": "Pipeline view (Prospect → Booked → Paid → Active → Completed)",
+      "description": "Pipeline view (Prospect \u2192 Booked \u2192 Paid \u2192 Active \u2192 Completed)",
       "priority": "P1",
       "phase": 1,
       "effort": "4h",
@@ -1085,7 +1085,7 @@
     {
       "id": "TRACK-006",
       "name": "Funnel Analytics View",
-      "description": "Vendor dashboard funnel view (views → clicks → checkout → purchase)",
+      "description": "Vendor dashboard funnel view (views \u2192 clicks \u2192 checkout \u2192 purchase)",
       "priority": "P0",
       "phase": 1,
       "effort": "4h",
@@ -2050,7 +2050,7 @@
     {
       "id": "GDP-006",
       "name": "Click Redirect Tracker",
-      "description": "Attribution spine: email → click → session → conversion with first-party cookie",
+      "description": "Attribution spine: email \u2192 click \u2192 session \u2192 conversion with first-party cookie",
       "category": "growth-data-plane",
       "priority": "P1",
       "passes": true
@@ -2102,7 +2102,61 @@
       "category": "growth-data-plane",
       "priority": "P1",
       "passes": true
+    },
+    {
+      "id": "NOMOCK-001",
+      "name": "Implement Real Email Notifications for Blog Showcase",
+      "description": "Replace TODO stub in src/app/api/blog-posts/[id]/showcase/route.ts with real email service integration (Resend/SendGrid) for showcase notifications",
+      "priority": "P1",
+      "category": "automation",
+      "passes": true,
+      "effort": "3h",
+      "files": [
+        "src/app/api/blog-posts/[id]/showcase/route.ts",
+        "src/lib/email/templates/content-showcase.tsx"
+      ],
+      "acceptance": [
+        "Email notifications sent via real email service",
+        "No TODO.*Send email.*integrate stubs remain"
+      ]
+    },
+    {
+      "id": "NOMOCK-002",
+      "name": "Implement Real Competitor Analysis API",
+      "description": "Replace TODO stub in src/app/api/websites/[id]/competitors/[competitorId]/analyze/route.ts with real competitor analysis using web scraping or AI analysis instead of placeholder comment",
+      "priority": "P1",
+      "category": "ai",
+      "passes": true,
+      "effort": "6h",
+      "files": [
+        "src/app/api/websites/[id]/competitors/[competitorId]/analyze/route.ts",
+        "src/lib/competitors/analyzer.ts"
+      ],
+      "acceptance": [
+        "Competitor analysis performs real web analysis",
+        "No TODO.*real implementation stubs remain",
+        "Returns actual competitive metrics"
+      ]
+    },
+    {
+      "id": "NOMOCK-003",
+      "name": "Implement Real Google Analytics/Search Console Integration",
+      "description": "Replace TODO stub in src/lib/analytics/check-back-scheduler.ts with real Google Analytics and Search Console API integration for checkback metrics",
+      "priority": "P2",
+      "category": "analytics",
+      "passes": true,
+      "effort": "8h",
+      "files": [
+        "src/lib/analytics/check-back-scheduler.ts",
+        "src/lib/analytics/google-analytics.ts",
+        "src/lib/analytics/search-console.ts"
+      ],
+      "acceptance": [
+        "Google Analytics API integrated for traffic metrics",
+        "Search Console API integrated for SEO metrics",
+        "No TODO.*Integrate.*Google stubs remain"
+      ]
     }
   ],
-  "lastUpdated": "2026-01-26T14:44:30.591Z"
+  "lastUpdated": "2026-02-06T23:30:00.000Z"
 }
