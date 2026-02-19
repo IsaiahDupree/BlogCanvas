@@ -2634,7 +2634,7 @@
       "description": "Sanitize all user inputs",
       "category": "security",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Strip HTML",
@@ -2649,7 +2649,7 @@
       "description": "Verify parameterized queries",
       "category": "security",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "No concatenation",
@@ -2705,7 +2705,7 @@
       "description": "Validate uploads",
       "category": "security",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "MIME check",
@@ -2720,7 +2720,7 @@
       "description": "Auth on every endpoint",
       "category": "security",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Own data only",
