@@ -47,8 +47,31 @@ const config = {
     testPathIgnorePatterns: ['/node_modules/', '/.next/'],
     collectCoverageFrom: [
         'src/**/*.{ts,tsx}',
-        '!src/**/*.d.ts'
-    ]
+        '!src/**/*.d.ts',
+        '!src/**/*.config.{ts,js}',
+        '!src/**/types.ts'
+    ],
+    coverageThresholds: {
+        global: {
+            branches: 60,
+            functions: 60,
+            lines: 60,
+            statements: 60
+        },
+        './src/lib/stripe/**/*.ts': {
+            branches: 80,
+            functions: 80,
+            lines: 80,
+            statements: 80
+        },
+        './src/lib/auth/**/*.ts': {
+            branches: 75,
+            functions: 75,
+            lines: 75,
+            statements: 75
+        }
+    },
+    coverageReporters: ['text', 'lcov', 'html', 'json-summary']
 };
 
 export default config;

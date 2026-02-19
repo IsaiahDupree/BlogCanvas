@@ -22,16 +22,39 @@ import { createClient } from '@/lib/supabase/server';
  */
 export async function POST(request: NextRequest) {
   try {
+    const body = await request.text();
+
     // Verify webhook signature (if configured)
     const webhookSecret = process.env.RESEND_WEBHOOK_SECRET;
     if (webhookSecret) {
       const signature = request.headers.get('resend-signature');
-      // TODO: Implement signature verification
-      // For now, we'll skip signature verification if not implemented
+
+      if (!signature) {
+        console.error('Missing resend-signature header');
+        return NextResponse.json(
+          { error: 'Unauthorized: Missing signature' },
+          { status: 401 }
+        );
+      }
+
+      // Verify HMAC signature
+      const crypto = require('crypto');
+      const expectedSignature = crypto
+        .createHmac('sha256', webhookSecret)
+        .update(body)
+        .digest('hex');
+
+      if (signature !== expectedSignature) {
+        console.error('Invalid webhook signature');
+        return NextResponse.json(
+          { error: 'Unauthorized: Invalid signature' },
+          { status: 401 }
+        );
+      }
     }
 
-    const body = await request.json();
-    const { type, data } = body;
+    const payload = JSON.parse(body);
+    const { type, data } = payload;
 
     if (!type || !data) {
       return NextResponse.json(

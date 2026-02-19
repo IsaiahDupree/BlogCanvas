@@ -2492,7 +2492,7 @@
       "description": "XSS and SQL injection tests",
       "category": "testing",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Script sanitized",
@@ -2505,7 +2505,7 @@
       "description": "Coverage config and thresholds",
       "category": "testing",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Config",
@@ -2591,7 +2591,7 @@
       "description": "CSRF tokens on POST/PUT/DELETE",
       "category": "security",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Token gen",
@@ -2605,7 +2605,7 @@
       "description": "Rate limit sign-in/up/reset",
       "category": "security",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Per-IP",
@@ -2620,7 +2620,7 @@
       "description": "Rate limit all APIs",
       "category": "security",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Per-user",
@@ -2662,7 +2662,7 @@
       "description": "CSP, HSTS, X-Frame-Options",
       "category": "security",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "CSP",

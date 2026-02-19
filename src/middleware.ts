@@ -3,6 +3,7 @@ import type { NextRequest } from 'next/server';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import createIntlMiddleware from 'next-intl/middleware';
 import { locales, defaultLocale } from './i18n';
+import { checkRateLimit, getClientIdentifier, RateLimitPresets } from './lib/rate-limit';
 
 // Create i18n middleware
 const intlMiddleware = createIntlMiddleware({
@@ -180,6 +181,33 @@ export async function middleware(request: NextRequest) {
         console.log('[Middleware] User has vendor role, allowing access to /app');
     }
 
+    // Apply rate limiting to API routes
+    if (request.nextUrl.pathname.startsWith('/api')) {
+        const rateLimitResult = applyRateLimit(request);
+
+        if (!rateLimitResult.allowed) {
+            return new NextResponse(
+                JSON.stringify({
+                    error: 'Too many requests',
+                    retryAfter: new Date(rateLimitResult.resetAt).toISOString()
+                }),
+                {
+                    status: 429,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...rateLimitResult.headers,
+                        'Retry-After': Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000).toString()
+                    }
+                }
+            );
+        }
+
+        // Add rate limit headers to successful responses
+        Object.entries(rateLimitResult.headers).forEach(([key, value]) => {
+            response.headers.set(key, value);
+        });
+    }
+
     // Handle CORS for API routes
     const origin = request.headers.get('origin') || '';
     const allowedOrigins = [
@@ -211,11 +239,43 @@ export async function middleware(request: NextRequest) {
         response.headers.set('Access-Control-Allow-Credentials', 'true');
     }
 
-    // Add security headers
+    // Add comprehensive security headers
     response.headers.set('X-Frame-Options', 'DENY');
     response.headers.set('X-Content-Type-Options', 'nosniff');
     response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
     response.headers.set('X-XSS-Protection', '1; mode=block');
+
+    // Strict Transport Security (HSTS) - only in production
+    if (process.env.NODE_ENV === 'production') {
+        response.headers.set(
+            'Strict-Transport-Security',
+            'max-age=31536000; includeSubDomains; preload'
+        );
+    }
+
+    // Content Security Policy
+    response.headers.set(
+        'Content-Security-Policy',
+        [
+            "default-src 'self'",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com",
+            "style-src 'self' 'unsafe-inline'",
+            "img-src 'self' data: https: blob:",
+            "font-src 'self' data:",
+            "connect-src 'self' https://*.supabase.co https://api.stripe.com",
+            "frame-src 'self' https://js.stripe.com",
+            "object-src 'none'",
+            "base-uri 'self'",
+            "form-action 'self'",
+            "upgrade-insecure-requests"
+        ].join('; ')
+    );
+
+    // Permissions Policy (restrict browser features)
+    response.headers.set(
+        'Permissions-Policy',
+        'geolocation=(), microphone=(), camera=()'
+    );
 
     // Add correlation ID to response headers for client-side tracking
     response.headers.set('X-Request-ID', correlationId);
@@ -250,6 +310,64 @@ export async function middleware(request: NextRequest) {
     }
 
     return response;
+}
+
+/**
+ * Apply rate limiting based on endpoint type
+ */
+function applyRateLimit(request: NextRequest): ReturnType<typeof checkRateLimit> {
+    const identifier = getClientIdentifier(request);
+    const pathname = request.nextUrl.pathname;
+
+    // Authentication endpoints (strict)
+    if (
+        pathname.startsWith('/api/auth/signin') ||
+        pathname.startsWith('/api/auth/signup') ||
+        pathname.startsWith('/api/auth/login')
+    ) {
+        return checkRateLimit(
+            `auth:${identifier}`,
+            RateLimitPresets.AUTH.maxRequests,
+            RateLimitPresets.AUTH.windowMs
+        );
+    }
+
+    // Password reset (very strict)
+    if (
+        pathname.startsWith('/api/auth/reset-password') ||
+        pathname.startsWith('/api/auth/forgot-password')
+    ) {
+        return checkRateLimit(
+            `password:${identifier}`,
+            RateLimitPresets.PASSWORD_RESET.maxRequests,
+            RateLimitPresets.PASSWORD_RESET.windowMs
+        );
+    }
+
+    // File upload endpoints (strict)
+    if (pathname.includes('/upload')) {
+        return checkRateLimit(
+            `upload:${identifier}`,
+            RateLimitPresets.UPLOAD.maxRequests,
+            RateLimitPresets.UPLOAD.windowMs
+        );
+    }
+
+    // Webhook endpoints (lenient)
+    if (pathname.startsWith('/api/webhooks/') || pathname.startsWith('/api/newsletters/webhooks/')) {
+        return checkRateLimit(
+            `webhook:${identifier}`,
+            RateLimitPresets.WEBHOOK.maxRequests,
+            RateLimitPresets.WEBHOOK.windowMs
+        );
+    }
+
+    // General API endpoints (moderate)
+    return checkRateLimit(
+        `api:${identifier}`,
+        RateLimitPresets.API.maxRequests,
+        RateLimitPresets.API.windowMs
+    );
 }
 
 /**

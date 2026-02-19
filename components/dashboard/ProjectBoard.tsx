@@ -15,18 +15,31 @@ interface BlogPost {
 
 export default function ProjectBoard() {
     const [posts, setPosts] = useState<BlogPost[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
-        // TODO: Implement /api/posts route to fetch all posts
-        // For now, mocking or we need to add that route
-    }, [])
+        async function fetchPosts() {
+            try {
+                setLoading(true)
+                const response = await fetch('/api/blog-posts')
+                const data = await response.json()
 
-    // Mock data for visualization
-    const mockPosts: BlogPost[] = [
-        { id: '1', topic: 'AI in 2024', status: 'drafting', updated_at: new Date().toISOString() },
-        { id: '2', topic: 'Email Marketing Tips', status: 'ready_for_review', updated_at: new Date().toISOString() },
-        { id: '3', topic: 'SEO Basics', status: 'published', updated_at: new Date().toISOString() },
-    ]
+                if (data.success && data.data) {
+                    setPosts(data.data)
+                } else {
+                    setError('Failed to fetch posts')
+                }
+            } catch (err) {
+                console.error('Error fetching posts:', err)
+                setError('Failed to load posts')
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchPosts()
+    }, [])
 
     const columns = [
         { id: 'drafting', title: 'Drafting', color: 'bg-blue-100' },
@@ -34,6 +47,26 @@ export default function ProjectBoard() {
         { id: 'approved', title: 'Approved', color: 'bg-green-100' },
         { id: 'published', title: 'Published', color: 'bg-gray-100' }
     ]
+
+    if (loading) {
+        return (
+            <div className="p-8">
+                <div className="flex justify-center items-center h-64">
+                    <p className="text-muted-foreground">Loading posts...</p>
+                </div>
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="p-8">
+                <div className="flex justify-center items-center h-64">
+                    <p className="text-red-600">{error}</p>
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className="p-8">
@@ -47,8 +80,8 @@ export default function ProjectBoard() {
                     <div key={col.id} className={`rounded-lg p-4 ${col.color}`}>
                         <h3 className="font-semibold mb-4 uppercase text-xs tracking-wider">{col.title}</h3>
                         <div className="space-y-3">
-                            {mockPosts
-                                .filter(p => p.status === col.id) // In real app, map statuses correctly
+                            {posts
+                                .filter(p => p.status === col.id)
                                 .map(post => (
                                     <Link key={post.id} href={`/posts/${post.id}/review`}>
                                         <Card className="cursor-pointer hover:shadow-md transition-shadow">
