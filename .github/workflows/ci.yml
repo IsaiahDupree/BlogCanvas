@@ -29,8 +29,8 @@ jobs:
           node-version: '20'
           cache: 'npm'
       - run: npm ci
-      - name: Run Jest tests
-        run: npm test
+      - name: Run Jest tests with coverage
+        run: npm run test:coverage
         env:
           CI: true
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
@@ -38,17 +38,32 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
-      - name: Upload coverage
+      - name: Upload coverage report
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: coverage
+          name: coverage-report
           path: coverage/
+          retention-days: 30
+      - name: Generate coverage summary
+        if: always()
+        run: |
+          echo "## Test Coverage Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f coverage/coverage-summary.json ]; then
+            cat coverage/coverage-summary.json | jq -r '.total | "- **Lines:** \(.lines.pct)%\n- **Statements:** \(.statements.pct)%\n- **Functions:** \(.functions.pct)%\n- **Branches:** \(.branches.pct)%"' >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Coverage report not found" >> $GITHUB_STEP_SUMMARY
+          fi
 
   e2e-tests:
     name: E2E Tests
     runs-on: ubuntu-latest
     needs: [lint, unit-tests]
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -70,14 +85,15 @@ jobs:
           OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
           CRON_SECRET=${{ secrets.CRON_SECRET }}
           EOF
-      - name: Run E2E tests
-        run: npm run test:e2e
+      - name: Run E2E tests (Shard ${{ matrix.shard }}/2)
+        run: npx playwright test --shard=${{ matrix.shard }}/2
         env:
           CI: true
-      - uses: actions/upload-artifact@v4
+      - name: Upload Playwright report (Shard ${{ matrix.shard }})
+        uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.shard }}
           path: playwright-report/
           retention-days: 30
 

@@ -15,6 +15,7 @@
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:debug": "playwright test --debug",
     "test:supabase": "tsx scripts/test-supabase-connection.ts",
+    "test:seed": "tsx scripts/seed-test-data.ts",
     "migrations:list": "tsx scripts/manage-migrations.ts list",
     "migrations:status": "tsx scripts/manage-migrations.ts status",
     "migrations:apply": "tsx scripts/manage-migrations.ts apply",
