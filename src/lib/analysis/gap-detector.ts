@@ -72,15 +72,26 @@ export function detectContentGaps(
 /**
  * Categorize gaps by priority
  */
-export function categorizeGaps(gaps: ContentGap[]): {
+export function categorizeGaps(gaps: (ContentGap | Partial<ContentGap>)[]): {
     high: ContentGap[];
     medium: ContentGap[];
     low: ContentGap[];
 } {
+    // Ensure all gaps have priority calculated
+    const gapsWithPriority = gaps.map(g => {
+        if (!g.priority && g.traffic_potential !== undefined && g.difficulty !== undefined) {
+            return {
+                ...g,
+                priority: calculatePriority(g.traffic_potential, g.difficulty)
+            } as ContentGap;
+        }
+        return g as ContentGap;
+    });
+
     return {
-        high: gaps.filter(g => g.priority === 'high'),
-        medium: gaps.filter(g => g.priority === 'medium'),
-        low: gaps.filter(g => g.priority === 'low')
+        high: gapsWithPriority.filter(g => g.priority === 'high'),
+        medium: gapsWithPriority.filter(g => g.priority === 'medium'),
+        low: gapsWithPriority.filter(g => g.priority === 'low')
     };
 }
 
@@ -142,7 +153,7 @@ export function generateTopicClusters(topics: string[]): TopicCluster[] {
 /**
  * Calculate priority based on traffic and difficulty
  */
-function calculatePriority(traffic: number, difficulty: number): 'high' | 'medium' | 'low' {
+export function calculatePriority(traffic: number, difficulty: number): 'high' | 'medium' | 'low' {
     // High traffic + low difficulty = high priority
     const score = (traffic / 1000) / (difficulty / 10);
 

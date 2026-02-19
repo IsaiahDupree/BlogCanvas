@@ -86,11 +86,13 @@ export function projectSEOScore(
 export function getRecommendedTarget(currentScore: number): number {
     // Recommend achievable improvement based on starting point
     if (currentScore < 40) {
-        return Math.min(70, currentScore + 25);
+        // For very low scores, aim for 60-70 range
+        return Math.min(70, Math.max(60, currentScore + 35));
     } else if (currentScore < 60) {
-        return Math.min(80, currentScore + 18);
+        // For mid-range scores, aim for 75-85 range
+        return Math.min(85, Math.max(75, currentScore + 20));
     } else if (currentScore < 75) {
-        return Math.min(85, currentScore + 12);
+        return Math.min(88, currentScore + 12);
     } else if (currentScore < 85) {
         return Math.min(92, currentScore + 8);
     } else {
@@ -165,11 +167,15 @@ export function generateDetailedProjection(
 export function calculateCadence(
     totalPosts: number,
     targetMonths: number,
-    maxPostsPerMonth: number = 12
-): number {
-    if (targetMonths <= 0) return 0;
-    const calculated = Math.ceil(totalPosts / targetMonths);
-    return Math.min(calculated, maxPostsPerMonth);
+    maxPostsPerMonth: number = 100
+): { posts_per_month: number; posts_per_week: number } {
+    if (targetMonths <= 0) return { posts_per_month: 0, posts_per_week: 0 };
+    const postsPerMonth = Math.min(Math.ceil(totalPosts / targetMonths), maxPostsPerMonth);
+    const postsPerWeek = Math.ceil(postsPerMonth / 4);
+    return {
+        posts_per_month: postsPerMonth,
+        posts_per_week: postsPerWeek
+    };
 }
 
 /**

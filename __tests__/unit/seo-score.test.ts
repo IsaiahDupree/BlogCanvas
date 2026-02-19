@@ -4,7 +4,7 @@ describe('SEO Score Calculator', () => {
     describe('calculateSEOScore', () => {
         it('should calculate perfect score for ideal page', () => {
             const page = {
-                title: 'Perfect SEO Page Title',
+                title: 'Perfect SEO Page Title - Complete Guide',
                 meta_description: 'This is a perfect meta description that is between 120 and 160 characters long for optimal SEO performance.',
                 headings: {
                     h1: ['Main Heading'],
