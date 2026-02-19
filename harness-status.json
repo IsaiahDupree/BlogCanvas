@@ -1,14 +1,16 @@
 {
   "projectId": "blogcanvas",
   "projectRoot": "/Users/isaiahdupree/Documents/Software/BlogCanvas",
-  "lastUpdated": "2026-02-06T23:18:54.505Z",
+  "lastUpdated": "2026-02-19T23:06:43.752Z",
   "sessionType": "CODING",
-  "status": "completed",
+  "status": "running",
   "stats": {
-    "total": 139,
-    "passing": 139,
-    "pending": 0,
-    "percentComplete": "100.0"
+    "total": 300,
+    "passing": 142,
+    "pending": 158,
+    "percentComplete": "47.3"
   },
-  "pid": 72147
+  "pid": 87701,
+  "currentSession": 1,
+  "model": "claude-sonnet-4-5-20250929"
 }

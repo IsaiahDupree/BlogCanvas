@@ -488,7 +488,7 @@ describe('AI Pipeline Integration Tests', () => {
             const callArgs = (mockProvider.call as jest.Mock).mock.calls[0][0];
 
             expect(callArgs.userPrompt).toContain('BRAND VOICE');
-            expect(callArgs.userPrompt).toContain('BRAND TONE');
+            expect(callArgs.userPrompt).toContain('TONE:');
         });
 
         it('should include previous sections context for draft agent', async () => {

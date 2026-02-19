@@ -40,18 +40,18 @@ export const PAGINATION_DEFAULTS = {
 export function parsePaginationParams(
   searchParams: URLSearchParams
 ): Required<Pick<PaginationParams, 'page' | 'limit'>> & Pick<PaginationParams, 'sortBy' | 'sortOrder'> {
-  const page = Math.max(
-    PAGINATION_DEFAULTS.MIN_LIMIT,
-    parseInt(searchParams.get('page') || String(PAGINATION_DEFAULTS.DEFAULT_PAGE), 10)
-  );
+  const parsedPage = parseInt(searchParams.get('page') || String(PAGINATION_DEFAULTS.DEFAULT_PAGE), 10);
+  const page = Number.isNaN(parsedPage)
+    ? PAGINATION_DEFAULTS.DEFAULT_PAGE
+    : Math.max(PAGINATION_DEFAULTS.MIN_LIMIT, parsedPage);
 
-  const limit = Math.min(
-    PAGINATION_DEFAULTS.MAX_LIMIT,
-    Math.max(
-      PAGINATION_DEFAULTS.MIN_LIMIT,
-      parseInt(searchParams.get('limit') || String(PAGINATION_DEFAULTS.DEFAULT_LIMIT), 10)
-    )
-  );
+  const parsedLimit = parseInt(searchParams.get('limit') || String(PAGINATION_DEFAULTS.DEFAULT_LIMIT), 10);
+  const limit = Number.isNaN(parsedLimit)
+    ? PAGINATION_DEFAULTS.DEFAULT_LIMIT
+    : Math.min(
+        PAGINATION_DEFAULTS.MAX_LIMIT,
+        Math.max(PAGINATION_DEFAULTS.MIN_LIMIT, parsedLimit)
+      );
 
   const sortBy = searchParams.get('sortBy') || undefined;
   const sortOrder = (searchParams.get('sortOrder') as 'asc' | 'desc') || 'desc';

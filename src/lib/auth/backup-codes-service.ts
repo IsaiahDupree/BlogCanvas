@@ -54,7 +54,7 @@ export class BackupCodesService {
   private static generateSingleCode(): string {
     // Use alphanumeric characters (uppercase) excluding similar-looking ones
     // Excludes: 0, O, I, 1, l to avoid confusion
-    const charset = '234567 89ABCDEFGHJKLMNPQRSTUVWXYZ'
+    const charset = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ'
     let code = ''
 
     // Generate 8 random characters

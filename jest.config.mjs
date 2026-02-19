@@ -4,7 +4,7 @@ const config = {
         {
             displayName: 'api',
             testEnvironment: 'node',
-            testMatch: ['**/__tests__/api/**/*.test.ts', '**/__tests__/agents/**/*.test.ts', '**/__tests__/pipeline/**/*.test.ts', '**/__tests__/integration/**/*.test.ts', '**/src/lib/**/__tests__/**/*.test.ts'],
+            testMatch: ['**/__tests__/api/**/*.test.ts', '**/__tests__/agents/**/*.test.ts', '**/__tests__/pipeline/**/*.test.ts', '**/__tests__/integration/**/*.test.ts', '**/__tests__/unit/**/*.test.ts', '**/src/lib/**/__tests__/**/*.test.ts'],
             setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
             moduleNameMapper: {
                 '^@/(.*)$': '<rootDir>/src/$1'
