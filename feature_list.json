@@ -2206,7 +2206,7 @@
       "description": "Unit tests for validation rules",
       "category": "testing",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Required",
@@ -2236,7 +2236,7 @@
       "description": "Unit tests for stores/context",
       "category": "testing",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Initial state",
@@ -2265,7 +2265,7 @@
       "description": "Stripe checkout and webhook test",
       "category": "testing",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Checkout",
@@ -2279,7 +2279,7 @@
       "description": "CSV/JSON import and export",
       "category": "testing",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Upload",
@@ -2294,7 +2294,7 @@
       "description": "Search, filter, and pagination",
       "category": "testing",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Text search",
