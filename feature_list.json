@@ -2677,7 +2677,7 @@
       "description": "No secrets in client bundles",
       "category": "security",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "No client secrets",
@@ -2762,7 +2762,7 @@
       "description": "Log security-relevant actions",
       "category": "security",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Auth events",
@@ -2776,7 +2776,7 @@
       "description": "Secure sessions with timeouts",
       "category": "security",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Timeout",
