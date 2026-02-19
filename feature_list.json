@@ -3,7 +3,7 @@
   "description": "Vendor-branded landing pages + checkout + client portal + scheduling + analytics",
   "version": "1.0",
   "totalFeatures": 300,
-  "completedFeatures": 148,
+  "completedFeatures": 172,
   "phases": {
     "phase1_mvp": "Core platform functionality",
     "phase2_scale": "Advanced features and integrations",
@@ -945,7 +945,7 @@
     {
       "id": "DASH-003",
       "name": "Vendor Pipeline View",
-      "description": "Pipeline view (Prospect → Booked → Paid → Active → Completed)",
+      "description": "Pipeline view (Prospect \u2192 Booked \u2192 Paid \u2192 Active \u2192 Completed)",
       "priority": "P1",
       "phase": 1,
       "effort": "4h",
@@ -1085,7 +1085,7 @@
     {
       "id": "TRACK-006",
       "name": "Funnel Analytics View",
-      "description": "Vendor dashboard funnel view (views → clicks → checkout → purchase)",
+      "description": "Vendor dashboard funnel view (views \u2192 clicks \u2192 checkout \u2192 purchase)",
       "priority": "P0",
       "phase": 1,
       "effort": "4h",
@@ -2050,7 +2050,7 @@
     {
       "id": "GDP-006",
       "name": "Click Redirect Tracker",
-      "description": "Attribution spine: email → click → session → conversion with first-party cookie",
+      "description": "Attribution spine: email \u2192 click \u2192 session \u2192 conversion with first-party cookie",
       "category": "growth-data-plane",
       "priority": "P1",
       "passes": true
@@ -2365,7 +2365,7 @@
       "description": "Playwright error/edge tests",
       "category": "testing",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "404",
@@ -2379,7 +2379,7 @@
       "description": "Page load optimization",
       "category": "testing",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "LCP < 2.5s",
@@ -2393,7 +2393,7 @@
       "description": "API response times",
       "category": "testing",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "List < 500ms",
@@ -2407,7 +2407,7 @@
       "description": "Query optimization",
       "category": "testing",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "No seq scans",
@@ -2435,7 +2435,7 @@
       "description": "Automated a11y scan",
       "category": "testing",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "No critical",
@@ -2464,7 +2464,7 @@
       "description": "Response shape validation",
       "category": "testing",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Shapes match",

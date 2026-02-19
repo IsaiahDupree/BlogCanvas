@@ -44,51 +44,75 @@ jest.mock('@/lib/supabase/server', () => ({
     }))
 }));
 
-describe('API Routes - Review Endpoints', () => {
-    describe('GET /api/posts/[id]/review', () => {
-        it('should return post with review data', async () => {
-            const { GET } = await import('@/app/api/posts/[id]/review/route');
+// Mock Supabase admin client
+jest.mock('@/lib/supabase', () => ({
+    supabaseAdmin: {
+        from: jest.fn((table: string) => ({
+            select: jest.fn(() => ({
+                order: jest.fn(() => ({
+                    eq: jest.fn(() => Promise.resolve({
+                        data: [{ id: 'comment-1', content: 'Test comment' }],
+                        error: null
+                    }))
+                })),
+                eq: jest.fn(() => ({
+                    order: jest.fn(() => Promise.resolve({
+                        data: [{ id: 'comment-1', content: 'Test comment' }],
+                        error: null
+                    }))
+                }))
+            })),
+            insert: jest.fn(() => ({
+                select: jest.fn(() => ({
+                    single: jest.fn(() => Promise.resolve({
+                        data: { id: 'comment-123', content: 'Test comment' },
+                        error: null
+                    }))
+                }))
+            }))
+        }))
+    }
+}));
 
-            const request = new NextRequest('http://localhost/api/posts/test-123/review');
-            const response = await GET(request, { params: { id: 'test-123' } });
-            const data = await response.json();
-
-            expect(response.status).toBe(200);
-            expect(data.post).toBeDefined();
-            expect(data.sections).toBeDefined();
-            expect(data.comments).toBeDefined();
-            expect(data.tasks).toBeDefined();
-        });
-
-        it('should handle database errors gracefully', async () => {
-            // This would require mocking Supabase to return an error
-            // For now, testing the happy path
-            expect(true).toBe(true);
-        });
-    });
-
-    describe('PATCH /api/posts/[id]/review', () => {
+describe('API Routes - Post Status Endpoints', () => {
+    describe('POST /api/posts/[postId]/status', () => {
         it('should update post status', async () => {
-            const { PATCH } = await import('@/app/api/posts/[id]/review/route');
+            const { POST } = await import('@/app/api/posts/[postId]/status/route');
 
-            const request = new NextRequest('http://localhost/api/posts/test-123/review', {
-                method: 'PATCH',
+            const request = new NextRequest('http://localhost/api/posts/test-123/status', {
+                method: 'POST',
                 body: JSON.stringify({ status: 'approved' })
             });
 
-            const response = await PATCH(request, { params: { id: 'test-123' } });
+            const response = await POST(request, { params: Promise.resolve({ postId: 'test-123' }) });
             const data = await response.json();
 
             expect(response.status).toBe(200);
-            expect(data.id).toBe('test-123');
+            expect(data.success).toBe(true);
+            expect(data.post.status).toBe('approved');
+        });
+
+        it('should reject invalid status', async () => {
+            const { POST } = await import('@/app/api/posts/[postId]/status/route');
+
+            const request = new NextRequest('http://localhost/api/posts/test-123/status', {
+                method: 'POST',
+                body: JSON.stringify({ status: 'invalid_status' })
+            });
+
+            const response = await POST(request, { params: Promise.resolve({ postId: 'test-123' }) });
+            const data = await response.json();
+
+            expect(response.status).toBe(400);
+            expect(data.success).toBe(false);
         });
     });
 });
 
 describe('API Routes - Section Endpoints', () => {
-    describe('PATCH /api/posts/[id]/sections/[sectionId]', () => {
+    describe('PATCH /api/posts/[postId]/sections/[sectionId]', () => {
         it('should update section content', async () => {
-            const { PATCH } = await import('@/app/api/posts/[id]/sections/[sectionId]/route');
+            const { PATCH } = await import('@/app/api/posts/[postId]/sections/[sectionId]/route');
 
             const request = new NextRequest('http://localhost/api/posts/test-123/sections/section-1', {
                 method: 'PATCH',
@@ -96,14 +120,14 @@ describe('API Routes - Section Endpoints', () => {
             });
 
             const response = await PATCH(request, {
-                params: { id: 'test-123', sectionId: 'section-1' }
+                params: Promise.resolve({ postId: 'test-123', sectionId: 'section-1' })
             });
 
             expect(response.status).toBe(200);
         });
 
         it('should validate update fields', async () => {
-            const { PATCH } = await import('@/app/api/posts/[id]/sections/[sectionId]/route');
+            const { PATCH } = await import('@/app/api/posts/[postId]/sections/[sectionId]/route');
 
             const request = new NextRequest('http://localhost/api/posts/test-123/sections/section-1', {
                 method: 'PATCH',
@@ -115,7 +139,7 @@ describe('API Routes - Section Endpoints', () => {
             });
 
             const response = await PATCH(request, {
-                params: { id: 'test-123', sectionId: 'section-1' }
+                params: Promise.resolve({ postId: 'test-123', sectionId: 'section-1' })
             });
 
             expect(response.status).toBe(200);

@@ -7,8 +7,12 @@ import rateLimiter, { checkRateLimit, getClientIdentifier, RateLimitPresets } fr
 
 describe('Rate Limiting', () => {
   beforeEach(() => {
-    // Reset rate limiter before each test
-    rateLimiter.reset('test-identifier');
+    // Reset all rate limiter state before each test
+    // We need to reset all possible test identifiers
+    rateLimiter.reset('test-user');
+    rateLimiter.reset('user-1');
+    rateLimiter.reset('user-2');
+    rateLimiter.reset('user-3');
   });
 
   describe('Basic rate limiting', () => {
