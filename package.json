@@ -19,6 +19,10 @@
     "migrations:list": "tsx scripts/manage-migrations.ts list",
     "migrations:status": "tsx scripts/manage-migrations.ts status",
     "migrations:apply": "tsx scripts/manage-migrations.ts apply",
+    "security:audit": "npm audit --audit-level=moderate",
+    "security:audit:prod": "npm audit --production --audit-level=critical",
+    "security:fix": "npm audit fix",
+    "security:report": "npm audit --json > security-audit.json && cat security-audit.json | jq '.metadata'",
     "harness": "node harness/run-harness-v2.js",
     "harness:continuous": "node harness/run-harness-v2.js --continuous",
     "harness:20hr": "node harness/run-harness-v2.js --continuous --max=200"
@@ -91,6 +95,7 @@
     "jest": "^30.2.0",
     "jest-environment-jsdom": "^30.2.0",
     "react-server-dom-webpack": "^19.2.1",
+    "schema-dts": "^1.1.5",
     "tailwindcss": "^4",
     "ts-jest": "^29.4.5",
     "ts-node": "^10.9.2",

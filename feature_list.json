@@ -2734,7 +2734,7 @@
       "description": "Automated CVE scanning",
       "category": "security",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "npm audit",
@@ -2832,7 +2832,7 @@
       "description": "Split bundles per route",
       "category": "performance",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Dynamic imports",
@@ -2845,7 +2845,7 @@
       "description": "next/image, WebP, responsive",
       "category": "performance",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "next/image",
@@ -2873,7 +2873,7 @@
       "description": "gzip/brotli",
       "category": "performance",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Compression",
@@ -2915,7 +2915,7 @@
       "description": "CDN with long-term cache",
       "category": "performance",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Cache-Control",
@@ -3013,7 +3013,7 @@
       "description": "Title/desc/OG on all pages",
       "category": "seo",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Titles",
@@ -3028,7 +3028,7 @@
       "description": "Auto-generate sitemap.xml",
       "category": "seo",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "All routes",
@@ -3042,7 +3042,7 @@
       "description": "Proper robots.txt",
       "category": "seo",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Allow public",
@@ -3055,7 +3055,7 @@
       "description": "Schema.org rich results",
       "category": "seo",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Organization",
@@ -3069,7 +3069,7 @@
       "description": "Prevent duplicate content",
       "category": "seo",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Canonical tags",
@@ -3096,7 +3096,7 @@
       "description": "Proper status codes",
       "category": "seo",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "404 status",
@@ -3151,7 +3151,7 @@
       "description": "Proper ARIA attributes",
       "category": "a11y",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Buttons",
@@ -3166,7 +3166,7 @@
       "description": "All features via keyboard",
       "category": "a11y",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Tab order",
@@ -3180,7 +3180,7 @@
       "description": "Focus on route change",
       "category": "a11y",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Main content",
@@ -3208,7 +3208,7 @@
       "description": "Readable by SR",
       "category": "a11y",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Alt text",
