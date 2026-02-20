@@ -20,6 +20,8 @@
     "migrations:list": "tsx scripts/manage-migrations.ts list",
     "migrations:status": "tsx scripts/manage-migrations.ts status",
     "migrations:apply": "tsx scripts/manage-migrations.ts apply",
+    "docs:api": "tsx scripts/generate-api-docs.ts",
+    "docs:schema": "tsx scripts/generate-schema-docs.ts",
     "security:audit": "npm audit --audit-level=moderate",
     "security:audit:prod": "npm audit --production --audit-level=critical",
     "security:fix": "npm audit fix",

@@ -3,7 +3,7 @@
   "description": "Vendor-branded landing pages + checkout + client portal + scheduling + analytics",
   "version": "1.0",
   "totalFeatures": 300,
-  "completedFeatures": 266,
+  "completedFeatures": 280,
   "phases": {
     "phase1_mvp": "Core platform functionality",
     "phase2_scale": "Advanced features and integrations",
@@ -945,7 +945,7 @@
     {
       "id": "DASH-003",
       "name": "Vendor Pipeline View",
-      "description": "Pipeline view (Prospect → Booked → Paid → Active → Completed)",
+      "description": "Pipeline view (Prospect \u2192 Booked \u2192 Paid \u2192 Active \u2192 Completed)",
       "priority": "P1",
       "phase": 1,
       "effort": "4h",
@@ -1085,7 +1085,7 @@
     {
       "id": "TRACK-006",
       "name": "Funnel Analytics View",
-      "description": "Vendor dashboard funnel view (views → clicks → checkout → purchase)",
+      "description": "Vendor dashboard funnel view (views \u2192 clicks \u2192 checkout \u2192 purchase)",
       "priority": "P0",
       "phase": 1,
       "effort": "4h",
@@ -2050,7 +2050,7 @@
     {
       "id": "GDP-006",
       "name": "Click Redirect Tracker",
-      "description": "Attribution spine: email → click → session → conversion with first-party cookie",
+      "description": "Attribution spine: email \u2192 click \u2192 session \u2192 conversion with first-party cookie",
       "category": "growth-data-plane",
       "priority": "P1",
       "passes": true
@@ -3727,7 +3727,7 @@
       "description": "Auto-gen API docs",
       "category": "devops",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Endpoints",
@@ -3741,7 +3741,7 @@
       "description": "DB schema docs",
       "category": "devops",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "ER diagram",
@@ -3881,7 +3881,7 @@
       "description": "Webhooks for events",
       "category": "notifications",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Configurable",
@@ -3895,7 +3895,7 @@
       "description": "Periodic summaries",
       "category": "notifications",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Daily/weekly",
@@ -3909,7 +3909,7 @@
       "description": "Handle bounced emails",
       "category": "notifications",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Bounce hook",
@@ -3965,7 +3965,7 @@
       "description": "User data export JSON/CSV",
       "category": "analytics",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "All data",
@@ -4078,7 +4078,7 @@
       "description": "All endpoints documented",
       "category": "documentation",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Endpoints",
@@ -4092,7 +4092,7 @@
       "description": "Schema with relationships",
       "category": "documentation",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Tables",
@@ -4401,7 +4401,7 @@
       "description": "Idempotent dev seed data",
       "category": "database",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Test accounts",
@@ -4415,7 +4415,7 @@
       "description": "Prevent concurrent overwrites",
       "category": "database",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Version field",
