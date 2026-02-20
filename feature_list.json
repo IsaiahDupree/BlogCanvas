@@ -945,7 +945,7 @@
     {
       "id": "DASH-003",
       "name": "Vendor Pipeline View",
-      "description": "Pipeline view (Prospect \u2192 Booked \u2192 Paid \u2192 Active \u2192 Completed)",
+      "description": "Pipeline view (Prospect → Booked → Paid → Active → Completed)",
       "priority": "P1",
       "phase": 1,
       "effort": "4h",
@@ -1085,7 +1085,7 @@
     {
       "id": "TRACK-006",
       "name": "Funnel Analytics View",
-      "description": "Vendor dashboard funnel view (views \u2192 clicks \u2192 checkout \u2192 purchase)",
+      "description": "Vendor dashboard funnel view (views → clicks → checkout → purchase)",
       "priority": "P0",
       "phase": 1,
       "effort": "4h",
@@ -2050,7 +2050,7 @@
     {
       "id": "GDP-006",
       "name": "Click Redirect Tracker",
-      "description": "Attribution spine: email \u2192 click \u2192 session \u2192 conversion with first-party cookie",
+      "description": "Attribution spine: email → click → session → conversion with first-party cookie",
       "category": "growth-data-plane",
       "priority": "P1",
       "passes": true
@@ -3602,7 +3602,7 @@
       "description": "Production error tracking",
       "category": "devops",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "SDK",
@@ -3867,7 +3867,7 @@
       "description": "Consistent branded emails",
       "category": "notifications",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Header",
@@ -3923,7 +3923,7 @@
       "description": "Track key events",
       "category": "analytics",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Page views",
@@ -4036,7 +4036,7 @@
       "description": "Track error spikes",
       "category": "analytics",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Rate calc",
@@ -4424,5 +4424,11 @@
       ]
     }
   ],
-  "lastUpdated": "2026-02-19T23:15:00.331Z"
+  "lastUpdated": "2026-02-19T23:15:00.331Z",
+  "stats": {
+    "total": 300,
+    "passing": 270,
+    "pending": 30,
+    "percentComplete": "90.0"
+  }
 }
