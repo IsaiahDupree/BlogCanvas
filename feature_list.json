@@ -3,7 +3,7 @@
   "description": "Vendor-branded landing pages + checkout + client portal + scheduling + analytics",
   "version": "1.0",
   "totalFeatures": 300,
-  "completedFeatures": 283,
+  "completedFeatures": 286,
   "phases": {
     "phase1_mvp": "Core platform functionality",
     "phase2_scale": "Advanced features and integrations",
@@ -3686,7 +3686,7 @@
       "description": "Remote feature flags",
       "category": "devops",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Management",
@@ -3979,7 +3979,7 @@
       "description": "Admin metrics view",
       "category": "analytics",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Growth",
@@ -4008,7 +4008,7 @@
       "description": "Feature usage limits",
       "category": "analytics",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Counters",
