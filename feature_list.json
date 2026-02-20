@@ -2421,7 +2421,7 @@
       "description": "50+ concurrent user simulation",
       "category": "testing",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "No errors",
@@ -2449,7 +2449,7 @@
       "description": "Screenshot comparison",
       "category": "testing",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Dashboard",
@@ -3630,7 +3630,7 @@
       "description": "Staging matching prod",
       "category": "devops",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Staging DB",
@@ -3644,7 +3644,7 @@
       "description": "DB backup with retention",
       "category": "devops",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Daily",
@@ -3658,7 +3658,7 @@
       "description": "Centralized structured logging",
       "category": "devops",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "JSON logs",
@@ -3713,7 +3713,7 @@
       "description": "Dockerfile and compose",
       "category": "devops",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Multi-stage",
@@ -3755,7 +3755,7 @@
       "description": "External uptime checks",
       "category": "devops",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "HTTP checks",
@@ -3769,7 +3769,7 @@
       "description": "Key rotation procedure",
       "category": "devops",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Procedure",
