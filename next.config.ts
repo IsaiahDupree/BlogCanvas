@@ -1,7 +1,11 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from 'next-intl/plugin';
+import withBundleAnalyzer from '@next/bundle-analyzer';
 
 const withNextIntl = createNextIntlPlugin('./src/i18n.ts');
+const bundleAnalyzer = withBundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+});
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
@@ -36,6 +40,17 @@ const nextConfig: NextConfig = {
     turbo: {
       resolveExtensions: ['.tsx', '.ts', '.jsx', '.js', '.json'],
     },
+    optimizeCss: true,
+    webpackBuildWorker: true,
+  },
+
+  // Production optimizations
+  productionBrowserSourceMaps: false,
+
+  // Bundle analysis budgets
+  onDemandEntries: {
+    maxInactiveAge: 60 * 1000,
+    pagesBufferLength: 5,
   },
 
   // Headers for caching and security
@@ -63,4 +78,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withNextIntl(nextConfig);
+export default bundleAnalyzer(withNextIntl(nextConfig));

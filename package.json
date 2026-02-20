@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev -p 4848",
     "build": "next build",
+    "build:analyze": "ANALYZE=true next build",
     "start": "next start",
     "lint": "eslint",
     "test": "jest",
@@ -73,10 +74,12 @@
     "stripe": "^20.1.2",
     "swagger-ui-react": "^5.31.0",
     "tailwind-merge": "^3.3.1",
-    "web-push": "^3.6.7"
+    "web-push": "^3.6.7",
+    "web-vitals": "^5.1.0"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.0",
+    "@next/bundle-analyzer": "^16.1.6",
     "@playwright/test": "^1.56.1",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",
