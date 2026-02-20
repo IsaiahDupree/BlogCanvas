@@ -6,6 +6,7 @@ import { MetaPixel } from "@/components/tracking/MetaPixel";
 import { QueryProvider } from "@/providers/query-provider";
 import { WebVitals } from "@/components/analytics/WebVitals";
 import { StructuredData } from "@/components/seo/StructuredData";
+import { ThemeProvider } from "@/contexts/theme-context";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -85,9 +86,11 @@ export default function RootLayout({
         {fbPixelId && <MetaPixel pixelId={fbPixelId} />}
         <RegisterServiceWorker />
         <WebVitals />
-        <QueryProvider>
-          {children}
-        </QueryProvider>
+        <ThemeProvider>
+          <QueryProvider>
+            {children}
+          </QueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -211,3 +211,80 @@
     }
   }
 }
+
+/* ============================================
+   PRINT STYLESHEET
+   feat-100: Print-optimized styles
+   ============================================ */
+@media print {
+  /* Hide non-essential elements */
+  nav,
+  aside,
+  .sidebar,
+  header .actions,
+  footer,
+  .no-print,
+  button,
+  [role="button"],
+  .print-hidden {
+    display: none !important;
+  }
+
+  /* Reset colors to black and white */
+  * {
+    color: #000 !important;
+    background: #fff !important;
+  }
+
+  /* Show links */
+  a[href]:after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+    color: #666 !important;
+  }
+
+  /* Don't show links for anchors */
+  a[href^="#"]:after,
+  a[href^="javascript:"]:after {
+    content: "";
+  }
+
+  /* Page breaks */
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+    page-break-inside: avoid;
+  }
+
+  table, figure, img {
+    page-break-inside: avoid;
+  }
+
+  /* Optimize layout */
+  body {
+    margin: 1cm;
+    font-size: 12pt;
+    line-height: 1.5;
+  }
+
+  /* Table styling */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  th, td {
+    border: 1px solid #000 !important;
+    padding: 8px;
+  }
+
+  /* Headers and footers */
+  @page {
+    margin: 2cm;
+  }
+
+  /* Show abbreviated URLs for external links */
+  a[href^="http"]:after {
+    content: " (" attr(href) ")";
+    font-size: 0.7em;
+  }
+}

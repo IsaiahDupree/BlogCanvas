@@ -945,7 +945,7 @@
     {
       "id": "DASH-003",
       "name": "Vendor Pipeline View",
-      "description": "Pipeline view (Prospect → Booked → Paid → Active → Completed)",
+      "description": "Pipeline view (Prospect \u2192 Booked \u2192 Paid \u2192 Active \u2192 Completed)",
       "priority": "P1",
       "phase": 1,
       "effort": "4h",
@@ -1085,7 +1085,7 @@
     {
       "id": "TRACK-006",
       "name": "Funnel Analytics View",
-      "description": "Vendor dashboard funnel view (views → clicks → checkout → purchase)",
+      "description": "Vendor dashboard funnel view (views \u2192 clicks \u2192 checkout \u2192 purchase)",
       "priority": "P0",
       "phase": 1,
       "effort": "4h",
@@ -2050,7 +2050,7 @@
     {
       "id": "GDP-006",
       "name": "Click Redirect Tracker",
-      "description": "Attribution spine: email → click → session → conversion with first-party cookie",
+      "description": "Attribution spine: email \u2192 click \u2192 session \u2192 conversion with first-party cookie",
       "category": "growth-data-plane",
       "priority": "P1",
       "passes": true
@@ -3291,7 +3291,7 @@
       "description": "Skeleton loading states",
       "category": "ui",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Dashboard",
@@ -3363,7 +3363,7 @@
       "description": "Collapsible sidebar",
       "category": "ui",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Desktop",
@@ -3377,7 +3377,7 @@
       "description": "Light/dark/system theme",
       "category": "ui",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Toggle",
@@ -3391,7 +3391,7 @@
       "description": "Auto-save form progress",
       "category": "ui",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Interval",
@@ -3405,7 +3405,7 @@
       "description": "Auto-load on scroll",
       "category": "ui",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Auto-load",
@@ -3419,7 +3419,7 @@
       "description": "Power user shortcuts",
       "category": "ui",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Cmd+/ help",
@@ -3503,7 +3503,7 @@
       "description": "Bell with dropdown",
       "category": "ui",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Badge",
@@ -3517,7 +3517,7 @@
       "description": "Avatar display and upload",
       "category": "ui",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Image",
@@ -3532,7 +3532,7 @@
       "description": "Click-to-copy with feedback",
       "category": "ui",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Copy button",
@@ -3560,7 +3560,7 @@
       "description": "Print stylesheet",
       "category": "ui",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Hide nav",

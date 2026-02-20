@@ -26,6 +26,7 @@ import {
     MessageSquare
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { ThemeToggle } from '@/components/ThemeToggle'
 
 interface NavItem {
     name: string
@@ -278,16 +279,19 @@ export function GlobalSidebar() {
                                        </p>
                                    </div>
                                </div>
-                               <Button
-                                   variant="ghost"
-                                   size="sm"
-                                   onClick={signOut}
-                                   className="w-full justify-start text-gray-300 hover:text-white hover:bg-gray-800"
-                               >
-                                   <LogOut className="w-4 h-4 mr-2" />
-                                   Sign Out
-                               </Button>
-                               
+                               <div className="flex flex-col gap-1">
+                                   <ThemeToggle />
+                                   <Button
+                                       variant="ghost"
+                                       size="sm"
+                                       onClick={signOut}
+                                       className="w-full justify-start text-gray-300 hover:text-white hover:bg-gray-800"
+                                   >
+                                       <LogOut className="w-4 h-4 mr-2" />
+                                       Sign Out
+                                   </Button>
+                               </div>
+
                                {/* Version info - WordBrew style */}
                                <div className="mt-4 pt-4 border-t border-gray-800">
                                    <p className="text-xs text-gray-500 text-center mb-1">BlogCanvas v1.0</p>

@@ -2,11 +2,12 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Camera, Save, Mail, Phone, Building, User as UserIcon, MapPin, Globe } from 'lucide-react'
+import { ArrowLeft, Save, Mail, Phone, Building, User as UserIcon, MapPin, Globe } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { AvatarUpload } from '@/components/AvatarUpload'
 
 export default function ClientProfilePage() {
   const [isSaving, setIsSaving] = useState(false)
@@ -33,6 +34,8 @@ export default function ClientProfilePage() {
     }))
   }
 
+  const [uploadMessage, setUploadMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
+
   const handleSave = async () => {
     setIsSaving(true)
     // Simulate API call
@@ -41,9 +44,14 @@ export default function ClientProfilePage() {
     // Show success message
   }
 
-  const handlePhotoUpload = () => {
-    // Handle photo upload
-    console.log('Upload photo')
+  const handleUploadSuccess = (avatarUrl: string) => {
+    setUploadMessage({ type: 'success', text: 'Avatar updated successfully!' })
+    setTimeout(() => setUploadMessage(null), 3000)
+  }
+
+  const handleUploadError = (error: string) => {
+    setUploadMessage({ type: 'error', text: error })
+    setTimeout(() => setUploadMessage(null), 5000)
   }
 
   return (
@@ -67,34 +75,21 @@ export default function ClientProfilePage() {
       </div>
 
       <div className="max-w-4xl mx-auto px-6 py-8">
+        {/* Upload message */}
+        {uploadMessage && (
+          <div className={`mb-4 p-4 rounded-lg ${uploadMessage.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
+            {uploadMessage.text}
+          </div>
+        )}
+
         {/* Profile Photo */}
         <Card className="p-6 bg-white shadow-xl mb-6">
           <h2 className="text-xl font-bold mb-4">Profile Photo</h2>
-          <div className="flex items-center gap-6">
-            <div className="relative">
-              <div className="w-24 h-24 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center text-white text-3xl font-bold">
-                {profileData.firstName[0]}{profileData.lastName[0]}
-              </div>
-              <button
-                onClick={handlePhotoUpload}
-                className="absolute bottom-0 right-0 w-8 h-8 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors shadow-lg"
-              >
-                <Camera className="w-4 h-4 text-gray-600" />
-              </button>
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-1">{profileData.firstName} {profileData.lastName}</h3>
-              <p className="text-sm text-muted-foreground mb-2">{profileData.email}</p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handlePhotoUpload}
-                className="text-sm"
-              >
-                Change Photo
-              </Button>
-            </div>
-          </div>
+          <AvatarUpload
+            userName={`${profileData.firstName} ${profileData.lastName}`}
+            onUploadSuccess={handleUploadSuccess}
+            onUploadError={handleUploadError}
+          />
         </Card>
 
         {/* Personal Information */}
