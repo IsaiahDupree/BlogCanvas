@@ -2519,7 +2519,7 @@
       "description": "Snapshot critical components",
       "category": "testing",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Dashboard",
@@ -2577,7 +2577,7 @@
       "description": "Tests for fixed bugs",
       "category": "testing",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Per-bug tests",
@@ -2690,7 +2690,7 @@
       "description": "Secure token storage/rotation",
       "category": "security",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "HttpOnly",
@@ -2748,7 +2748,7 @@
       "description": "Encrypt PII at rest",
       "category": "security",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "PII identified",
@@ -2790,7 +2790,7 @@
       "description": "Data export/deletion/consent",
       "category": "security",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Export",
@@ -2804,7 +2804,7 @@
       "description": "Cache expensive queries",
       "category": "performance",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Headers",
@@ -2818,7 +2818,7 @@
       "description": "React Query/SWR config",
       "category": "performance",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Stale time",

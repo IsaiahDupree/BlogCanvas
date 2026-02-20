@@ -39,6 +39,7 @@
     "@stripe/stripe-js": "^8.6.1",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.47.10",
+    "@tanstack/react-query": "^5.90.21",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/qrcode": "^1.5.6",
