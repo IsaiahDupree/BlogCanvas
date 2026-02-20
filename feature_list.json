@@ -3,7 +3,7 @@
   "description": "Vendor-branded landing pages + checkout + client portal + scheduling + analytics",
   "version": "1.0",
   "totalFeatures": 300,
-  "completedFeatures": 176,
+  "completedFeatures": 203,
   "phases": {
     "phase1_mvp": "Core platform functionality",
     "phase2_scale": "Advanced features and integrations",
@@ -2887,7 +2887,7 @@
       "description": "Cursor/offset pagination",
       "category": "performance",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Cursor",
@@ -3082,7 +3082,7 @@
       "description": "Dynamic social images",
       "category": "seo",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Dynamic text",
@@ -3110,7 +3110,7 @@
       "description": "Breadcrumbs with structured data",
       "category": "seo",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Visual",
@@ -3237,7 +3237,7 @@
       "description": "Announce validation errors",
       "category": "a11y",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Summary",
@@ -3251,7 +3251,7 @@
       "description": "Respect prefers-reduced-motion",
       "category": "a11y",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Disable animations",

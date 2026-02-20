@@ -10,6 +10,8 @@ interface GenerateMetadataParams {
   modifiedTime?: string
   author?: string
   noIndex?: boolean
+  vendorName?: string
+  ogType?: 'default' | 'post' | 'offer'
 }
 
 export function generateMetadata({
@@ -22,11 +24,24 @@ export function generateMetadata({
   modifiedTime,
   author,
   noIndex = false,
+  vendorName,
+  ogType = 'default',
 }: GenerateMetadataParams): Metadata {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://blogcanvas.com'
   const url = `${baseUrl}${path}`
-  const defaultImage = `${baseUrl}/og-default.png`
-  const ogImage = image || defaultImage
+
+  // Generate dynamic OG image if no custom image is provided
+  let ogImage = image
+  if (!ogImage) {
+    const params = new URLSearchParams({
+      title: title.slice(0, 100), // Limit length for URL
+      description: description.slice(0, 150),
+      type: ogType,
+    })
+    if (vendorName) params.set('vendor', vendorName)
+    if (author) params.set('author', author)
+    ogImage = `${baseUrl}/api/og?${params.toString()}`
+  }
 
   const metadata: Metadata = {
     title,
