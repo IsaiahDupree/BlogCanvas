@@ -3,7 +3,7 @@
   "description": "Vendor-branded landing pages + checkout + client portal + scheduling + analytics",
   "version": "1.0",
   "totalFeatures": 300,
-  "completedFeatures": 218,
+  "completedFeatures": 238,
   "phases": {
     "phase1_mvp": "Core platform functionality",
     "phase2_scale": "Advanced features and integrations",
@@ -2859,7 +2859,7 @@
       "description": "Indexes and pooling",
       "category": "performance",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Indexes",
@@ -3194,7 +3194,7 @@
       "description": "Meet contrast ratios",
       "category": "a11y",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Normal 4.5:1",
@@ -3223,7 +3223,7 @@
       "description": "Support 200% zoom",
       "category": "a11y",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "No scroll",
@@ -3264,7 +3264,7 @@
       "description": "Usable in high contrast",
       "category": "a11y",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Borders",
@@ -3277,7 +3277,7 @@
       "description": "Proper table markup",
       "category": "a11y",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Headers",
@@ -3447,7 +3447,7 @@
       "description": "Tables on mobile",
       "category": "ui",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Desktop table",
@@ -3461,7 +3461,7 @@
       "description": "File drag-drop zone",
       "category": "ui",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Overlay",
@@ -3475,7 +3475,7 @@
       "description": "Quick search/nav",
       "category": "ui",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Search",
@@ -3489,7 +3489,7 @@
       "description": "Stepped form with progress",
       "category": "ui",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Steps",
@@ -3546,7 +3546,7 @@
       "description": "Multi-select with actions",
       "category": "ui",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Checkbox",

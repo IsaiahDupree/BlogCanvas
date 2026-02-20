@@ -148,6 +148,33 @@
     }
   }
 
+  /* High Contrast Mode - WCAG AAA compliance */
+  .high-contrast {
+    --background: oklch(1 0 0);
+    --foreground: oklch(0 0 0);
+    --border: oklch(0 0 0);
+    --primary: oklch(0 0 0);
+    --primary-foreground: oklch(1 0 0);
+    --muted: oklch(0.95 0 0);
+    --muted-foreground: oklch(0.1 0 0);
+  }
+
+  .high-contrast * {
+    border-color: oklch(0 0 0) !important;
+  }
+
+  .high-contrast a {
+    text-decoration: underline;
+    color: oklch(0 0 0);
+    font-weight: 600;
+  }
+
+  .high-contrast button,
+  .high-contrast [role="button"] {
+    border: 2px solid oklch(0 0 0) !important;
+    font-weight: 600;
+  }
+
   /* Remove sr-only when focused (for skip links) */
   .focus\:not-sr-only:focus {
     position: static;
