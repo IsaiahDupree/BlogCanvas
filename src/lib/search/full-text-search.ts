@@ -3,6 +3,7 @@
  */
 
 import { createClient } from '@/lib/supabase/server'
+import { logSearchQuery } from '@/lib/analytics/search-analytics'
 
 export interface SearchResult {
   id: string
@@ -19,8 +20,10 @@ export interface SearchResult {
 export async function searchBlogPosts(
   query: string,
   vendorId: string,
-  limit: number = 20
+  limit: number = 20,
+  trackAnalytics: boolean = true
 ): Promise<SearchResult[]> {
+  const startTime = Date.now()
   const supabase = await createClient()
 
   const { data, error } = await supabase
@@ -35,7 +38,7 @@ export async function searchBlogPosts(
     return []
   }
 
-  return (data || []).map((row: any) => ({
+  const results = (data || []).map((row: any) => ({
     id: row.id,
     title: row.topic || 'Untitled',
     excerpt: row.draft?.substring(0, 200) || '',
@@ -43,6 +46,21 @@ export async function searchBlogPosts(
     score: row.rank || 0,
     url: `/vendor/posts/${row.id}`
   }))
+
+  // Track search analytics
+  if (trackAnalytics) {
+    const searchDuration = Date.now() - startTime
+    await logSearchQuery({
+      vendor_id: vendorId,
+      query,
+      result_count: results.length,
+      entity_type: 'blog_post',
+      had_results: results.length > 0,
+      search_duration_ms: searchDuration
+    })
+  }
+
+  return results
 }
 
 /**
@@ -51,8 +69,10 @@ export async function searchBlogPosts(
 export async function searchClients(
   query: string,
   vendorId: string,
-  limit: number = 20
+  limit: number = 20,
+  trackAnalytics: boolean = true
 ): Promise<SearchResult[]> {
+  const startTime = Date.now()
   const supabase = await createClient()
 
   const { data, error } = await supabase
@@ -70,7 +90,7 @@ export async function searchClients(
     return []
   }
 
-  return (data || []).map((row: any) => ({
+  const results = (data || []).map((row: any) => ({
     id: row.id,
     title: row.name,
     excerpt: row.notes?.substring(0, 200) || '',
@@ -78,6 +98,21 @@ export async function searchClients(
     score: 1,
     url: `/vendor/clients/${row.id}`
   }))
+
+  // Track search analytics
+  if (trackAnalytics) {
+    const searchDuration = Date.now() - startTime
+    await logSearchQuery({
+      vendor_id: vendorId,
+      query,
+      result_count: results.length,
+      entity_type: 'client',
+      had_results: results.length > 0,
+      search_duration_ms: searchDuration
+    })
+  }
+
+  return results
 }
 
 /**
@@ -86,8 +121,10 @@ export async function searchClients(
 export async function searchWebsites(
   query: string,
   vendorId: string,
-  limit: number = 20
+  limit: number = 20,
+  trackAnalytics: boolean = true
 ): Promise<SearchResult[]> {
+  const startTime = Date.now()
   const supabase = await createClient()
 
   const { data, error } = await supabase
@@ -107,7 +144,7 @@ export async function searchWebsites(
     return []
   }
 
-  return (data || []).map((row: any) => ({
+  const results = (data || []).map((row: any) => ({
     id: row.id,
     title: row.domain,
     excerpt: row.primary_keyword || '',
@@ -115,6 +152,21 @@ export async function searchWebsites(
     score: 1,
     url: `/vendor/websites/${row.id}`
   }))
+
+  // Track search analytics
+  if (trackAnalytics) {
+    const searchDuration = Date.now() - startTime
+    await logSearchQuery({
+      vendor_id: vendorId,
+      query,
+      result_count: results.length,
+      entity_type: 'website',
+      had_results: results.length > 0,
+      search_duration_ms: searchDuration
+    })
+  }
+
+  return results
 }
 
 /**
@@ -125,16 +177,31 @@ export async function universalSearch(
   vendorId: string,
   limit: number = 30
 ): Promise<SearchResult[]> {
-  // Search all entity types in parallel
+  const startTime = Date.now()
+
+  // Search all entity types in parallel (don't track individual searches)
   const [blogPosts, clients, websites] = await Promise.all([
-    searchBlogPosts(query, vendorId, limit / 3),
-    searchClients(query, vendorId, limit / 3),
-    searchWebsites(query, vendorId, limit / 3)
+    searchBlogPosts(query, vendorId, limit / 3, false),
+    searchClients(query, vendorId, limit / 3, false),
+    searchWebsites(query, vendorId, limit / 3, false)
   ])
 
   // Combine and sort by score
   const allResults = [...blogPosts, ...clients, ...websites]
-  return allResults.sort((a, b) => b.score - a.score).slice(0, limit)
+  const results = allResults.sort((a, b) => b.score - a.score).slice(0, limit)
+
+  // Track universal search analytics
+  const searchDuration = Date.now() - startTime
+  await logSearchQuery({
+    vendor_id: vendorId,
+    query,
+    result_count: results.length,
+    entity_type: 'universal',
+    had_results: results.length > 0,
+    search_duration_ms: searchDuration
+  })
+
+  return results
 }
 
 /**
