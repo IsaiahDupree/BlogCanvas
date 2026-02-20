@@ -3,7 +3,7 @@
   "description": "Vendor-branded landing pages + checkout + client portal + scheduling + analytics",
   "version": "1.0",
   "totalFeatures": 300,
-  "completedFeatures": 238,
+  "completedFeatures": 266,
   "phases": {
     "phase1_mvp": "Core platform functionality",
     "phase2_scale": "Advanced features and integrations",
@@ -2901,7 +2901,7 @@
       "description": "Prevent duplicate calls",
       "category": "performance",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Debounce",
@@ -2929,7 +2929,7 @@
       "description": "DB connection pool config",
       "category": "performance",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Pool size",
@@ -2971,7 +2971,7 @@
       "description": "Prefetch routes/data",
       "category": "performance",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Link prefetch",
@@ -3672,7 +3672,7 @@
       "description": "Monitoring endpoints",
       "category": "devops",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "/api/health",
@@ -3700,7 +3700,7 @@
       "description": "Dependabot/Renovate",
       "category": "devops",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Config",
@@ -3783,7 +3783,7 @@
       "description": "Email via Resend/SendGrid",
       "category": "notifications",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Service",
@@ -3797,7 +3797,7 @@
       "description": "Branded welcome email",
       "category": "notifications",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Triggered",
@@ -3811,7 +3811,7 @@
       "description": "Secure reset link",
       "category": "notifications",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Token",
@@ -3825,7 +3825,7 @@
       "description": "Verify email address",
       "category": "notifications",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Token",
@@ -3839,7 +3839,7 @@
       "description": "User controls",
       "category": "notifications",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Per-type",
@@ -3853,7 +3853,7 @@
       "description": "Notification list UI",
       "category": "notifications",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Model",
@@ -4135,7 +4135,7 @@
       "description": "Subscriptions and payments",
       "category": "integrations",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Checkout",
@@ -4149,7 +4149,7 @@
       "description": "Server-side logic",
       "category": "integrations",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Auth verify",
@@ -4163,7 +4163,7 @@
       "description": "Upload with validation",
       "category": "integrations",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Upload",
@@ -4177,7 +4177,7 @@
       "description": "Live data updates",
       "category": "integrations",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Subscribe",
@@ -4191,7 +4191,7 @@
       "description": "LLM-powered features",
       "category": "integrations",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "API client",
@@ -4205,7 +4205,7 @@
       "description": "Google/GitHub OAuth",
       "category": "integrations",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Config",
@@ -4219,7 +4219,7 @@
       "description": "Import from spreadsheets",
       "category": "integrations",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Upload",
@@ -4233,7 +4233,7 @@
       "description": "Server-side PDF generation",
       "category": "integrations",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Templates",
@@ -4261,7 +4261,7 @@
       "description": "Calendar sync",
       "category": "integrations",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Google Calendar",
@@ -4275,7 +4275,7 @@
       "description": "Branded transactional email",
       "category": "integrations",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Templates",
@@ -4289,7 +4289,7 @@
       "description": "Process external webhooks",
       "category": "integrations",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Verify signature",
@@ -4317,7 +4317,7 @@
       "description": "Full-text search implementation",
       "category": "integrations",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "tsvector",
@@ -4331,7 +4331,7 @@
       "description": "Scheduled background tasks",
       "category": "integrations",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Edge Function cron",
@@ -4345,7 +4345,7 @@
       "description": "Verify RLS on all tables",
       "category": "database",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "RLS enabled",
@@ -4359,7 +4359,7 @@
       "description": "Add indexes on FK and query columns",
       "category": "database",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "FK indexes",
@@ -4373,7 +4373,7 @@
       "description": "Status-based soft delete",
       "category": "database",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Status field",
@@ -4387,7 +4387,7 @@
       "description": "Track all data mutations",
       "category": "database",
       "priority": "P2",
-      "passes": false,
+      "passes": true,
       "effort": "4h",
       "criteria": [
         "Action type",
