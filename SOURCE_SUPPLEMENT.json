@@ -1,0 +1,16 @@
+{
+  "supplements_snapshot": "tip-4076e2ac2fdb9ca0-r3",
+  "source_roots": [
+    "C:\\Users\\Isaia\\Documents\\Coding\\BlogCanvas"
+  ],
+  "files": {
+    "src/app/api/workflow/export/route.ts": {
+      "source": "C:\\Users\\Isaia\\Documents\\Coding\\BlogCanvas\\src\\app\\api\\workflow\\export\\route.ts",
+      "reason": "portable authored code absent from staged source selection"
+    },
+    "src/data/blog-posts.ts": {
+      "source": "C:\\Users\\Isaia\\Documents\\Coding\\BlogCanvas\\src\\data\\blog-posts.ts",
+      "reason": "portable authored code absent from staged source selection"
+    }
+  }
+}
