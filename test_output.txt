@@ -1,0 +1,42 @@
+FAIL __tests__/agents/draft.test.ts
+  Draft Agent
+    ΓêÜ should generate content for a section (3 ms)
+    ├ù should inject brand voice and tone into prompt (1 ms)
+    ΓêÜ should include key points in the prompt (1 ms)
+    ΓêÜ should handle different section types appropriately
+    ΓêÜ should handle LLM errors gracefully
+    ΓêÜ should use fallback values when marketing context is missing (1 ms)
+
+  ΓùÅ Draft Agent ΓÇ║ should inject brand voice and tone into prompt
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected substring: "buzzwords"
+    Received string:    "Write the following section of a blog post:┬╖
+    SECTION: Test Section (body)
+    KEY POINTS TO COVER:
+    - Point 1┬╖
+    TARGET WORD COUNT: 200 words
+    TARGET KEYWORD: undefined
+    TOPIC: Test┬╖
+    BRAND VOICE: Direct, Confident, Helpful
+    BRAND TONE: Professional yet approachable┬╖┬╖┬╖
+    Return a JSON object with:
+    - content: the written section content (markdown format)
+    - wordCount: actual word count"
+
+      76 |
+      77 |         // Should include brand don'ts
+    > 78 |         expect(callArgs.userPrompt).toContain('buzzwords');
+         |                                     ^
+      79 |     });
+      80 |
+      81 |     it('should include key points in the prompt', async () => {
+
+      at Object.<anonymous> (__tests__/agents/draft.test.ts:78:37)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 5 passed, 6 total
+Snapshots:   0 total
+Time:        0.444 s, estimated 1 s
+Ran all test suites matching __tests__/agents/draft.test.ts.

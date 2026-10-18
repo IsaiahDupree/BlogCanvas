@@ -1,0 +1,671 @@
+{
+  "name": "BlogCanvas v0 - Content Factory Automation",
+  "description": "Bare-bones Make.com automation: Topic → Draft → Review → WordPress Publish",
+  "version": "1.0.0",
+  "scenarios": [
+    {
+      "name": "Scenario 1: Topic → Draft Doc → Notify Editor",
+      "description": "Watches Google Sheet for new topics, generates drafts with OpenAI, creates Google Docs, and notifies editor",
+      "modules": [
+        {
+          "id": 1,
+          "type": "googleSheets",
+          "action": "watchRows",
+          "label": "Watch for New Drafts",
+          "config": {
+            "spreadsheet": "Content_Batch",
+            "watchColumn": "status",
+            "filter": {
+              "status": "READY_TO_DRAFT"
+            }
+          }
+        },
+        {
+          "id": 2,
+          "type": "tools",
+          "action": "setVariables",
+          "label": "Build Prompt Variables",
+          "config": {
+            "variables": [
+              {
+                "name": "topic",
+                "value": "{{1.topic}}"
+              },
+              {
+                "name": "primary_keyword",
+                "value": "{{1.primary_keyword}}"
+              },
+              {
+                "name": "intent",
+                "value": "{{1.intent}}"
+              },
+              {
+                "name": "target_word_count",
+                "value": "{{1.target_word_count}}"
+              },
+              {
+                "name": "client_name",
+                "value": "{{1.client_name}}"
+              },
+              {
+                "name": "site_url",
+                "value": "{{1.site_url}}"
+              },
+              {
+                "name": "batch_id",
+                "value": "{{1.batch_id}}"
+              }
+            ]
+          }
+        },
+        {
+          "id": 3,
+          "type": "tools",
+          "action": "textAggregator",
+          "label": "Build OpenAI Prompt",
+          "config": {
+            "template": "You are an expert SEO content writer. Write a comprehensive blog post with the following requirements:\n\n**Topic:** {{2.topic}}\n**Primary Keyword:** {{2.primary_keyword}}\n**Search Intent:** {{2.intent}}\n**Target Word Count:** {{2.target_word_count}}\n**Client Website:** {{2.site_url}}\n\n**Requirements:**\n1. Write in HTML format ready for WordPress\n2. Include proper H1, H2, H3 headings\n3. Add a meta description (150-160 characters)\n4. Suggest a URL slug\n5. Include internal linking opportunities\n6. Write engaging, informative content that matches the search intent\n7. Ensure content is factually accurate and well-researched\n8. Include a compelling introduction and conclusion\n\n**Output Format (JSON):**\n{\n  \"title\": \"SEO-optimized title\",\n  \"meta_description\": \"150-160 char description\",\n  \"slug\": \"url-friendly-slug\",\n  \"content\": \"Full HTML content here\",\n  \"excerpt\": \"Short excerpt for WordPress\"\n}\n\nBegin writing:"
+          }
+        },
+        {
+          "id": 4,
+          "type": "http",
+          "action": "makeRequest",
+          "label": "Generate Draft with OpenAI",
+          "config": {
+            "url": "https://api.openai.com/v1/chat/completions",
+            "method": "POST",
+            "headers": {
+              "Authorization": "Bearer {{$env.OPENAI_API_KEY}}",
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "model": "gpt-4",
+              "messages": [
+                {
+                  "role": "system",
+                  "content": "You are an expert SEO content writer specializing in WordPress-ready blog posts. Always return valid JSON."
+                },
+                {
+                  "role": "user",
+                  "content": "{{3.text}}"
+                }
+              ],
+              "temperature": 0.7,
+              "max_tokens": 4000
+            }
+          },
+          "errorHandling": {
+            "onError": "routeToError"
+          }
+        },
+        {
+          "id": 5,
+          "type": "tools",
+          "action": "parseJSON",
+          "label": "Parse OpenAI Response",
+          "config": {
+            "data": "{{4.choices[0].message.content}}"
+          }
+        },
+        {
+          "id": 6,
+          "type": "googleDocs",
+          "action": "createDocument",
+          "label": "Create Draft Document",
+          "config": {
+            "title": "{{2.topic}} - {{2.primary_keyword}}",
+            "body": "**Batch ID:** {{2.batch_id}}\n**Client:** {{2.client_name}}\n**Primary Keyword:** {{2.primary_keyword}}\n**Intent:** {{2.intent}}\n**Target Word Count:** {{2.target_word_count}}\n**Generated:** {{$now}}\n\n---\n\n**SEO Title:** {{5.title}}\n**Meta Description:** {{5.meta_description}}\n**Slug:** {{5.slug}}\n\n---\n\n{{5.content}}"
+          }
+        },
+        {
+          "id": 7,
+          "type": "googleDrive",
+          "action": "moveFile",
+          "label": "Move to Client Folder",
+          "config": {
+            "fileId": "{{6.id}}",
+            "folderId": "/Clients/{{2.client_name}}/Drafts"
+          }
+        },
+        {
+          "id": 8,
+          "type": "googleSheets",
+          "action": "updateRow",
+          "label": "Update Sheet with Draft URL",
+          "config": {
+            "spreadsheet": "Content_Batch",
+            "rowId": "{{1.id}}",
+            "values": {
+              "draft_doc_url": "{{6.url}}",
+              "status": "NEEDS_REVIEW",
+              "last_updated": "{{$now}}"
+            }
+          }
+        },
+        {
+          "id": 9,
+          "type": "slack",
+          "action": "sendMessage",
+          "label": "Notify Editor (Slack)",
+          "config": {
+            "channel": "#content-review",
+            "text": "📝 *New Draft Ready for Review*\n\n*Topic:* {{2.topic}}\n*Client:* {{2.client_name}}\n*Keyword:* {{2.primary_keyword}}\n*Word Count Target:* {{2.target_word_count}}\n\n*Draft Document:* {{6.url}}\n\n*Batch ID:* {{2.batch_id}}\n\nPlease review and update status in the Content_Batch sheet."
+          }
+        },
+        {
+          "id": 10,
+          "type": "googleSheets",
+          "action": "updateRow",
+          "label": "Error Handler - Update Status",
+          "config": {
+            "spreadsheet": "Content_Batch",
+            "rowId": "{{1.id}}",
+            "values": {
+              "status": "ERROR",
+              "editor_notes": "OpenAI API Error: {{4.error}}",
+              "last_updated": "{{$now}}"
+            }
+          }
+        },
+        {
+          "id": 11,
+          "type": "slack",
+          "action": "sendMessage",
+          "label": "Error Handler - Notify Admin",
+          "config": {
+            "channel": "#content-errors",
+            "text": "❌ *Draft Generation Failed*\n\n*Batch ID:* {{2.batch_id}}\n*Topic:* {{2.topic}}\n*Error:* {{4.error}}\n\nPlease check the Content_Batch sheet and retry."
+          }
+        }
+      ],
+      "connections": [
+        {
+          "from": 1,
+          "to": 2
+        },
+        {
+          "from": 2,
+          "to": 3
+        },
+        {
+          "from": 3,
+          "to": 4
+        },
+        {
+          "from": 4,
+          "to": 5,
+          "condition": "success"
+        },
+        {
+          "from": 4,
+          "to": 10,
+          "condition": "error"
+        },
+        {
+          "from": 5,
+          "to": 6
+        },
+        {
+          "from": 6,
+          "to": 7
+        },
+        {
+          "from": 7,
+          "to": 8
+        },
+        {
+          "from": 8,
+          "to": 9
+        },
+        {
+          "from": 10,
+          "to": 11
+        }
+      ]
+    },
+    {
+      "name": "Scenario 2: Approval → WordPress Publish",
+      "description": "Watches for approved posts and publishes them to WordPress",
+      "modules": [
+        {
+          "id": 1,
+          "type": "googleSheets",
+          "action": "watchRows",
+          "label": "Watch for Approved Posts",
+          "config": {
+            "spreadsheet": "Content_Batch",
+            "watchColumn": "status",
+            "filter": {
+              "status": "APPROVED_FOR_PUBLISH"
+            }
+          }
+        },
+        {
+          "id": 2,
+          "type": "googleSheets",
+          "action": "getRow",
+          "label": "Get Full Row Data",
+          "config": {
+            "spreadsheet": "Content_Batch",
+            "rowId": "{{1.id}}"
+          }
+        },
+        {
+          "id": 3,
+          "type": "googleDocs",
+          "action": "getDocument",
+          "label": "Get Draft Content",
+          "config": {
+            "documentId": "{{2.draft_doc_url}}"
+          }
+        },
+        {
+          "id": 4,
+          "type": "tools",
+          "action": "textParser",
+          "label": "Extract HTML from Doc",
+          "config": {
+            "text": "{{3.body}}",
+            "pattern": "---\\n\\n(.*)",
+            "extract": "content"
+          }
+        },
+        {
+          "id": 5,
+          "type": "tools",
+          "action": "setVariables",
+          "label": "Prepare WordPress Data",
+          "config": {
+            "variables": [
+              {
+                "name": "wp_status",
+                "value": "{{2.publish_mode}}"
+              },
+              {
+                "name": "wp_date",
+                "value": "{{2.publish_datetime}}"
+              }
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "type": "http",
+          "action": "makeRequest",
+          "label": "Publish to WordPress",
+          "config": {
+            "url": "{{2.site_url}}/wp-json/wp/v2/posts",
+            "method": "POST",
+            "headers": {
+              "Authorization": "Basic {{$env.WORDPRESS_AUTH}}",
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "title": "{{2.topic}}",
+              "content": "{{4.content}}",
+              "status": "{{5.wp_status}}",
+              "date": "{{5.wp_date}}",
+              "slug": "{{2.primary_keyword}}",
+              "excerpt": "{{2.topic}} - {{2.primary_keyword}}"
+            }
+          },
+          "errorHandling": {
+            "onError": "routeToError"
+          }
+        },
+        {
+          "id": 7,
+          "type": "googleSheets",
+          "action": "updateRow",
+          "label": "Update Sheet with Post Info",
+          "config": {
+            "spreadsheet": "Content_Batch",
+            "rowId": "{{1.id}}",
+            "values": {
+              "wp_post_id": "{{6.id}}",
+              "wp_post_url": "{{6.link}}",
+              "status": "PUBLISHED",
+              "last_updated": "{{$now}}"
+            }
+          }
+        },
+        {
+          "id": 8,
+          "type": "slack",
+          "action": "sendMessage",
+          "label": "Notify Publication Success",
+          "config": {
+            "channel": "#content-published",
+            "text": "✅ *Post Published Successfully*\n\n*Topic:* {{2.topic}}\n*Client:* {{2.client_name}}\n*WordPress Post:* {{6.link}}\n*Post ID:* {{6.id}}\n\n*Batch ID:* {{2.batch_id}}"
+          }
+        },
+        {
+          "id": 9,
+          "type": "googleSheets",
+          "action": "updateRow",
+          "label": "Error Handler - Update Status",
+          "config": {
+            "spreadsheet": "Content_Batch",
+            "rowId": "{{1.id}}",
+            "values": {
+              "status": "ERROR",
+              "editor_notes": "WordPress API Error: {{6.error}}",
+              "last_updated": "{{$now}}"
+            }
+          }
+        },
+        {
+          "id": 10,
+          "type": "slack",
+          "action": "sendMessage",
+          "label": "Error Handler - Notify Admin",
+          "config": {
+            "channel": "#content-errors",
+            "text": "❌ *WordPress Publish Failed*\n\n*Batch ID:* {{2.batch_id}}\n*Topic:* {{2.topic}}\n*Error:* {{6.error}}\n\nPlease check the Content_Batch sheet and retry."
+          }
+        }
+      ],
+      "connections": [
+        {
+          "from": 1,
+          "to": 2
+        },
+        {
+          "from": 2,
+          "to": 3
+        },
+        {
+          "from": 3,
+          "to": 4
+        },
+        {
+          "from": 4,
+          "to": 5
+        },
+        {
+          "from": 5,
+          "to": 6
+        },
+        {
+          "from": 6,
+          "to": 7,
+          "condition": "success"
+        },
+        {
+          "from": 6,
+          "to": 9,
+          "condition": "error"
+        },
+        {
+          "from": 7,
+          "to": 8
+        },
+        {
+          "from": 9,
+          "to": 10
+        }
+      ]
+    },
+    {
+      "name": "Scenario 2B: Client Approval via Google Form",
+      "description": "Alternative trigger: Client approves via Google Form",
+      "modules": [
+        {
+          "id": 1,
+          "type": "googleForms",
+          "action": "watchResponses",
+          "label": "Watch Form Responses",
+          "config": {
+            "formId": "{{$env.APPROVAL_FORM_ID}}"
+          }
+        },
+        {
+          "id": 2,
+          "type": "tools",
+          "action": "filter",
+          "label": "Filter Approved Responses",
+          "config": {
+            "condition": "{{1.approve}} = YES"
+          }
+        },
+        {
+          "id": 3,
+          "type": "googleSheets",
+          "action": "searchRows",
+          "label": "Find Row by Batch ID",
+          "config": {
+            "spreadsheet": "Content_Batch",
+            "searchCriteria": {
+              "batch_id": "{{1.batch_id}}"
+            }
+          }
+        },
+        {
+          "id": 4,
+          "type": "googleSheets",
+          "action": "updateRow",
+          "label": "Update Approval Status",
+          "config": {
+            "spreadsheet": "Content_Batch",
+            "rowId": "{{3.id}}",
+            "values": {
+              "client_approval": "YES",
+              "status": "APPROVED_FOR_PUBLISH",
+              "editor_notes": "{{1.notes}}",
+              "last_updated": "{{$now}}"
+            }
+          }
+        }
+      ],
+      "connections": [
+        {
+          "from": 1,
+          "to": 2
+        },
+        {
+          "from": 2,
+          "to": 3
+        },
+        {
+          "from": 3,
+          "to": 4
+        }
+      ]
+    },
+    {
+      "name": "Scenario 3: Monthly Report Email",
+      "description": "Generates and sends monthly client reports",
+      "modules": [
+        {
+          "id": 1,
+          "type": "scheduler",
+          "action": "schedule",
+          "label": "Monthly Trigger",
+          "config": {
+            "schedule": "0 9 1 * *",
+            "timezone": "America/New_York"
+          }
+        },
+        {
+          "id": 2,
+          "type": "googleSheets",
+          "action": "searchRows",
+          "label": "Get Published Posts",
+          "config": {
+            "spreadsheet": "Content_Batch",
+            "searchCriteria": {
+              "status": "PUBLISHED"
+            },
+            "dateRange": {
+              "column": "last_updated",
+              "start": "{{$subtractMonths($now, 1)}}",
+              "end": "{{$now}}"
+            }
+          }
+        },
+        {
+          "id": 3,
+          "type": "tools",
+          "action": "aggregator",
+          "label": "Group by Client",
+          "config": {
+            "groupBy": "client_name",
+            "aggregate": [
+              {
+                "field": "wp_post_url",
+                "operation": "list"
+              },
+              {
+                "field": "topic",
+                "operation": "list"
+              }
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "type": "tools",
+          "action": "textAggregator",
+          "label": "Build Report Data",
+          "config": {
+            "template": "**Client:** {{3.client_name}}\n**Period:** Last 30 days\n\n**Published Posts:**\n{{#each 3.wp_post_url}}\n- {{this}} ({{../topic}})\n{{/each}}\n\n**Topics Covered:**\n{{#each 3.topic}}\n- {{this}}\n{{/each}}\n\n**Total Posts:** {{3.count}}"
+          }
+        },
+        {
+          "id": 5,
+          "type": "http",
+          "action": "makeRequest",
+          "label": "Generate Email Summary with OpenAI",
+          "config": {
+            "url": "https://api.openai.com/v1/chat/completions",
+            "method": "POST",
+            "headers": {
+              "Authorization": "Bearer {{$env.OPENAI_API_KEY}}",
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "model": "gpt-4",
+              "messages": [
+                {
+                  "role": "system",
+                  "content": "You are a professional content marketing consultant writing client reports. Write friendly, professional emails that summarize content performance and suggest next steps."
+                },
+                {
+                  "role": "user",
+                  "content": "Generate a client-friendly email report based on this data:\n\n{{4.text}}\n\nInclude:\n1. Summary of what was published\n2. Topics covered\n3. Suggested next batch of topics\n4. Call to action\n\nKeep it professional but friendly."
+                }
+              ],
+              "temperature": 0.7,
+              "max_tokens": 1000
+            }
+          }
+        },
+        {
+          "id": 6,
+          "type": "gmail",
+          "action": "sendEmail",
+          "label": "Send Report Email",
+          "config": {
+            "to": "{{3.client_email}}",
+            "subject": "Monthly Content Report - {{$formatDate($now, 'MMMM YYYY')}}",
+            "body": "{{5.choices[0].message.content}}",
+            "format": "html"
+          }
+        }
+      ],
+      "connections": [
+        {
+          "from": 1,
+          "to": 2
+        },
+        {
+          "from": 2,
+          "to": 3
+        },
+        {
+          "from": 3,
+          "to": 4
+        },
+        {
+          "from": 4,
+          "to": 5
+        },
+        {
+          "from": 5,
+          "to": 6
+        }
+      ]
+    }
+  ],
+  "environmentVariables": [
+    {
+      "name": "OPENAI_API_KEY",
+      "description": "Your OpenAI API key for content generation",
+      "required": true
+    },
+    {
+      "name": "WORDPRESS_AUTH",
+      "description": "WordPress REST API authentication (Base64 encoded username:password or application password)",
+      "required": true
+    },
+    {
+      "name": "APPROVAL_FORM_ID",
+      "description": "Google Form ID for client approvals (optional, for Scenario 2B)",
+      "required": false
+    }
+  ],
+  "setupInstructions": {
+    "googleSheet": {
+      "name": "Content_Batch",
+      "columns": [
+        "batch_id",
+        "client_name",
+        "site_url",
+        "topic",
+        "primary_keyword",
+        "intent",
+        "target_word_count",
+        "status",
+        "draft_doc_url",
+        "editor_notes",
+        "client_approval",
+        "wp_post_id",
+        "wp_post_url",
+        "publish_mode",
+        "publish_datetime",
+        "last_updated"
+      ],
+      "statusValues": [
+        "READY_TO_DRAFT",
+        "NEEDS_REVIEW",
+        "CHANGES_REQUESTED",
+        "APPROVED_FOR_PUBLISH",
+        "PUBLISHED",
+        "ERROR"
+      ]
+    },
+    "googleDrive": {
+      "folderStructure": "/Clients/{client_name}/Drafts/"
+    },
+    "wordPress": {
+      "restApiEndpoint": "/wp-json/wp/v2/posts",
+      "authentication": "Application Password or Basic Auth"
+    }
+  },
+  "openAIPromptTemplate": {
+    "description": "The exact prompt template used in Scenario 1 for generating WordPress-ready content",
+    "template": "You are an expert SEO content writer. Write a comprehensive blog post with the following requirements:\n\n**Topic:** {topic}\n**Primary Keyword:** {primary_keyword}\n**Search Intent:** {intent}\n**Target Word Count:** {target_word_count}\n**Client Website:** {site_url}\n\n**Requirements:**\n1. Write in HTML format ready for WordPress\n2. Include proper H1, H2, H3 headings\n3. Add a meta description (150-160 characters)\n4. Suggest a URL slug\n5. Include internal linking opportunities\n6. Write engaging, informative content that matches the search intent\n7. Ensure content is factually accurate and well-researched\n8. Include a compelling introduction and conclusion\n\n**Output Format (JSON):**\n{\n  \"title\": \"SEO-optimized title\",\n  \"meta_description\": \"150-160 char description\",\n  \"slug\": \"url-friendly-slug\",\n  \"content\": \"Full HTML content here\",\n  \"excerpt\": \"Short excerpt for WordPress\"\n}\n\nBegin writing:"
+  },
+  "notes": [
+    "This is a v0 'bare-bones' automation that gets you 80% of the value before building the full PRD system.",
+    "Scenario 1 handles: Topic → Draft → Review notification",
+    "Scenario 2 handles: Approval → WordPress Publish",
+    "Scenario 2B is an alternative approval method via Google Forms",
+    "Scenario 3 provides basic monthly reporting without deep analytics",
+    "All scenarios include error handling and notifications",
+    "The Google Sheet serves as the single source of truth",
+    "You can import this JSON into Make.com and configure the connections"
+  ]
+}
+

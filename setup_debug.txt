@@ -1,0 +1,225 @@
+  console.log
+    [dotenv@17.2.3] injecting env (6) from .env.local -- tip: ≡ƒöÉ prevent committing .env to code: https://dotenvx.com/precommit
+
+      at _log (node_modules/dotenv/lib/main.js:142:11)
+
+  console.log
+    Jest Setup: Loading .env.local
+
+      at Object.<anonymous> (jest.setup.js:3:9)
+
+  console.log
+    NEXT_PUBLIC_SUPABASE_URL: SET
+
+      at Object.<anonymous> (jest.setup.js:4:9)
+
+  console.log
+    SUPABASE_SERVICE_ROLE_KEY: SET
+
+      at Object.<anonymous> (jest.setup.js:5:9)
+
+(node:353860) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+FAIL __tests__/integration/real-database.test.ts
+  Real Database Integration Tests
+    Client Management Workflow
+      ├ù should create a new client in Supabase (124 ms)
+      ├ù should fetch all clients from Supabase (89 ms)
+      ├ù should update client details (58 ms)
+    Blog Post Workflow
+      ├ù should create a new blog post for client (66 ms)
+      ├ù should fetch posts for a specific client (113 ms)
+      ├ù should update post status (60 ms)
+    Client Approval Workflow
+      ├ù should approve a post (59 ms)
+      ├ù should create change request and revert to editing (61 ms)
+    Comments Workflow
+      ├ù should add comment to post (61 ms)
+      ├ù should fetch all comments for post (61 ms)
+    Real API Endpoints with Database
+      ├ù should create client via API and persist to database (2 ms)
+
+  ΓùÅ Real Database Integration Tests ΓÇ║ Client Management Workflow ΓÇ║ should create a new client in Supabase
+
+    expect(received).toBeNull()
+
+    Received: {"code": "PGRST204", "details": null, "hint": null, "message": "Could not find the 'contact_email' column of 'clients' in the schema cache"}
+
+      48 |                 .single();
+      49 |
+    > 50 |             expect(error).toBeNull();
+         |                           ^
+      51 |             expect(data).toBeDefined();
+      52 |             expect(data.name).toBe('Test Client Integration');
+      53 |             expect(data.slug).toBe('test-client-integration');
+
+      at Object.<anonymous> (__tests__/integration/real-database.test.ts:50:27)
+
+  ΓùÅ Real Database Integration Tests ΓÇ║ Client Management Workflow ΓÇ║ should fetch all clients from Supabase
+
+    expect(received).toBeGreaterThan(expected)
+
+    Expected: > 0
+    Received:   0
+
+      63 |             expect(error).toBeNull();
+      64 |             expect(Array.isArray(data)).toBe(true);
+    > 65 |             expect(data.length).toBeGreaterThan(0);
+         |                                 ^
+      66 |
+      67 |             const testClient = data.find(c => c.id === testClientId);
+      68 |             expect(testClient).toBeDefined();
+
+      at Object.<anonymous> (__tests__/integration/real-database.test.ts:65:33)
+
+  ΓùÅ Real Database Integration Tests ΓÇ║ Client Management Workflow ΓÇ║ should update client details
+
+    expect(received).toBeNull()
+
+    Received: {"code": "PGRST204", "details": null, "hint": null, "message": "Could not find the 'status' column of 'clients' in the schema cache"}
+
+      80 |                 .single();
+      81 |
+    > 82 |             expect(error).toBeNull();
+         |                           ^
+      83 |             expect(data.website).toBe('updated-testclient.com');
+      84 |             expect(data.status).toBe('onboarding');
+      85 |         });
+
+      at Object.<anonymous> (__tests__/integration/real-database.test.ts:82:27)
+
+  ΓùÅ Real Database Integration Tests ΓÇ║ Blog Post Workflow ΓÇ║ should create a new blog post for client
+
+    expect(received).toBeNull()
+
+    Received: {"code": "PGRST204", "details": null, "hint": null, "message": "Could not find the 'content_type' column of 'blog_posts' in the schema cache"}
+
+      102 |                 .single();
+      103 |
+    > 104 |             expect(error).toBeNull();
+          |                           ^
+      105 |             expect(data).toBeDefined();
+      106 |             expect(data.topic).toBe('How to Test Integration');
+      107 |             expect(data.client_id).toBe(testClientId);
+
+      at Object.<anonymous> (__tests__/integration/real-database.test.ts:104:27)
+
+  ΓùÅ Real Database Integration Tests ΓÇ║ Blog Post Workflow ΓÇ║ should fetch posts for a specific client
+
+    expect(received).toBeNull()
+
+    Received: {"code": "22P02", "details": null, "hint": null, "message": "invalid input syntax for type uuid: \"undefined\""}
+
+      117 |                 .eq('client_id', testClientId);
+      118 |
+    > 119 |             expect(error).toBeNull();
+          |                           ^
+      120 |             expect(Array.isArray(data)).toBe(true);
+      121 |             expect(data.length).toBeGreaterThan(0);
+      122 |
+
+      at Object.<anonymous> (__tests__/integration/real-database.test.ts:119:27)
+
+  ΓùÅ Real Database Integration Tests ΓÇ║ Blog Post Workflow ΓÇ║ should update post status
+
+    expect(received).toBeNull()
+
+    Received: {"code": "PGRST204", "details": null, "hint": null, "message": "Could not find the 'title' column of 'blog_posts' in the schema cache"}
+
+      136 |                 .single();
+      137 |
+    > 138 |             expect(error).toBeNull();
+          |                           ^
+      139 |             expect(data.status).toBe('ready_for_review');
+      140 |             expect(data.title).toContain('How to Test Integration');
+      141 |         });
+
+      at Object.<anonymous> (__tests__/integration/real-database.test.ts:138:27)
+
+  ΓùÅ Real Database Integration Tests ΓÇ║ Client Approval Workflow ΓÇ║ should approve a post
+
+    expect(received).toBeNull()
+
+    Received: {"code": "PGRST204", "details": null, "hint": null, "message": "Could not find the 'approved_at' column of 'blog_posts' in the schema cache"}
+
+      157 |                 .single();
+      158 |
+    > 159 |             expect(postError).toBeNull();
+          |                               ^
+      160 |             expect(post.status).toBe('approved');
+      161 |             expect(post.approved_by).toBe(approvedBy);
+      162 |             expect(post.approved_at).toBeDefined();
+
+      at Object.<anonymous> (__tests__/integration/real-database.test.ts:159:31)
+
+  ΓùÅ Real Database Integration Tests ΓÇ║ Client Approval Workflow ΓÇ║ should create change request and revert to editing
+
+    expect(received).toBeNull()
+
+    Received: {"code": "PGRST204", "details": null, "hint": null, "message": "Could not find the 'needs_revision' column of 'blog_posts' in the schema cache"}
+
+      193 |                 .single();
+      194 |
+    > 195 |             expect(postError).toBeNull();
+          |                               ^
+      196 |             expect(post.status).toBe('editing');
+      197 |             expect(post.needs_revision).toBe(true);
+      198 |
+
+      at Object.<anonymous> (__tests__/integration/real-database.test.ts:195:31)
+
+  ΓùÅ Real Database Integration Tests ΓÇ║ Comments Workflow ΓÇ║ should add comment to post
+
+    expect(received).toBeNull()
+
+    Received: {"code": "PGRST204", "details": null, "hint": null, "message": "Could not find the 'author_id' column of 'comments' in the schema cache"}
+
+      229 |                 .single();
+      230 |
+    > 231 |             expect(error).toBeNull();
+          |                           ^
+      232 |             expect(data.content).toBe('This looks great!');
+      233 |             expect(data.blog_post_id).toBe(testPostId);
+      234 |         });
+
+      at Object.<anonymous> (__tests__/integration/real-database.test.ts:231:27)
+
+  ΓùÅ Real Database Integration Tests ΓÇ║ Comments Workflow ΓÇ║ should fetch all comments for post
+
+    expect(received).toBeNull()
+
+    Received: {"code": "22P02", "details": null, "hint": null, "message": "invalid input syntax for type uuid: \"undefined\""}
+
+      240 |                 .eq('blog_post_id', testPostId);
+      241 |
+    > 242 |             expect(error).toBeNull();
+          |                           ^
+      243 |             expect(Array.isArray(data)).toBe(true);
+      244 |             expect(data.length).toBeGreaterThan(0);
+      245 |         });
+
+      at Object.<anonymous> (__tests__/integration/real-database.test.ts:242:27)
+
+  ΓùÅ Real Database Integration Tests ΓÇ║ Real API Endpoints with Database ΓÇ║ should create client via API and persist to database
+
+    TypeError: fetch failed
+
+      248 |     describe('Real API Endpoints with Database', () => {
+      249 |         it('should create client via API and persist to database', async () => {
+    > 250 |             const response = await fetch('http://localhost:3002/api/clients', {
+          |                              ^
+      251 |                 method: 'POST',
+      252 |                 headers: { 'Content-Type': 'application/json' },
+      253 |                 body: JSON.stringify({
+
+      at Object.<anonymous> (__tests__/integration/real-database.test.ts:250:30)
+
+    Cause:
+    connect ECONNREFUSED ::1:3002
+
+
+Test Suites: 1 failed, 1 total
+Tests:       11 failed, 11 total
+Snapshots:   0 total
+Time:        2.741 s
+Ran all test suites matching __tests__/integration/real-database.test.ts.
