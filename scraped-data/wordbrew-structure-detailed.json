@@ -1,0 +1,84 @@
+{
+  "url": "https://app.wordbrew.com",
+  "title": "",
+  "viewport": {
+    "width": 1920,
+    "height": 1080
+  },
+  "layout": {
+    "mainContent": {
+      "sections": []
+    },
+    "cards": [],
+    "buttons": [
+      {
+        "text": "Create your account",
+        "type": "submit",
+        "classes": [
+          "text-center",
+          "focus-within:ring-4",
+          "focus-within:outline-none",
+          "inline-flex",
+          "items-center",
+          "justify-center",
+          "px-5",
+          "py-2.5",
+          "text-sm",
+          "text-white",
+          "focus-within:ring-primary-300",
+          "dark:focus-within:ring-primary-800",
+          "rounded-lg",
+          "mt-4",
+          "mb-4",
+          "bg-[#1B0CC7]",
+          "hover:bg-[#4c40cc]",
+          "dark:bg-green-500",
+          "dark:hover:bg-green-700",
+          "w-full",
+          "h-12",
+          "font-normal"
+        ]
+      },
+      {
+        "text": "Sign in With Google",
+        "type": "button",
+        "classes": [
+          "w-full",
+          "px-5",
+          "relative",
+          "text-center",
+          "items-center",
+          "border-solid",
+          "border-[1px]",
+          "rounded-md",
+          "border-[#D2D2D2]",
+          "dark:border-white",
+          "dark:text-white",
+          "min-h-12",
+          "mb-5",
+          "hover:border-black"
+        ]
+      },
+      {
+        "text": "Already have an account? Log in",
+        "type": "submit",
+        "classes": [
+          "text-[#1B0CC7]",
+          "underline",
+          "hover:text-blue-700",
+          "focus:outline-none",
+          "text-sm"
+        ]
+      }
+    ]
+  },
+  "colors": {
+    "background": "rgb(255, 255, 255)"
+  },
+  "typography": {
+    "fonts": [
+      "Inter, Kanit"
+    ],
+    "sizes": []
+  }
+}
