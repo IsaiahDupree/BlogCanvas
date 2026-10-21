@@ -2,13 +2,35 @@
 
 import Stripe from 'stripe';
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('STRIPE_SECRET_KEY is not set in environment variables');
+let stripeClient: Stripe | undefined;
+
+/**
+ * Resolves Stripe only when a payment operation actually runs. This keeps
+ * unrelated routes buildable in environments that do not enable payments,
+ * while still failing closed for every payment request without a real key.
+ */
+export function getStripe(): Stripe {
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) {
+    throw new Error('STRIPE_SECRET_KEY is not set in environment variables');
+  }
+
+  stripeClient ??= new Stripe(key, {
+    apiVersion: '2024-12-18.acacia',
+    typescript: true,
+  });
+
+  return stripeClient;
 }
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2024-12-18.acacia',
-  typescript: true,
+// Backwards-compatible lazy client for existing Stripe modules. The proxy does
+// not manufacture a credential or a client; it resolves the real client only
+// when an operation accesses it.
+export const stripe = new Proxy({} as Stripe, {
+  get(_target, property, receiver) {
+    const value = Reflect.get(getStripe(), property, receiver);
+    return typeof value === 'function' ? value.bind(getStripe()) : value;
+  },
 });
 
 // Stripe Connect configuration
