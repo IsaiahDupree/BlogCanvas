@@ -54,15 +54,15 @@ export default function LandingPage() {
           </div>
           
           <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight">
-            Create Blog Content<br />
+            Build a better blog workflow<br />
             <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              10x Faster with AI
+              with AI assistance
             </span>
           </h1>
           
           <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-10">
-            BlogCanvas is the complete AI content platform for agencies and content teams. 
-            Research, write, optimize, and publish SEO-perfect blog posts in minutes, not hours.
+            BlogCanvas helps agencies and content teams organize research, drafts,
+            reviews, and publishing in one content workflow.
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -80,43 +80,31 @@ export default function LandingPage() {
           </div>
 
           <p className="text-sm text-gray-500 mt-6">
-            No credit card required • Free forever plan available
+            Explore the workflow before deciding whether it fits your team.
           </p>
         </div>
 
-        {/* Hero Image/Stats */}
+        {/* Workflow overview */}
         <div className="max-w-6xl mx-auto mt-16">
           <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 shadow-2xl">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
               <div>
-                <p className="text-4xl font-bold text-white">10M+</p>
-                <p className="text-gray-400">Words Generated</p>
+                <p className="text-xl font-bold text-white">Research</p>
+                <p className="text-gray-400">Start with a source-aware brief</p>
               </div>
               <div>
-                <p className="text-4xl font-bold text-white">5,000+</p>
-                <p className="text-gray-400">Blog Posts Created</p>
+                <p className="text-xl font-bold text-white">Create</p>
+                <p className="text-gray-400">Shape drafts and editorial workflows</p>
               </div>
               <div>
-                <p className="text-4xl font-bold text-white">89%</p>
-                <p className="text-gray-400">Avg SEO Score</p>
+                <p className="text-xl font-bold text-white">Review</p>
+                <p className="text-gray-400">Keep feedback and approvals visible</p>
               </div>
               <div>
-                <p className="text-4xl font-bold text-white">3hr → 15min</p>
-                <p className="text-gray-400">Time Saved</p>
+                <p className="text-xl font-bold text-white">Publish</p>
+                <p className="text-gray-400">Connect approved content to your CMS</p>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Logos Section */}
-      <section className="py-12 border-y bg-gray-50">
-        <div className="max-w-7xl mx-auto px-6">
-          <p className="text-center text-sm text-gray-500 mb-8">TRUSTED BY CONTENT TEAMS AT</p>
-          <div className="flex flex-wrap justify-center items-center gap-12 opacity-50">
-            {['Agency One', 'Content Co', 'Marketing Pro', 'SEO Masters', 'Digital First'].map((name) => (
-              <span key={name} className="text-xl font-bold text-gray-400">{name}</span>
-            ))}
           </div>
         </div>
       </section>
