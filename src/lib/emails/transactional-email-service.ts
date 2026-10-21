@@ -5,22 +5,15 @@
  * using a template system and email queue for reliable delivery.
  */
 
-import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
+import { supabaseAdmin } from '@/lib/supabase';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
-// Create Supabase client with service role for queue management (bypasses RLS)
-const supabaseServiceRole = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-        auth: {
-            autoRefreshToken: false,
-            persistSession: false
-        }
-    }
-);
+// Reuse the lazy service-role client so API modules can be imported during
+// builds without database credentials. Database access still requires the
+// configured runtime URL and service-role key.
+const supabaseServiceRole = supabaseAdmin;
 
 export interface TransactionalEmailOptions {
     templateKey: string;        // e.g., 'user_invitation'
