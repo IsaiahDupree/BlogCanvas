@@ -2,8 +2,6 @@ import type { MetadataRoute } from 'next'
 import { SITE_URL } from '@/lib/site-url'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  return [
-    { url: `${SITE_URL}/` },
-    { url: `${SITE_URL}/blog` },
-  ]
+  // /blog is explicitly noindex until its content and rendering dependencies are ready.
+  return [{ url: `${SITE_URL}/` }]
 }
