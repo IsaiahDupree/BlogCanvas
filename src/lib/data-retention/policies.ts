@@ -3,11 +3,7 @@
  * Automated cleanup of old data while preserving audit trails
  */
 
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+import { supabaseAdmin as supabase } from '@/lib/supabase';
 
 /**
  * Retention periods by data type (in days)

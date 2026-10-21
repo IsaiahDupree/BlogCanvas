@@ -1,7 +1,7 @@
 // Client Portal - Revisions Page
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,7 +15,7 @@ import { AlertCircle, CheckCircle, Clock, GitPullRequest, X } from 'lucide-react
 import type { VendorRevision } from '@/types/portal';
 import type { VendorDeliverable } from '@/types/portal';
 
-export default function RevisionsPage() {
+function RevisionsContent() {
   const params = useParams();
   const searchParams = useSearchParams();
   const workspaceId = params.workspaceId as string;
@@ -384,5 +384,13 @@ export default function RevisionsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function RevisionsPage() {
+  return (
+    <Suspense fallback={<main className="min-h-screen" aria-busy="true" />}>
+      <RevisionsContent />
+    </Suspense>
   );
 }

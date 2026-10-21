@@ -7,14 +7,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import Stripe from 'stripe';
 import { stripe } from '@/lib/stripe/stripe-client';
-import { createClient } from '@supabase/supabase-js';
+import { supabaseAdmin as supabase } from '@/lib/supabase';
 import { sendOrderConfirmationEmail, sendNewOrderToVendor } from '@/lib/vendor/email-notifications';
-
-// Use service role client for webhooks (bypasses RLS)
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
 

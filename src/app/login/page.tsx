@@ -5,12 +5,9 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Mail, Lock, ArrowRight, AlertCircle, Shield, Briefcase, User, UserPlus } from 'lucide-react'
 import { Card } from '@/components/ui/card'
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase/client'
 
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+const supabase = createClient()
 
 // Check if registration is allowed (set via env)
 const allowRegistration = process.env.NEXT_PUBLIC_ALLOW_REGISTRATION === 'true'

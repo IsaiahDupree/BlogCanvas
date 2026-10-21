@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert } from '@/components/ui/alert';
@@ -21,7 +21,7 @@ interface ConnectStatus {
   dashboardUrl?: string;
 }
 
-export default function PaymentsSettingsPage() {
+function PaymentsSettingsContent() {
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
@@ -273,5 +273,13 @@ export default function PaymentsSettingsPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function PaymentsSettingsPage() {
+  return (
+    <Suspense fallback={<main className="min-h-screen" aria-busy="true" />}>
+      <PaymentsSettingsContent />
+    </Suspense>
   );
 }

@@ -3,20 +3,8 @@
  * Sends email notifications when pipeline jobs complete
  */
 
-import { createClient } from '@supabase/supabase-js';
+import { supabaseAdmin as supabaseServiceRole } from '@/lib/supabase';
 import { queueTransactionalEmail } from '@/lib/emails/transactional-email-service';
-
-// Create Supabase client with service role for bypassing RLS
-const supabaseServiceRole = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-        auth: {
-            autoRefreshToken: false,
-            persistSession: false
-        }
-    }
-);
 
 export interface PipelineCompletionNotificationOptions {
     jobId: string;

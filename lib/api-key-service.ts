@@ -3,15 +3,9 @@
  * Handles generation, validation, and management of API keys
  */
 
-import { createClient } from '@supabase/supabase-js';
+import { supabaseAdmin as supabase } from '@/lib/supabase';
 import * as bcrypt from 'bcryptjs';
 import { randomBytes } from 'crypto';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
-// Service role client for API key operations
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 export interface ApiKey {
   id: string;
