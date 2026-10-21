@@ -6,7 +6,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { processPendingCheckBacks } from '@/lib/analytics/check-back-scheduler'
 
-export const runtime = 'edge'
+// The scheduler uses Supabase and Node environment variables, so it cannot
+// run in the Edge runtime.
+export const runtime = 'nodejs'
 export const maxDuration = 300 // 5 minutes max
 
 /**
