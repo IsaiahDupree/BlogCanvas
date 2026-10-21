@@ -1,7 +1,7 @@
 // WL-001: Custom Domains API - Get, Update, Delete
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/server';
 import {
   getCustomDomain,
   updateCustomDomain,
@@ -18,7 +18,7 @@ export async function GET(
   { params }: { params: { domainId: string } }
 ) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Get authenticated user
     const {
@@ -73,7 +73,7 @@ export async function PATCH(
   { params }: { params: { domainId: string } }
 ) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Get authenticated user
     const {
@@ -121,7 +121,7 @@ export async function DELETE(
   { params }: { params: { domainId: string } }
 ) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Get authenticated user
     const {

@@ -1,6 +1,6 @@
 // WL-001: Custom Domain Database Functions
 
-import { createClient } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase';
 import type {
   CustomDomain,
   CreateCustomDomainInput,
@@ -20,7 +20,7 @@ export function generateVerificationToken(): string {
  * Get all custom domains for a vendor
  */
 export async function getVendorDomains(vendorId: string): Promise<CustomDomain[]> {
-  const supabase = createClient();
+  const supabase = supabaseAdmin;
 
   const { data, error } = await supabase
     .from('custom_domains')
@@ -40,7 +40,7 @@ export async function getVendorDomains(vendorId: string): Promise<CustomDomain[]
  * Get a specific custom domain by ID
  */
 export async function getCustomDomain(domainId: string): Promise<CustomDomain | null> {
-  const supabase = createClient();
+  const supabase = supabaseAdmin;
 
   const { data, error } = await supabase
     .from('custom_domains')
@@ -60,7 +60,7 @@ export async function getCustomDomain(domainId: string): Promise<CustomDomain | 
  * Get a custom domain by domain name
  */
 export async function getCustomDomainByName(domain: string): Promise<CustomDomain | null> {
-  const supabase = createClient();
+  const supabase = supabaseAdmin;
 
   const { data, error } = await supabase
     .from('custom_domains')
@@ -84,7 +84,7 @@ export async function getCustomDomainByName(domain: string): Promise<CustomDomai
  * Get primary domain for a vendor
  */
 export async function getPrimaryDomain(vendorId: string): Promise<CustomDomain | null> {
-  const supabase = createClient();
+  const supabase = supabaseAdmin;
 
   const { data, error } = await supabase
     .from('custom_domains')
@@ -113,7 +113,7 @@ export async function createCustomDomain(
   vendorId: string,
   input: CreateCustomDomainInput
 ): Promise<CustomDomain> {
-  const supabase = createClient();
+  const supabase = supabaseAdmin;
 
   // Generate verification token
   const verificationToken = generateVerificationToken();
@@ -167,7 +167,7 @@ export async function updateCustomDomain(
   vendorId: string,
   input: UpdateCustomDomainInput
 ): Promise<CustomDomain> {
-  const supabase = createClient();
+  const supabase = supabaseAdmin;
 
   const { data, error } = await supabase
     .from('custom_domains')
@@ -192,7 +192,7 @@ export async function deleteCustomDomain(
   domainId: string,
   vendorId: string
 ): Promise<boolean> {
-  const supabase = createClient();
+  const supabase = supabaseAdmin;
 
   const { error } = await supabase
     .from('custom_domains')
@@ -216,7 +216,7 @@ export async function updateVerificationStatus(
   status: 'pending' | 'verifying' | 'verified' | 'failed',
   verifiedAt?: Date
 ): Promise<void> {
-  const supabase = createClient();
+  const supabase = supabaseAdmin;
 
   const updates: any = {
     verification_status: status,
@@ -246,7 +246,7 @@ export async function updateSSLStatus(
   sslIssuedAt?: Date,
   sslExpiresAt?: Date
 ): Promise<void> {
-  const supabase = createClient();
+  const supabase = supabaseAdmin;
 
   const updates: any = {
     ssl_status: status,
@@ -281,7 +281,7 @@ export async function logDomainVerification(
   details?: Record<string, any>,
   errorMessage?: string
 ): Promise<void> {
-  const supabase = createClient();
+  const supabase = supabaseAdmin;
 
   const { error } = await supabase
     .from('domain_verification_logs')
@@ -304,7 +304,7 @@ export async function logDomainVerification(
 export async function getDomainVerificationLogs(
   domainId: string
 ): Promise<DomainVerificationLog[]> {
-  const supabase = createClient();
+  const supabase = supabaseAdmin;
 
   const { data, error } = await supabase
     .from('domain_verification_logs')
@@ -334,7 +334,7 @@ export async function isDomainAvailable(domain: string): Promise<boolean> {
  * Get active verified domains (for routing)
  */
 export async function getActiveVerifiedDomains(): Promise<CustomDomain[]> {
-  const supabase = createClient();
+  const supabase = supabaseAdmin;
 
   const { data, error } = await supabase
     .from('custom_domains')

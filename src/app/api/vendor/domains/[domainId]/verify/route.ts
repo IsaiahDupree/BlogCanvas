@@ -1,7 +1,7 @@
 // WL-002: Domain Verification API
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/server';
 import { getCustomDomain } from '@/lib/db/custom-domains';
 import {
   verifyDomain,
@@ -18,7 +18,7 @@ export async function POST(
   { params }: { params: { domainId: string } }
 ) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Get authenticated user
     const {
@@ -92,7 +92,7 @@ export async function GET(
   { params }: { params: { domainId: string } }
 ) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Get authenticated user
     const {
