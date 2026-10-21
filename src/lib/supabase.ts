@@ -1,28 +1,44 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-// Get environment variables with fallback for testing
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+function createLazyClient(keyName: 'NEXT_PUBLIC_SUPABASE_ANON_KEY' | 'SUPABASE_SERVICE_ROLE_KEY'): SupabaseClient {
+    let client: SupabaseClient | undefined;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn('⚠️ Supabase credentials not found in environment variables');
+    const getClient = () => {
+        if (client) return client;
+
+        const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const key = process.env[keyName];
+        if (!url || !key) {
+            throw new Error(`Supabase is not configured: NEXT_PUBLIC_SUPABASE_URL and ${keyName} are required`);
+        }
+
+        client = createClient(url, key, {
+            auth: {
+                autoRefreshToken: false,
+                persistSession: false,
+            },
+        });
+        return client;
+    };
+
+    // Keep route modules importable during builds that do not have runtime
+    // credentials. The real client is created only when a request uses it.
+    return new Proxy({} as SupabaseClient, {
+        get(_target, property) {
+            const actual = getClient();
+            const value = Reflect.get(actual, property, actual);
+            return typeof value === 'function' ? value.bind(actual) : value;
+        },
+        set(_target, property, value) {
+            return Reflect.set(getClient(), property, value, getClient());
+        },
+    });
 }
 
-// Client-side Supabase client (uses anon key)
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-// Server-side Supabase client (uses service role key for admin operations)
-export const supabaseAdmin = createClient(
-    supabaseUrl,
-    supabaseServiceKey,
-    {
-        auth: {
-            autoRefreshToken: false,
-            persistSession: false
-        }
-    }
-);
+// Clients are initialized on first use so public pages and route builds do not
+// require database credentials just to import server modules.
+export const supabase = createLazyClient('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+export const supabaseAdmin = createLazyClient('SUPABASE_SERVICE_ROLE_KEY');
 
 // Helper to get user from session
 export async function getCurrentUser() {
