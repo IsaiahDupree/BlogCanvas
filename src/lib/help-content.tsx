@@ -214,8 +214,8 @@ export const helpContent = {
   brand: {
     voice: "How your brand speaks. Examples: 'Professional yet approachable', 'Bold and direct', 'Warm and empathetic'.",
     tone: "Emotional quality of your content. Examples: 'Optimistic', 'Serious', 'Playful', 'Authoritative'.",
-    dos: "Specific examples of what to do. Example: 'Use "platform" instead of "software"', 'Start with action verbs'.",
-    donts: "What to avoid. Example: 'Never use jargon like "synergy"', 'Don't make claims without data'.",
+    dos: `Specific examples of what to do. Example: 'Use "platform" instead of "software"', 'Start with action verbs'.`,
+    donts: `What to avoid. Example: 'Never use jargon like "synergy"', 'Don't make claims without data'.`,
     terminology: "Preferred terms and phrases unique to your brand. Helps AI use correct vocabulary.",
     sampleContent: "Links to your best existing content. AI learns from these examples to match your style.",
   },

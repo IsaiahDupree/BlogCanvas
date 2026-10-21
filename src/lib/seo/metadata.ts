@@ -1,4 +1,5 @@
-import { Metadata } from 'next'
+import type { Metadata } from 'next'
+import { SITE_URL } from '@/lib/site-url'
 
 interface GenerateMetadataParams {
   title: string
@@ -27,7 +28,7 @@ export function generateMetadata({
   vendorName,
   ogType = 'default',
 }: GenerateMetadataParams): Metadata {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://blogcanvas.com'
+  const baseUrl = SITE_URL
   const url = `${baseUrl}${path}`
 
   // Generate dynamic OG image if no custom image is provided
@@ -77,7 +78,6 @@ export function generateMetadata({
       title,
       description,
       images: [ogImage],
-      creator: '@blogcanvas',
     },
   }
 
@@ -109,7 +109,6 @@ export const defaultMetadata: Metadata = {
     'blog canvas',
     'client relationships',
   ],
-  authors: [{ name: 'BlogCanvas' }],
   creator: 'BlogCanvas',
   publisher: 'BlogCanvas',
   formatDetection: {
@@ -117,11 +116,10 @@ export const defaultMetadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://blogcanvas.com'),
+  metadataBase: new URL(SITE_URL),
   openGraph: {
     title: 'BlogCanvas - Client-Vendor Relationship Management',
     description: 'The all-in-one platform for bloggers to manage clients, create offers, and streamline content delivery.',
-    url: process.env.NEXT_PUBLIC_APP_URL || 'https://blogcanvas.com',
     siteName: 'BlogCanvas',
     locale: 'en_US',
     type: 'website',
@@ -130,7 +128,6 @@ export const defaultMetadata: Metadata = {
     card: 'summary_large_image',
     title: 'BlogCanvas - Client-Vendor Relationship Management',
     description: 'The all-in-one platform for bloggers to manage clients, create offers, and streamline content delivery.',
-    creator: '@blogcanvas',
   },
   robots: {
     index: true,

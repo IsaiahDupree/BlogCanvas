@@ -8,7 +8,15 @@ import { getVendorBranding, type EmailBranding } from './branding';
 import { captureException } from '@/lib/monitoring/sentry';
 import { trackEvent, EventCategory, EventAction } from '@/lib/analytics/event-tracker';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resend: Resend | undefined;
+
+function getResendClient(): Resend {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    throw new Error('Email service is not configured: RESEND_API_KEY is required');
+  }
+  return (resend ??= new Resend(apiKey));
+}
 
 export interface EmailOptions {
   to: string | string[];
@@ -39,7 +47,7 @@ export async function sendEmail(options: EmailOptions) {
       },
     });
 
-    const response = await resend.emails.send({
+    const response = await getResendClient().emails.send({
       from: fromAddress,
       to: options.to,
       subject: options.subject,

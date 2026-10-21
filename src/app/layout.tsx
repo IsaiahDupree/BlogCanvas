@@ -7,6 +7,7 @@ import { QueryProvider } from "@/providers/query-provider";
 import { WebVitals } from "@/components/analytics/WebVitals";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { ThemeProvider } from "@/contexts/theme-context";
+import { SITE_URL } from "@/lib/site-url";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,13 +20,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "BlogCanvas - AI-Powered Content at Scale",
     template: "%s | BlogCanvas",
   },
   description: "Create, manage, and publish high-quality blog content with AI assistance. Streamline your content workflow with intelligent automation.",
   keywords: ["blog management", "content creation", "AI content", "blog automation", "content marketing"],
-  authors: [{ name: "BlogCanvas Team" }],
   creator: "BlogCanvas",
   publisher: "BlogCanvas",
   manifest: "/manifest.json",
@@ -44,7 +45,6 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: process.env.NEXT_PUBLIC_APP_URL || "https://blogcanvas.com",
     title: "BlogCanvas - AI-Powered Content at Scale",
     description: "Create, manage, and publish high-quality blog content with AI assistance",
     siteName: "BlogCanvas",
@@ -53,7 +53,6 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "BlogCanvas - AI-Powered Content at Scale",
     description: "Create, manage, and publish high-quality blog content with AI assistance",
-    creator: "@blogcanvas",
   },
   robots: {
     index: true,

@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin as supabase } from '@/lib/supabase'
 import { encryptToken, decryptToken, generateSecureToken } from '@/lib/encryption'
 
 /**
@@ -8,11 +8,6 @@ import { encryptToken, decryptToken, generateSecureToken } from '@/lib/encryptio
  * Manages automatic rotation of API tokens and refresh tokens
  * to minimize the impact of token compromise.
  */
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 export interface TokenRecord {
   id: string

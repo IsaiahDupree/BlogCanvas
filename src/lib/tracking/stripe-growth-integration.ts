@@ -4,6 +4,7 @@
  */
 
 import type Stripe from 'stripe';
+import { SITE_URL } from '@/lib/site-url';
 import {
   findOrCreatePerson,
   linkIdentity,
@@ -76,7 +77,7 @@ export async function trackCheckoutCompleted(
     if (process.env.NEXT_PUBLIC_FB_PIXEL_ID) {
       await trackServerSideEvent(
         'Purchase',
-        `${process.env.NEXT_PUBLIC_SITE_URL || 'https://blogcanvas.com'}/checkout`,
+        `${process.env.NEXT_PUBLIC_SITE_URL || SITE_URL}/checkout`,
         {
           email: customerEmail,
           externalId: person.id,

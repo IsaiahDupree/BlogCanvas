@@ -18,7 +18,7 @@ export default function PagePreview({ page }: PagePreviewProps) {
           <div className="w-3 h-3 rounded-full bg-green-400"></div>
         </div>
         <div className="flex-1 text-center text-sm text-gray-600 font-mono">
-          Preview - blogcanvas.com/@yourhandle/{page.slug}
+          Preview - www.blogcanvas.io/@yourhandle/{page.slug}
         </div>
       </div>
 

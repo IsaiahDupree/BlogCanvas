@@ -1,24 +1,13 @@
-import { Organization, Product, BreadcrumbList, Article, WithContext } from 'schema-dts'
+import type { Organization, Product, BreadcrumbList, Article, WithContext } from 'schema-dts'
+import { SITE_URL } from '@/lib/site-url'
 
 export function generateOrganizationSchema(): WithContext<Organization> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://blogcanvas.com'
-
   return {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'BlogCanvas',
-    url: baseUrl,
-    logo: `${baseUrl}/logo.png`,
+    url: `${SITE_URL}/`,
     description: 'Client-Vendor Relationship Management Platform for Bloggers',
-    sameAs: [
-      'https://twitter.com/blogcanvas',
-      'https://linkedin.com/company/blogcanvas',
-    ],
-    contactPoint: {
-      '@type': 'ContactPoint',
-      contactType: 'Customer Support',
-      email: 'support@blogcanvas.com',
-    },
   }
 }
 
@@ -44,14 +33,12 @@ export function generateProductSchema({
   image,
   vendor,
 }: ProductSchemaParams): WithContext<Product> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://blogcanvas.com'
-
   return {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name,
     description,
-    image: image || `${baseUrl}/og-default.png`,
+    ...(image ? { image } : {}),
     url,
     offers: {
       '@type': 'Offer',
@@ -61,7 +48,6 @@ export function generateProductSchema({
       seller: {
         '@type': 'Organization',
         name: vendor.name,
-        url: `${baseUrl}/@${vendor.handle}`,
       },
     },
   }
@@ -107,17 +93,15 @@ export function generateArticleSchema({
   dateModified,
   author,
 }: ArticleSchemaParams): WithContext<Article> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://blogcanvas.com'
-
   return {
     '@context': 'https://schema.org',
     '@type': 'Article',
     headline: title,
     description,
-    image: image || `${baseUrl}/og-default.png`,
+    ...(image ? { image } : {}),
     url,
     datePublished,
-    dateModified: dateModified || datePublished,
+    ...(dateModified ? { dateModified } : {}),
     author: {
       '@type': 'Person',
       name: author.name,
@@ -126,10 +110,6 @@ export function generateArticleSchema({
     publisher: {
       '@type': 'Organization',
       name: 'BlogCanvas',
-      logo: {
-        '@type': 'ImageObject',
-        url: `${baseUrl}/logo.png`,
-      },
     },
   }
 }
@@ -139,7 +119,7 @@ export function StructuredData({ data }: { data: WithContext<Organization | Prod
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, '\\u003c') }}
     />
   )
 }

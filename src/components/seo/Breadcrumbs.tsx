@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { ChevronRight, Home } from 'lucide-react'
+import { SITE_URL } from '@/lib/site-url'
 
 export interface BreadcrumbItem {
   label: string
@@ -14,7 +15,7 @@ interface BreadcrumbsProps {
 }
 
 export function Breadcrumbs({ items, className = '' }: BreadcrumbsProps) {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://blogcanvas.com'
+  const baseUrl = SITE_URL
 
   // Generate JSON-LD structured data
   const structuredData = {
@@ -41,7 +42,7 @@ export function Breadcrumbs({ items, className = '' }: BreadcrumbsProps) {
       {/* JSON-LD structured data for SEO */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, '\\u003c') }}
       />
 
       {/* Visual breadcrumb navigation */}
