@@ -1,4 +1,5 @@
 import { WebSite, Organization, WithContext } from 'schema-dts'
+import { SITE_URL } from '@/lib/site-url'
 
 /**
  * Structured Data for SEO
@@ -8,30 +9,20 @@ export function StructuredData() {
   const websiteSchema: WithContext<WebSite> = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
+    '@id': `${SITE_URL}/#website`,
     name: 'BlogCanvas',
     description: 'AI-Powered Content Management Platform',
-    url: process.env.NEXT_PUBLIC_APP_URL || 'https://blogcanvas.com',
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: {
-        '@type': 'EntryPoint',
-        urlTemplate: `${process.env.NEXT_PUBLIC_APP_URL || 'https://blogcanvas.com'}/search?q={search_term_string}`,
-      },
-      'query-input': 'required name=search_term_string',
-    },
+    url: SITE_URL,
+    publisher: { '@id': `${SITE_URL}/#organization` },
   }
 
   const organizationSchema: WithContext<Organization> = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
+    '@id': `${SITE_URL}/#organization`,
     name: 'BlogCanvas',
     description: 'AI-Powered Content Management Platform for bloggers and content creators',
-    url: process.env.NEXT_PUBLIC_APP_URL || 'https://blogcanvas.com',
-    logo: `${process.env.NEXT_PUBLIC_APP_URL || 'https://blogcanvas.com'}/logo.png`,
-    sameAs: [
-      'https://twitter.com/blogcanvas',
-      'https://github.com/blogcanvas',
-    ],
+    url: SITE_URL,
   }
 
   return (
@@ -39,13 +30,13 @@ export function StructuredData() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(websiteSchema),
+          __html: JSON.stringify(websiteSchema).replace(/</g, '\\u003c'),
         }}
       />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(organizationSchema),
+          __html: JSON.stringify(organizationSchema).replace(/</g, '\\u003c'),
         }}
       />
     </>

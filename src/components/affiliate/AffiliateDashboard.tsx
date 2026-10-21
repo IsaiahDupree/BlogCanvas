@@ -6,6 +6,7 @@
  */
 
 import { useState } from 'react';
+import { SITE_URL } from '@/lib/site-url';
 import type {
   Affiliate,
   ReferralCode,
@@ -41,7 +42,7 @@ export default function AffiliateDashboard({
   const [copied, setCopied] = useState(false);
 
   const referralUrl = referralCode
-    ? `${process.env.NEXT_PUBLIC_APP_URL || 'https://blogcanvas.com'}/r/${
+    ? `${SITE_URL}/r/${
         referralCode.custom_slug || referralCode.code
       }`
     : null;

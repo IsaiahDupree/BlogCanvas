@@ -4,6 +4,7 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
+import { SITE_URL } from '@/lib/site-url';
 import type {
   ReferralCode,
   CreateReferralCode,
@@ -278,7 +279,7 @@ export async function getOrCreateClientReferralCode(
  * Build full referral URL
  */
 function buildReferralUrl(code: string, customSlug?: string | null): string {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://blogcanvas.com';
+  const baseUrl = SITE_URL;
   const slug = customSlug || code;
   return `${baseUrl}/r/${slug}`;
 }

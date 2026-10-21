@@ -150,7 +150,7 @@ export default function VendorDashboardPage() {
           Welcome back, {vendor.business_name}!
         </p>
         <p className="text-sm text-gray-500 mt-1">
-          Your public URL: <span className="font-mono text-blue-600">blogcanvas.com/@{vendor.handle}</span>
+          Your public pages: <span className="font-mono text-blue-600">www.blogcanvas.io/@{vendor.handle}/page-slug</span>
         </p>
       </div>
 

@@ -239,7 +239,7 @@ export default function VendorRegisterPage() {
                 <Label htmlFor="handle">
                   Vendor Handle *
                   <span className="text-sm text-gray-500 ml-2">
-                    (Your URL: blogcanvas.com/@{formData.handle || 'yourhandle'})
+                    (Your page URLs: www.blogcanvas.io/@{formData.handle || 'yourhandle'}/page-slug)
                   </span>
                 </Label>
                 <div className="relative mt-1">
