@@ -9,7 +9,6 @@
  */
 
 import { createClient } from '@supabase/supabase-js'
-import { useEffect, useState } from 'react'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -352,23 +351,6 @@ export async function getFeatureFlagStats(
       enabled_percentage: 0
     }
   }
-}
-
-/**
- * React hook for using feature flags in components
- */
-export function useFeatureFlag(flagKey: string, entityType?: EntityType, entityId?: string) {
-  const [enabled, setEnabled] = useState(false)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    isFeatureEnabled(flagKey, entityType, entityId).then(result => {
-      setEnabled(result)
-      setLoading(false)
-    })
-  }, [flagKey, entityType, entityId])
-
-  return { enabled, loading }
 }
 
 // Export for server-side usage

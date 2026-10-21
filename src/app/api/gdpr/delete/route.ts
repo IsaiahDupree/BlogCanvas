@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createClient } from '@/lib/supabase/server'
 import { deleteUserData } from '@/lib/gdpr/data-export'
 
 /**
@@ -12,7 +11,7 @@ import { deleteUserData } from '@/lib/gdpr/data-export'
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient({ cookies })
+    const supabase = await createClient()
 
     // Get authenticated user
     const {
