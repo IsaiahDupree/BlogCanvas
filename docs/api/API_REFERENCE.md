@@ -342,11 +342,15 @@ Receives and processes Core Web Vitals metrics from the client
 
 #### POST /analyze
 
-**File:** `src/app/api/analyze/route.ts`
+**Status:** Retired. Returns `410 Gone`; the former implementation returned fabricated analysis IDs.
+
+Use the Website Scanner in the authenticated workspace. It scans an existing website record through `POST /api/websites/{websiteId}/scan`.
 
 ---
 
 #### GET /analyze/{analysisId}
+
+**Status:** Retired. Returns `410 Gone`; the former implementation returned fabricated sample results for any ID.
 
 **Parameters:**
 
@@ -354,7 +358,7 @@ Receives and processes Core Web Vitals metrics from the client
 |------|------|-----|----------|-------------|
 | analysisId | string | path | Yes | The analysisId identifier |
 
-**File:** `src/app/api/analyze/[analysisId]/route.ts`
+**Replacement:** Review scan records in the authenticated workspace. The legacy `analysisId` is not a persisted scan identifier.
 
 ---
 

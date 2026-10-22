@@ -51,7 +51,7 @@
 | Stage | Description | Status | Implementation |
 |-------|-------------|--------|----------------|
 | 1. **Input Client + Site** | CSM adds client (brand info, niche, goals), enters URLs | ✅ Done | `/app/clients`, brand guides |
-| 2. **Automated Baseline SEO Audit** | Crawl site, get SEO score, indexed pages, topic coverage | ✅ Done | `/api/analyze/website`, `seo_audits` |
+| 2. **Automated Baseline SEO Audit** | Crawl a connected site and persist scan evidence | ⚠️ Partial | Workspace scan routes exist; the legacy generic `/api/analyze` endpoint is retired. Indexed-page and topic-coverage outputs require separate verification. |
 | 3. **Gap & Opportunity Analysis** | Build Topic Map, compare coverage vs ideal | ✅ Done | `topic_clusters`, coverage map |
 | 4. **Forecast & Package Proposal** | Choose goals/horizon, system suggests posts & cadence | ⚠️ Partial | Batch settings exist, pitch generator pending |
 | 5. **Topic List → Production Batch** | CSV import, structured batch with due dates | ✅ Done | `/app/batches`, CSV import |
@@ -71,7 +71,7 @@ Based on the vision document (`prd.md`), here's the detailed implementation stat
 | Feature | Status | Notes |
 |---------|--------|-------|
 | Add client + website | ✅ Done | `/app/clients`, `/api/clients` |
-| Run crawl/SEO audit job | ✅ Done | `/api/analyze/website`, website insights |
+| Run crawl/SEO audit job | ⚠️ Partial | Use the authenticated Website Scanner for a connected site; the old generic endpoint returned fabricated analysis and is retired. |
 | Generate topic clusters | ✅ Done | `topic_clusters` table, AI generation |
 | Compute SEO score now/projected | ✅ Done | `seo_audits` table, scoring system |
 | Topic coverage map | ✅ Done | Website analysis dashboard |
@@ -693,7 +693,7 @@ Complete journey from "Cold Site" to "Monthly Report":
 ├─────────────────────────────────────────────────────────────────────────────┤
 │  2. AUTOMATED BASELINE SEO AUDIT                                             │
 │     Crawl site → SEO score → indexed pages → topic coverage                  │
-│     ✅ /api/analyze/website, seo_audits table                                │
+│     ⚠️ Workspace scan routes exist; persisted index/coverage evidence needs verification │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │  3. GAP & OPPORTUNITY ANALYSIS                                               │
 │     Topic Map → clusters, pillar topics → coverage comparison                │

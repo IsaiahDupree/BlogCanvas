@@ -11,8 +11,8 @@ const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 const safeFetch = async (url: string) => {
     try {
         return await fetch(url);
-    } catch (error: any) {
-        if (error.message?.includes('fetch failed') || error.code === 'ECONNREFUSED') {
+        } catch (error: unknown) {
+            if (error instanceof Error && (error.message.includes('fetch failed') || ('code' in error && error.code === 'ECONNREFUSED'))) {
             throw new Error('SKIP_TEST_SERVER_NOT_RUNNING');
         }
         throw error;
@@ -26,8 +26,8 @@ const safeFetch = async (url: string) => {
             try {
                 const response = await safeFetch(`${baseUrl}/`);
                 expect(response.status).toBe(200);
-            } catch (error: any) {
-                if (error.message === 'SKIP_TEST_SERVER_NOT_RUNNING') {
+            } catch (error: unknown) {
+                if (error instanceof Error && error.message === 'SKIP_TEST_SERVER_NOT_RUNNING') {
                     console.log('⚠️  Skipping accessibility test - server not running');
                     return;
                 }
@@ -44,6 +44,15 @@ const safeFetch = async (url: string) => {
             const response = await fetch(`${baseUrl}/blog/test-slug`);
             // Can be 200 (found) or 404 (not found) - both are valid responses
             expect([200, 404]).toContain(response.status);
+        });
+
+        it('should keep the legacy website-analysis page out of search and direct users to the workspace', async () => {
+            const response = await fetch(`${baseUrl}/analyze`);
+            expect(response.status).toBe(200);
+            const html = await response.text();
+            expect(html).toMatch(/<meta[^>]+name="robots"[^>]+content="[^"]*noindex/i);
+            expect(html).toContain('Sign in to BlogCanvas');
+            expect(html).toContain('no longer displays sample analysis results');
         });
     });
 
@@ -185,12 +194,20 @@ const safeFetch = async (url: string) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ url: 'https://example.com' })
             });
-            expect([200, 400, 401, 403]).toContain(response.status);
+            expect(response.status).toBe(410);
+            await expect(response.json()).resolves.toMatchObject({
+                success: false,
+                error: expect.stringContaining('legacy endpoint is retired'),
+            });
         });
 
         it('should access GET /api/analyze/[analysisId]', async () => {
             const response = await fetch(`${baseUrl}/api/analyze/test-id`);
-            expect([200, 404, 401, 403]).toContain(response.status);
+            expect(response.status).toBe(410);
+            await expect(response.json()).resolves.toMatchObject({
+                success: false,
+                error: expect.stringContaining('legacy analysis endpoint is retired'),
+            });
         });
     });
 });
